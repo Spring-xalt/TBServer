@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仿淘宝 - 注册</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <!-- 样式文件：直接指向static下的style.css -->
+  <link rel="stylesheet" href="/taobao/style.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ff4400',
+            secondary: '#f5f5f5',
+            dark: '#333333',
+            light: '#666666',
+            border: '#dddddd'
+          },
+          fontFamily: {
+            sans: ['Microsoft YaHei', 'Arial', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .form-input-focus {
+        @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
+      }
+      .tab-active {
+        @apply text-primary border-primary font-medium bg-primary/5;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<!-- 顶部导航：跳转登录页/首页 -->
+<header class="bg-white border-b border-border">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="flex items-center">
+      <a href="/taobao/index.html" class="text-primary text-2xl font-bold flex items-center">
+        <i class="fa fa-shopping-bag mr-2"></i>
+        <span>仿淘宝商城</span>
+      </a>
+    </div>
+    <div class="transition-all duration-300 hover:scale-105">
+      <span class="text-light">已有账号？</span>
+      <a href="/taobao/login.html" class="text-primary hover:underline ml-1 font-medium">
+        立即登录
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容区：消费者/商户注册切换 -->
+<main class="container mx-auto px-4 py-8 md:py-12">
+  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+    <!-- 注册类型切换选项卡 -->
+    <div class="border-b border-border">
+      <div class="flex">
+        <button id="consumerTab" class="tab-btn tab-active flex-1 py-4 px-6 text-center border-b-2 transition-all duration-300" data-role="consumer">
+          消费者注册
+        </button>
+        <button id="merchantTab" class="tab-btn flex-1 py-4 px-6 text-center border-b-2 border-transparent text-light transition-all duration-300" data-role="merchant">
+          商户注册
+        </button>
+      </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="successMessage" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded m-4">
+      <i class="fa fa-check-circle mr-2"></i>
+      <span></span>
+    </div>
+    <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded m-4">
+      <i class="fa fa-exclamation-circle mr-2"></i>
+      <span></span>
+    </div>
+
+    <!-- 消费者注册表单 -->
+    <div id="consumerForm" class="p-6">
+      <form id="consumerRegisterForm" class="space-y-4">
+        <div>
+          <label for="consumerUsername" class="block text-dark text-sm font-medium mb-1">
+            账号 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-user"></i>
+                            </span>
+            <input type="text" id="consumerUsername"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请设置登录账号" required>
+          </div>
+          <p id="usernameError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div>
+          <label for="consumerPassword" class="block text-dark text-sm font-medium mb-1">
+            密码 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-lock"></i>
+                            </span>
+            <input type="password" id="consumerPassword"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请设置密码（6-20位）" required>
+            <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+          <p id="passwordError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div>
+          <label for="consumerConfirmPassword" class="block text-dark text-sm font-medium mb-1">
+            确认密码 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-lock"></i>
+                            </span>
+            <input type="password" id="consumerConfirmPassword"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请再次输入密码" required>
+            <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+          <p id="confirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit" class="w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 flex items-center justify-center transform hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fa fa-user-plus mr-2"></i>
+            注册账号
+          </button>
+        </div>
+
+        <div class="text-center text-light text-sm mt-4">
+          点击"注册账号"，即表示您同意我们的
+          <a href="#" class="text-primary hover:underline">服务条款</a>
+          和
+          <a href="#" class="text-primary hover:underline">隐私政策</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- 商户注册表单 -->
+    <div id="merchantForm" class="p-6 hidden">
+      <form id="merchantRegisterForm" class="space-y-4">
+        <div>
+          <label for="merchantUsername" class="block text-dark text-sm font-medium mb-1">
+            登录账号 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-user"></i>
+                            </span>
+            <input type="text" id="merchantUsername"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请设置登录账号" required>
+          </div>
+          <p id="merchantUsernameError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div>
+          <label for="merchantPassword" class="block text-dark text-sm font-medium mb-1">
+            登录密码 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-lock"></i>
+                            </span>
+            <input type="password" id="merchantPassword"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请设置密码（6-20位）" required>
+            <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+          <p id="merchantPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div>
+          <label for="merchantConfirmPassword" class="block text-dark text-sm font-medium mb-1">
+            确认密码 <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-light">
+                                <i class="fa fa-lock"></i>
+                            </span>
+            <input type="password" id="merchantConfirmPassword"
+                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   placeholder="请再次输入密码" required>
+            <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+          <p id="merchantConfirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit" class="w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 flex items-center justify-center transform hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fa fa-store mr-2"></i>
+            注册商户
+          </button>
+        </div>
+
+        <div class="text-center text-light text-sm mt-4">
+          点击"注册商户"，即表示您同意我们的
+          <a href="#" class="text-primary hover:underline">商户服务条款</a>
+          和
+          <a href="#" class="text-primary hover:underline">隐私政策</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="bg-white border-t border-border mt-12">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center text-light text-sm">
+      <p>© 2023 仿淘宝商城 版权所有</p>
+      <p class="mt-2">联系方式：service@example.com</p>
+    </div>
+  </div>
+</footer>
+
+<!-- 引入AXIOS -->
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+  // 基础配置：后端接口基础路径
+  axios.defaults.baseURL = 'http://localhost:8082/taobao';
+  axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
+
+  // 页面元素
+  const consumerTab = document.getElementById('consumerTab');
+  const merchantTab = document.getElementById('merchantTab');
+  const consumerForm = document.getElementById('consumerForm');
+  const merchantForm = document.getElementById('merchantForm');
+
+  // 消息元素
+  const successMessage = document.getElementById('successMessage');
+  const errorMessage = document.getElementById('errorMessage');
+
+  // 切换注册类型
+  consumerTab.addEventListener('click', () => {
+    switchForm('consumer');
+  });
+
+  merchantTab.addEventListener('click', () => {
+    switchForm('merchant');
+  });
+
+  // 切换表单显示
+  function switchForm(type) {
+    clearAllErrors();
+    hideMessages();
+
+    if (type === 'consumer') {
+      consumerTab.classList.add('tab-active');
+      merchantTab.classList.remove('tab-active');
+      consumerForm.classList.remove('hidden');
+      merchantForm.classList.add('hidden');
+    } else {
+      merchantTab.classList.add('tab-active');
+      consumerTab.classList.remove('tab-active');
+      merchantForm.classList.remove('hidden');
+      consumerForm.classList.add('hidden');
+    }
+  }
+
+  // 密码显示/隐藏切换
+  document.querySelectorAll('.togglePassword').forEach(button => {
+    button.addEventListener('click', function() {
+      const passwordInput = this.parentElement.querySelector('input');
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+
+      // 切换图标
+      this.querySelector('i').classList.toggle('fa-eye');
+      this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+  });
+
+  // 消费者注册表单提交
+  document.getElementById('consumerRegisterForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      username: document.getElementById('consumerUsername').value.trim(),
+      password: document.getElementById('consumerPassword').value.trim(),
+      confirmPassword: document.getElementById('consumerConfirmPassword').value.trim()
+    };
+
+    if (!validateConsumerForm(formData)) {
+      return;
+    }
+
+    try {
+      const registerData = {
+        username: formData.username,
+        password: formData.password
+      };
+
+      const response = await axios.post('/auth/consumer/register', registerData);
+
+      if (response.data.success || response.status === 200) {
+        showSuccessMessage('消费者注册成功，正在跳转到登录页...');
+        // 注册成功跳转登录页（路径适配新结构）
+        setTimeout(() => {
+          window.location.href = '/taobao/login.html';
+        }, 3000);
+      } else {
+        showErrorMessage(response.data.message || '注册失败，请重试');
+      }
+    } catch (error) {
+      console.error('消费者注册失败:', error);
+      const errorMsg = error.response?.data?.message || '网络错误，请稍后重试';
+      showErrorMessage(`注册失败: ${errorMsg}`);
+    }
+  });
+
+  // 商户注册表单提交
+  document.getElementById('merchantRegisterForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      username: document.getElementById('merchantUsername').value.trim(),
+      password: document.getElementById('merchantPassword').value.trim(),
+      confirmPassword: document.getElementById('merchantConfirmPassword').value.trim()
+    };
+
+    if (!validateMerchantForm(formData)) {
+      return;
+    }
+
+    try {
+      const registerData = {
+        username: formData.username,
+        password: formData.password
+      };
+
+      const response = await axios.post('/auth/merchant/register', registerData);
+
+      if (response.data.success || response.status === 200) {
+        showSuccessMessage('商户注册成功，正在跳转到登录页...');
+        // 注册成功跳转登录页（路径适配新结构）
+        setTimeout(() => {
+          window.location.href = '/taobao/login.html';
+        }, 3000);
+      } else {
+        showErrorMessage(response.data.message || '注册失败，请重试');
+      }
+    } catch (error) {
+      console.error('商户注册失败:', error);
+      const errorMsg = error.response?.data?.message || '网络错误，请稍后重试';
+      showErrorMessage(`注册失败: ${errorMsg}`);
+    }
+  });
+
+  // 表单验证等工具函数
+  function validateConsumerForm(data) {
+    let isValid = true;
+    clearConsumerErrors();
+
+    if (!data.username) {
+      showError('usernameError', '请输入账号');
+      isValid = false;
+    }
+
+    if (!data.password) {
+      showError('passwordError', '请输入密码');
+      isValid = false;
+    } else if (data.password.length < 6 || data.password.length > 20) {
+      showError('passwordError', '密码长度必须在6-20位之间');
+      isValid = false;
+    }
+
+    if (data.password !== data.confirmPassword) {
+      showError('confirmPasswordError', '两次输入的密码不一致');
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  function validateMerchantForm(data) {
+    let isValid = true;
+    clearMerchantErrors();
+
+    if (!data.username) {
+      showError('merchantUsernameError', '请输入登录账号');
+      isValid = false;
+    }
+
+    if (!data.password) {
+      showError('merchantPasswordError', '请输入登录密码');
+      isValid = false;
+    } else if (data.password.length < 6 || data.password.length > 20) {
+      showError('merchantPasswordError', '密码长度必须在6-20位之间');
+      isValid = false;
+    }
+
+    if (data.password !== data.confirmPassword) {
+      showError('merchantConfirmPasswordError', '两次输入的密码不一致');
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  function showError(elementId, message) {
+    const errorElement = document.getElementById(elementId);
+    errorElement.textContent = message;
+    errorElement.classList.remove('hidden');
+  }
+
+  function clearConsumerErrors() {
+    ['usernameError', 'passwordError', 'confirmPasswordError']
+            .forEach(id => {
+              const el = document.getElementById(id);
+              el.textContent = '';
+              el.classList.add('hidden');
+            });
+  }
+
+  function clearMerchantErrors() {
+    ['merchantUsernameError', 'merchantPasswordError', 'merchantConfirmPasswordError']
+            .forEach(id => {
+              const el = document.getElementById(id);
+              el.textContent = '';
+              el.classList.add('hidden');
+            });
+  }
+
+  function clearAllErrors() {
+    clearConsumerErrors();
+    clearMerchantErrors();
+  }
+
+  function showSuccessMessage(message) {
+    hideMessages();
+    successMessage.querySelector('span').textContent = message;
+    successMessage.classList.remove('hidden');
+  }
+
+  function showErrorMessage(message) {
+    hideMessages();
+    errorMessage.querySelector('span').textContent = message;
+    errorMessage.classList.remove('hidden');
+  }
+
+  function hideMessages() {
+    successMessage.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+  }
+</script>
+</body>
+</html>
