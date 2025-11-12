@@ -1,5 +1,6 @@
 package com.taobao.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.entity.Product;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public interface ProductService {
     Product getProductById(Integer id);
 
     List<Product> getAllProducts();
+//    IPage<Product> getProductsByPage(int page, int size);
 
     List<Product> getProductsByMerchantId(Integer merchantId);
 

@@ -54,16 +54,18 @@
         </a>
       </div>
 
-      <!-- 搜索框 -->
+
       <div class="hidden md:block flex-1 max-w-xl mx-8">
         <div class="relative">
-          <input type="text" placeholder="搜索商品..."
+          <input id="searchInput" type="text" placeholder="搜索商品..."
                  class="w-full pl-4 pr-10 py-2 border border-border rounded-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none">
-          <button class="absolute right-0 top-0 h-full px-4 text-primary hover:text-orange-600">
+          <button onclick="searchProducts()" class="absolute right-0 top-0 h-full px-4 text-primary hover:text-orange-600">
             <i class="fa fa-search"></i>
           </button>
         </div>
       </div>
+
+
 
       <!-- 用户操作区（根据登录状态动态显示） -->
       <div class="flex items-center space-x-4" id="userActions">
@@ -147,6 +149,7 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="productList">
     <!-- 产品卡片将通过JavaScript动态生成 -->
   </div>
+  <div id="pagination"></div>
 
   <!-- 加载提示 -->
   <div id="loadingIndicator" class="flex justify-center items-center py-12">
@@ -154,16 +157,7 @@
     <p class="ml-4 text-light">加载商品中...</p>
   </div>
 
-  <!-- 搜索框（统一） -->
-  <div class="mt-8 md:max-w-xl mx-auto">
-    <div class="relative">
-      <input id="searchInput" type="text" placeholder="搜索商品..."
-             class="w-full pl-4 pr-10 py-2 border border-border rounded-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none">
-      <button onclick="searchProducts('main')" class="absolute right-0 top-0 h-full px-4 text-primary hover:text-orange-600">
-        <i class="fa fa-search"></i>
-      </button>
-    </div>
-  </div>
+
 
   <!-- 无商品提示（默认隐藏） -->
   <div id="noProducts" class="hidden text-center py-12">
@@ -190,6 +184,9 @@
   // 动态 baseURL（如果后端是在 /taobao 上下文）
   axios.defaults.baseURL = window.location.origin + '/taobao';
   axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
+
+  // let currentPage = 1;
+  // const pageSize = 8;
 
   document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
@@ -221,7 +218,7 @@
               document.getElementById('guestActions').classList.remove('hidden');
             });
   }
-
+  //
   // 加载产品列表（调用 /product/all）
   function loadProducts() {
     const productListElement = document.getElementById('productList');
@@ -254,12 +251,69 @@
         `;
             });
   }
-  // 搜索商品
-  function searchProducts(which) {
-    // 根据参数选择搜索框
-    const keyword = which === 'nav'
-            ? document.getElementById('navSearchInput').value.trim()
-            : document.getElementById('searchInput').value.trim();
+
+  // // 加载产品列表（分页实现）
+  // function loadProducts(page = 1) {
+  //   currentPage = page;
+  //   const productListElement = document.getElementById('productList');
+  //   const loadingIndicator = document.getElementById('loadingIndicator');
+  //   const noProductsElement = document.getElementById('noProducts');
+  //   const paginationElement = document.getElementById('pagination');
+  //
+  //   productListElement.innerHTML = '';
+  //   noProductsElement.classList.add('hidden');
+  //   loadingIndicator.classList.remove('hidden');
+  //   if (paginationElement) paginationElement.innerHTML = '';
+  //
+  //   axios.get('/product/all', { params: { page, size: pageSize } })
+  //           .then(resp => {
+  //             loadingIndicator.classList.add('hidden');
+  //             const body = resp.data;
+  //             const payload = body && body.data;
+  //             const products = payload && payload.products ? payload.products : [];
+  //             const total = payload ? payload.total : 0;
+  //             const pages = payload ? payload.pages : 0;
+  //
+  //             if (products.length > 0) {
+  //               products.forEach(product => {
+  //                 productListElement.appendChild(createProductCard(product));
+  //               });
+  //               renderPagination(currentPage, pages, total);
+  //             } else {
+  //               noProductsElement.classList.remove('hidden');
+  //             }
+  //           })
+  //           .catch(err => {
+  //             console.error('加载产品失败:', err);
+  //             loadingIndicator.classList.add('hidden');
+  //             noProductsElement.classList.remove('hidden');
+  //             noProductsElement.innerHTML = `
+  //         <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+  //         <p class="text-light">加载商品失败，请稍后重试</p>
+  //       `;
+  //           });
+  // }
+  //
+  // // 渲染分页按钮
+  // function renderPagination(current, totalPages, totalItems) {
+  //   const container = document.getElementById('pagination');
+  //   if (!container || totalPages <= 1) return;
+  //
+  //   let html = '<div class="flex items-center justify-center space-x-2 mt-8">';
+  //   html += `<button onclick="loadProducts(${current - 1})"
+  //             class="px-3 py-2 border rounded-md text-sm ${current <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}"
+  //             ${current <= 1 ? 'disabled' : ''}>上一页</button>`;
+  //   html += `<span class="text-sm text-light">第 ${current} / ${totalPages} 页（共 ${totalItems} 件）</span>`;
+  //   html += `<button onclick="loadProducts(${current + 1})"
+  //             class="px-3 py-2 border rounded-md text-sm ${current >= totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}"
+  //             ${current >= totalPages ? 'disabled' : ''}>下一页</button>`;
+  //   html += '</div>';
+  //   container.innerHTML = html;
+  // }
+
+
+  function searchProducts() {
+    const keyword = document.getElementById('searchInput').value.trim();
 
     const productListElement = document.getElementById('productList');
     const loadingIndicator = document.getElementById('loadingIndicator');
@@ -270,7 +324,6 @@
       return;
     }
 
-    // 清空旧内容
     productListElement.innerHTML = '';
     noProductsElement.classList.add('hidden');
     loadingIndicator.classList.remove('hidden');
@@ -278,20 +331,18 @@
     axios.get('/product/search', { params: { keyword } })
             .then(resp => {
               loadingIndicator.classList.add('hidden');
-
               const body = resp.data;
               const products = Array.isArray(body) ? body : (body && (body.data || []));
               if (products && products.length > 0) {
                 products.forEach(product => {
-                  const productCard = createProductCard(product);
-                  productListElement.appendChild(productCard);
+                  productListElement.appendChild(createProductCard(product));
                 });
               } else {
                 noProductsElement.classList.remove('hidden');
                 noProductsElement.innerHTML = `
-            <i class="fa fa-search text-4xl text-gray-300 mb-4"></i>
-            <p class="text-light">没有找到相关商品</p>
-          `;
+          <i class="fa fa-search text-4xl text-gray-300 mb-4"></i>
+          <p class="text-light">没有找到相关商品</p>
+        `;
               }
             })
             .catch(err => {
@@ -299,12 +350,11 @@
               loadingIndicator.classList.add('hidden');
               noProductsElement.classList.remove('hidden');
               noProductsElement.innerHTML = `
-          <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
-          <p class="text-light">搜索失败，请稍后重试</p>
-        `;
+        <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+        <p class="text-light">搜索失败，请稍后重试</p>
+      `;
             });
   }
-
 
 
 

@@ -1,6 +1,7 @@
 package com.taobao.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.entity.Product;
 import com.taobao.service.ProductService;
@@ -8,7 +9,9 @@ import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
   @auther: Jimi
@@ -25,6 +28,25 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         return R.success("共查询到" + products.size() + "件商品", products);
     }
+//    //优化为分页查询
+//    @GetMapping("/all")
+//    public R<Map<String, Object>> getAllProducts(
+//            @RequestParam(defaultValue = "1") int page,
+//            @RequestParam(defaultValue = "8") int size) {
+//        IPage<Product> result = productService.getProductsByPage(page, size);
+//
+//        Map<String, Object> data = new HashMap<>();
+//        // 当前页商品列表
+//        data.put("products", result.getRecords());
+//        // 总条数
+//        data.put("total", result.getTotal());
+//        // 当前页码
+//        data.put("page", result.getCurrent());
+//        // 总页数
+//        data.put("pages", result.getPages());
+//
+//        return R.success("共查询到" + result.getTotal() + "件商品", data);
+//    }
 
     @GetMapping("/{id}")
     public R<Product> getProductById(@PathVariable Integer id){

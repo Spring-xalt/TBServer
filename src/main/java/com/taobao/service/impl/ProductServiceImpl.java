@@ -1,6 +1,8 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.taobao.entity.Product;
 import com.taobao.mapper.ProductMapper;
 import com.taobao.service.ProductService;
@@ -40,10 +42,16 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.selectById(id);
     }
 
+
     @Override
     public List<Product> getAllProducts() {
         return productMapper.selectList(null);
     }
+//    @Override
+//    public IPage<Product> getProductsByPage(int page, int size) {
+//        Page<Product> p = new Page<>(page, size);
+//        return productMapper.selectPage(p, null);
+//    }
 
     @Override
     public List<Product> getProductsByMerchantId(Integer merchantId) {

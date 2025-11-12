@@ -79,7 +79,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         //先验证库里是否有该用户名
         QueryWrapper<Consumer> mqr = new QueryWrapper<>();
         mqr.eq("username", registerDto.getUsername());
-        Long count=consumerMapper.selectCount(mqr);
+        Long count= consumerMapper.selectCount(mqr);
         //有就提示
         if(count>0){
             return R.error("您已经注册过消费者账号了,请跳转登录界面");

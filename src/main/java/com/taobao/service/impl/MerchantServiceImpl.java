@@ -118,7 +118,7 @@ public class MerchantServiceImpl implements MerchantService {
         //先验证库里是否有该用户名(根据姓名)
         QueryWrapper<Merchant> mqr = new QueryWrapper<>();
         mqr.eq("username", registerDto.getUsername());
-        Long count=merchantMapper.selectCount(mqr);
+        Long count= merchantMapper.selectCount(mqr);
         //有就提示
         if(count>0){
             return R.error("您已经注册过商铺账号了,请跳转登录界面");

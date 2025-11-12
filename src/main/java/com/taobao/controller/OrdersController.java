@@ -19,14 +19,14 @@ public class OrdersController {
     @Autowired
     private OrdersService ordersService;
 
-    @GetMapping("/all ")
+    @GetMapping("/all")
     public R<List<Orders>> getAllOrders() {
         List<Orders> orders = ordersService.getAllOrders();
         return R.success("共查询到" + orders.size() + "条订单", orders);
     }
 
     @GetMapping("/{id}")
-    public R<Orders> getOrderById(Integer id) {
+    public R<Orders> getOrderById(@PathVariable Integer id) {
         Orders order = ordersService.getOrderById(id);
         if (order == null) {
             return R.error(404, "未找到ID为" + id + "的订单");

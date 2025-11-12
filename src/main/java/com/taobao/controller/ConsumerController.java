@@ -45,7 +45,8 @@ public class ConsumerController {
 
     @GetMapping("/me")
     public R<Consumer> getCurrentConsumer(HttpSession session) {
-        Integer id = (Integer) session.getAttribute("consumerId"); // 依赖登录时存的 session
+        // 依赖登录时存的 session
+        Integer id = (Integer) session.getAttribute("consumerId");
         if(id == null){
             return R.error("未登录");
         }
