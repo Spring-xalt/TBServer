@@ -437,11 +437,16 @@
                       .then(resp => {
                         if (resp.data.code === 200) {
                           alert(resp.data.msg || '已加入购物车');
-                          // 角标 +1
-                          const countEl = document.getElementById('cartCount');
-                          if (countEl) {
-                            countEl.innerText = parseInt(countEl.innerText) + 1;
-                          }
+                          // 重新从后端获取准确的种类数，更新角标
+                          axios.get('/cart/count')
+                                  .then(countResp => {
+                                    if (countResp.data.code === 200) {
+                                      const countEl = document.getElementById('cartCount');
+                                      if (countEl) {
+                                        countEl.innerText = countResp.data.data;
+                                      }
+                                    }
+                                  });
                         } else {
                           alert(resp.data.msg || '加入购物车失败');
                         }

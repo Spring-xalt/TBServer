@@ -34,6 +34,11 @@ public class AuthController {
     // 游客登录
     @PostMapping("/guest")
     public R<String> guestLogin(HttpSession session) {
+        //游客登陆后要先删除之前的session内容
+        session.removeAttribute("consumerId");
+        session.removeAttribute("role");
+        session.removeAttribute("cart");   // 加上这一行
+
         session.setAttribute("role", "guest");
         return R.success("游客登录成功");
     }
@@ -76,6 +81,7 @@ public class AuthController {
     public R<Consumer> loginConsumer(@RequestBody UserLoginDto loginDto,HttpSession session) {
         return consumerService.login(loginDto,session);
     }
+
     @PostMapping("/consumer/logout")
     public R<String> logout(HttpSession session) {
         session.invalidate();
