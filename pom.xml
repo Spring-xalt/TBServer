@@ -72,6 +72,7 @@
             <scope>test</scope>
         </dependency>
 
+
         <!-- 添加数据库连接池（ Druid ） -->
 <!--        <dependency>-->
 <!--            <groupId>com.alibaba</groupId>-->
@@ -96,6 +97,7 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>1.18.30</version>
+
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

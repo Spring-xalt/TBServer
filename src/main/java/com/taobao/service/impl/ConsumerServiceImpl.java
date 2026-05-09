@@ -111,8 +111,10 @@ public class ConsumerServiceImpl implements ConsumerService {
             return R.error("密码错误，请重试!");
         }
 
+        // 登录之后的关键，将消费者id写入session，后续需要靠这个校验查数据
         session.setAttribute("consumerId", consumer.getId());
-        //前端角色判断
+
+        // 前端角色判断
         session.setAttribute("role", "consumer");
 
         return R.success("登录成功!", consumer);
