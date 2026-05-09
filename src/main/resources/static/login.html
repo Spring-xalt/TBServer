@@ -6,7 +6,7 @@
   <title>仿淘宝 - 登录</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <!-- 修复：style.css路径添加/taobao，匹配后端静态资源目录 -->
+
   <link rel="stylesheet" href="/taobao/style.css">
 
   <script>
@@ -47,7 +47,7 @@
 <header class="bg-white border-b border-border">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <div class="flex items-center">
-      <!-- 修复：首页路径添加/taobao，匹配注册页的首页跳转 -->
+
       <a href="/taobao/index.html" class="text-primary text-2xl font-bold flex items-center">
         <i class="fa fa-shopping-bag mr-2"></i>
         <span>仿淘宝商城</span>
@@ -55,7 +55,6 @@
     </div>
     <div class="transition-all duration-300 hover:scale-105">
       <span class="text-light">还没有账号？</span>
-      <!-- 修复：注册跳转路径改为/taobao/register.html，和注册页的登录跳转对应 -->
       <a href="/taobao/register.html" class="text-primary hover:underline ml-1 font-medium">
         立即注册
       </a>
@@ -137,7 +136,6 @@
           </button>
         </div>
 
-        <!-- 新增：表单底部注册链接（管理员切换时隐藏） -->
         <div id="formRegisterLink" class="text-center mt-2">
           <span class="text-light">没有账号？</span>
           <a href="/taobao/register.html" class="text-primary hover:underline font-medium ml-1">
@@ -170,8 +168,8 @@
 <!-- 引入AXIOS -->
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
-  // 修复：axios基础路径添加/taobao，匹配后端yml配置的context-path
-  axios.defaults.baseURL = 'http://localhost:8082/taobao';
+
+  axios.defaults.baseURL = 'http://localhost:8080/taobao';
   axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 
   // 页面元素
@@ -180,7 +178,7 @@
   const adminTab = document.getElementById('adminTab');
   const loginRoleInput = document.getElementById('loginRole');
   const guestLoginBtn = document.getElementById('guestLoginBtn');
-  const formRegisterLink = document.getElementById('formRegisterLink'); // 新增：表单底部注册链接元素
+  const formRegisterLink = document.getElementById('formRegisterLink');
 
   // 消息元素
   const successMessage = document.getElementById('successMessage');
@@ -253,25 +251,15 @@
     };
 
     try {
-      // 修复：无需额外加/taobao，baseURL已包含
       const response = await axios.post(`/auth/${role}/login`, loginData);
 
-      if (response.data.success || response.status === 200) {
+      if (response.data.code == 200) {
+
         showSuccessMessage('登录成功，正在跳转...');
-
-        // 根据角色跳转到不同的主页面：修复路径添加/taobao
         setTimeout(() => {
-          let targetUrl;
-          if (role === 'consumer') {
-            targetUrl = '/taobao/consumer-index.html';
-          } else if (role === 'merchant') {
-            targetUrl = '/taobao/merchant-index.html';
-          } else if (role === 'admin') {
-            targetUrl = '/taobao/admin-index.html';
-          }
-
-          window.location.href = targetUrl;
+          window.location.href = '/taobao/index.html';
         }, 1500);
+
       } else {
         showErrorMessage(response.data.message || '登录失败，请重试');
       }
