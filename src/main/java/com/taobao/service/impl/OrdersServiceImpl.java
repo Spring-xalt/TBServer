@@ -2,6 +2,7 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
+import com.taobao.dto.OrderVO;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Orders;
@@ -64,6 +65,12 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public boolean deleteOrder(Integer id) {
         return ordersMapper.deleteById(id) >0;
+    }
+
+
+    @Override
+    public List<OrderVO> listMyOrders(int consumerId) {
+        return ordersMapper.selectOrdersWithMerchant(consumerId);
     }
 
     //支付接口必须保证事务支持 (数据库新建订单时默认status为 1 )

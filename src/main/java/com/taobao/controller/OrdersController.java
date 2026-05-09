@@ -1,8 +1,10 @@
 package com.taobao.controller;
 
 import com.taobao.common.R;
+import com.taobao.dto.OrderVO;
 import com.taobao.entity.Orders;
 import com.taobao.service.OrdersService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -72,6 +74,16 @@ public class OrdersController {
             return R.success("ID为[" + order.getId() + "]的订单已成功删除");
         }
         return R.error("订单删除失败，请重试");
+    }
+
+    @GetMapping("/consumerSelf")
+    public R<List<OrderVO>> consumerOrders(HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+        List<OrderVO> list = ordersService.listMyOrders(consumerId);
+        return R.success(list);
     }
 
     @PutMapping("/{orderId}/pay")
