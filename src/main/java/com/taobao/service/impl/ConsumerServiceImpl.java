@@ -12,6 +12,7 @@ import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.OrdersMapper;
 import com.taobao.service.ConsumerService;
 import com.taobao.service.OrdersService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -97,10 +98,11 @@ public class ConsumerServiceImpl implements ConsumerService {
     }
 
     @Override
-    public R<Consumer> login(UserLoginDto loginDto) {
+    public R<Consumer> login(UserLoginDto loginDto, HttpSession session) {
         QueryWrapper<Consumer> mqw = new QueryWrapper<>();
         mqw.eq("username", loginDto.getUsername());
         Consumer consumer = consumerMapper.selectOne(mqw);
+
         if(consumer == null){
             return R.error("您还未注册过消费者账号,请先注册");
         }
@@ -108,6 +110,11 @@ public class ConsumerServiceImpl implements ConsumerService {
         if(!consumer.getPassword().equals(loginDto.getPassword())){
             return R.error("密码错误，请重试!");
         }
+
+        session.setAttribute("consumerId", consumer.getId());
+        //前端角色判断
+        session.setAttribute("role", "consumer");
+
         return R.success("登录成功!", consumer);
     }
 }

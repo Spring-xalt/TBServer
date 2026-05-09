@@ -73,8 +73,8 @@ public class AuthController {
         return consumerService.register(registerDto);
     }
     @PostMapping("/consumer/login")
-    public R<Consumer> loginConsumer(@RequestBody UserLoginDto loginDto) {
-        return consumerService.login(loginDto);
+    public R<Consumer> loginConsumer(@RequestBody UserLoginDto loginDto,HttpSession session) {
+        return consumerService.login(loginDto,session);
     }
     @PostMapping("/consumer/logout")
     public R<String> logout(HttpSession session) {

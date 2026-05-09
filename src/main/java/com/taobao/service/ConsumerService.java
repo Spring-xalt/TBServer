@@ -4,6 +4,7 @@ import com.taobao.common.R;
 import com.taobao.dto.UserLoginDto;
 import com.taobao.dto.UserRegisterDto;
 import com.taobao.entity.Consumer;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
@@ -17,5 +18,5 @@ public interface ConsumerService {
 
 
     R<String> register(UserRegisterDto registerDto);
-    R<Consumer> login( UserLoginDto loginDto);
+    R<Consumer> login(UserLoginDto loginDto, HttpSession session);
 }
