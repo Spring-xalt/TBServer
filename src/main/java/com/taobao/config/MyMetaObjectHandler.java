@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
  */
 @Component
 public class MyMetaObjectHandler implements MetaObjectHandler {
+    //数据库字段自动填充set
     @Override
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "create_time", LocalDateTime.class, LocalDateTime.now());
