@@ -8,41 +8,24 @@ import java.util.List;
 
 
 public interface CartMapper extends BaseMapper<Cart>{
-    //  加入购物车（同一消费者重复加同一商品，数量+1而不是新增记录）
-    @Insert("INSERT INTO cart (consumer_id, product_id, merchant_id, quantity) " +
-            "VALUES (#{consumerId}, #{productId}, #{merchantId}, 1) " +
-            "ON DUPLICATE KEY UPDATE quantity = quantity + 1")
-    int insertOrAddQuantity(@Param("consumerId") int consumerId,
-                            @Param("productId") int productId,
-                            @Param("merchantId") int merchantId);
+    //  加载：查询某消费者在 cart 表中的所有记录（只查 cart 表，不关联其他表）
+    @Select("SELECT * FROM cart WHERE consumer_id = #{consumerId}")
+    List<Cart> selectByConsumerId(@Param("consumerId") int consumerId);
 
-    // 2. 查看购物车列表（关联 product 和 merchant 表，一次查出商品名、价格、商户名）
-    @Select("SELECT c.id, c.consumer_id, c.product_id, c.merchant_id, c.quantity, " +
-            "p.product_name, p.price, m.merchant_name " +
-            "FROM cart c " +
-            "JOIN product p ON c.product_id = p.id " +
-            "JOIN merchant m ON c.merchant_id = m.id " +
-            "WHERE c.consumer_id = #{consumerId} " +
-            "ORDER BY c.create_time DESC")
-    List<CartVO> selectCartWithDetails(@Param("consumerId") int consumerId);
-
-    // 3. 修改某条购物车项的数量（用 id 和 consumer_id 双重校验，防止越权）
-    @Update("UPDATE cart SET quantity = #{quantity} WHERE id = #{id} AND consumer_id = #{consumerId}")
-    int updateQuantity(@Param("id") int id,
-                       @Param("consumerId") int consumerId,
-                       @Param("quantity") int quantity);
-
-    // 4. 删除某条购物车项
-    @Delete("DELETE FROM cart WHERE id = #{id} AND consumer_id = #{consumerId}")
-    int deleteByIdAndConsumer(@Param("id") int id,
-                              @Param("consumerId") int consumerId);
-
-    // 5. 一键清空某消费者的购物车
+    //   清空：删除某消费者在 cart 表中的所有记录（保存前使用）
     @Delete("DELETE FROM cart WHERE consumer_id = #{consumerId}")
-    int clearByConsumer(@Param("consumerId") int consumerId);
+    int deleteByConsumerId(@Param("consumerId") int consumerId);
 
-    // 6. 统计某消费者购物车中商品种类数（用于顶部购物车角标）
+    //   插入：插入一条新的购物车记录（保存时逐条插入）（对于cart和cartItem存在不同的采用先删除后插入的方法实现）
+    @Insert("INSERT INTO cart (consumer_id, product_id, merchant_id, quantity) " +
+            "VALUES (#{consumerId}, #{productId}, #{merchantId}, #{quantity})")
+    int insertOne(@Param("consumerId") int consumerId,
+                  @Param("productId") int productId,
+                  @Param("merchantId") int merchantId,
+                  @Param("quantity") int quantity);
+
+    //  统计：查询购物车中商品种类数（可用于角标，但实际多用 Session 计数）
     @Select("SELECT COUNT(*) FROM cart WHERE consumer_id = #{consumerId}")
-    int countByConsumer(@Param("consumerId") int consumerId);
+    int countByConsumerId(@Param("consumerId") int consumerId);
 }
 
