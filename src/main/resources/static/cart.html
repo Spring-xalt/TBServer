@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的购物车</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4400',
+                        secondary: '#f5f5f5',
+                        dark: '#333333',
+                        light: '#666666',
+                        border: '#dddddd'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- 头部 -->
+<header class="bg-white border-b border-border">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/taobao/index.html" class="text-primary text-xl font-bold">
+            <i class="fa fa-shopping-bag mr-2"></i>返回首页
+        </a>
+        <h1 class="text-dark text-2xl font-bold">我的购物车</h1>
+        <div></div> <!-- 占位 -->
+    </div>
+</header>
+
+<!-- 主内容 -->
+<main class="container mx-auto px-4 py-8">
+    <div id="cartLoading" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+        <p class="text-light mt-4">加载中...</p>
+    </div>
+
+    <div id="cartEmpty" class="hidden text-center py-12">
+        <i class="fa fa-shopping-cart text-5xl text-gray-300 mb-4"></i>
+        <p class="text-light text-lg">购物车是空的</p>
+        <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去逛逛</a>
+    </div>
+
+    <div id="cartContent" class="hidden">
+        <div id="cartItems" class="space-y-4"></div>
+        <div class="flex justify-end mt-8">
+            <button onclick="saveCart()" class="bg-primary hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-md text-lg transition-colors">
+                保存购物车
+            </button>
+        </div>
+    </div>
+
+    <div id="messageBox" class="hidden fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+    axios.defaults.baseURL = window.location.origin + '/taobao';
+
+    document.addEventListener('DOMContentLoaded', loadCart);
+
+    function loadCart() {
+        document.getElementById('cartLoading').classList.remove('hidden');
+        document.getElementById('cartEmpty').classList.add('hidden');
+        document.getElementById('cartContent').classList.add('hidden');
+
+        axios.get('/cart/list')
+            .then(resp => {
+                document.getElementById('cartLoading').classList.add('hidden');
+                if (resp.data.code === 200 && resp.data.data.length > 0) {
+                    renderCart(resp.data.data);
+                } else {
+                    document.getElementById('cartEmpty').classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                document.getElementById('cartLoading').classList.add('hidden');
+                document.getElementById('cartEmpty').classList.remove('hidden');
+                document.getElementById('cartEmpty').innerHTML =
+                    '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
+                    '<p class="text-light">加载失败，请先登录</p>';
+            });
+    }
+
+    function renderCart(items) {
+        const container = document.getElementById('cartItems');
+        container.innerHTML = '';
+
+        items.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'bg-white rounded-lg shadow-sm p-4 flex items-center justify-between';
+            div.innerHTML = `
+                <div class="flex-1">
+                    <h3 class="font-medium text-dark">${item.productName}</h3>
+                    <p class="text-light text-sm">商户：${item.merchantName}</p>
+                    <p class="text-primary font-bold mt-1">¥${item.price.toFixed(2)}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-dark">数量：${item.quantity}</span>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('cartContent').classList.remove('hidden');
+    }
+
+    function saveCart() {
+        axios.post('/cart/save')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    showMessage('购物车已保存！');
+                    // 保存后重新加载，可能清空
+                    setTimeout(() => { window.location.reload(); }, 800);
+                } else {
+                    alert(resp.data.msg || '保存失败');
+                }
+            })
+            .catch(err => {
+                console.error('保存失败:', err);
+                alert('保存失败，请重试');
+            });
+    }
+
+    function showMessage(msg) {
+        const box = document.getElementById('messageBox');
+        box.innerText = msg;
+        box.classList.remove('hidden');
+        setTimeout(() => box.classList.add('hidden'), 2000);
+    }
+</script>
+</body>
+</html>
