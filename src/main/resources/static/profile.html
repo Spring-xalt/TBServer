@@ -72,7 +72,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
+
+
     axios.defaults.baseURL = window.location.origin + '/taobao';
+    let currentConsumerId = null;   // 保存当前消费者 id
 
     document.addEventListener('DOMContentLoaded', loadProfile);
 
@@ -82,6 +85,7 @@
                 document.getElementById('loading').classList.add('hidden');
                 if (resp.data.code === 200) {
                     const data = resp.data.data;
+                    currentConsumerId = data.id;   // 保存 id
                     document.getElementById('username').value = data.username;
                     document.getElementById('nickname').value = data.consumer_name;
                     document.getElementById('balance').value = data.account_balance;
@@ -97,31 +101,25 @@
     }
 
     function saveProfile() {
-        const updatedData = {
-            id: null,  // 将从原数据获取
-            consumer_name: document.getElementById('nickname').value.trim(),
-            account_balance: parseFloat(document.getElementById('balance').value)
-        };
+        const nickname = document.getElementById('nickname').value.trim();
+        const balance = parseFloat(document.getElementById('balance').value);
 
-        // 先获取一次数据以拿到 id
-        axios.get('/consumer/me')
-            .then(resp => {
-                if (resp.data.code !== 200) {
-                    alert('请重新登录');
-                    window.location.href = '/taobao/login.html';
-                    return;
-                }
-                updatedData.id = resp.data.data.id;
-                // 保留原用户名等其他字段
-                updatedData.username = resp.data.data.username;
-                updatedData.password = resp.data.data.password;
+        if (!nickname) {
+            alert('昵称不能为空');
+            return;
+        }
 
-                return axios.put('/consumer/update', updatedData);
-            })
+        axios.put('/consumer/update', {
+            id: currentConsumerId,                  // 必传 id
+            consumer_name: nickname,
+            account_balance: balance
+        })
             .then(resp => {
-                if (resp && resp.data && resp.data.code === 200) {
+                if (resp.data.code === 200) {
                     alert('个人信息已更新');
                     window.location.href = '/taobao/index.html';
+                } else {
+                    alert(resp.data.msg || '更新失败');
                 }
             })
             .catch(err => {
@@ -129,6 +127,8 @@
                 alert('更新失败，请重试');
             });
     }
+
+
 </script>
 </body>
 </html>

@@ -68,10 +68,11 @@ public class ConsumerController {
 
     // 更新客户信息
     @PutMapping("/update")
-    public boolean updateCustomer(@RequestBody Consumer consumer) {
+    public R<String> updateCustomer(@RequestBody Consumer consumer) {
         if(consumer.getId()==null){
             throw new IllegalStateException("更新必须传入id信息");
         }
-        return consumerService.updateConsumer(consumer);
+        boolean done=consumerService.updateConsumer(consumer);
+        return done ? R.success("个人信息已更新") : R.error("更新失败");
     }
 }
