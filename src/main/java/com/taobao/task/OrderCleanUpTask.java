@@ -27,7 +27,9 @@ public class OrderCleanUpTask {
         wrapper.eq("status", 3)
                 .lt("receive_time", LocalDateTime.now().minusMonths(3));
         ordersMapper.delete(wrapper);
-        
+
+
+
     }
 }
 
