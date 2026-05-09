@@ -65,11 +65,19 @@ public class AuthController {
     public R<String> loginMerchant(@RequestBody UserLoginDto loginDto) {
         return merchantService.login(loginDto);
     }
-    @PostMapping("/merchant/logout")
-    public R<String> logoutMerchant(HttpSession session) {
+
+
+    //消费者和商户的登出可以合并 销毁session即可
+    @PostMapping("/logout")
+    public R<String> logout(HttpSession session) {
         session.invalidate();
-        return R.success("退出成功!");
+        return R.success("已退出登录");
     }
+//    @PostMapping("/merchant/logout")
+//    public R<String> logoutMerchant(HttpSession session) {
+//        session.invalidate();
+//        return R.success("退出成功!");
+//    }
 
 
     @PostMapping("/consumer/register")
@@ -83,11 +91,11 @@ public class AuthController {
         return consumerService.login(loginDto,session);
     }
 
-    @PostMapping("/consumer/logout")
-    public R<String> logout(HttpSession session) {
-        session.invalidate();
-        return R.success("退出成功!");
-    }
+//    @PostMapping("/consumer/logout")
+//    public R<String> logout(HttpSession session) {
+//        session.invalidate();
+//        return R.success("退出成功!");
+//    }
 
 
 }

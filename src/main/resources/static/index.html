@@ -477,7 +477,7 @@
     if (confirm('确定要退出登录吗？')) {
       axios.post('/auth/logout')
               .then(response => {
-                window.location.reload();
+                window.location.href='/taobao/login.html'
               })
               .catch(error => {
                 console.error('退出登录失败:', error);
