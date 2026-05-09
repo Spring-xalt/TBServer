@@ -90,14 +90,24 @@
             <span id="cartCount" class="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
 
           </div>
+
           <div class="relative group">
-                            <span class="text-dark hover:text-primary transition-colors cursor-pointer">
-                                <i class="fa fa-user-circle mr-1"></i>我的账户
-                            </span>
-            <div class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-2 hidden group-hover:block z-10">
-              <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">个人中心</a>
+
+            <span onclick="toggleAccountMenu()"
+                  class="text-dark hover:text-primary transition-colors cursor-pointer">
+                <i class="fa fa-user-circle mr-1"></i>我的账户
+            </span>
+
+
+
+            <div id="accountDropdown"
+                 class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-2 hidden z-10">
+
+              <a href="/taobao/profile.html" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">个人中心</a>
+
+
               <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">我的订单</a>
-              <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">收藏夹</a>
+
               <div class="border-t border-gray-100 my-1"></div>
               <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100">退出登录</a>
             </div>
@@ -475,6 +485,22 @@
               });
     }
   }
+
+
+  // 切换账户下拉菜单
+  function toggleAccountMenu() {
+    document.getElementById('accountDropdown').classList.toggle('hidden');
+  }
+
+  // 点击页面其他地方关闭菜单
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('accountDropdown');
+    const btn = e.target.closest('[onclick="toggleAccountMenu()"]');
+    if (menu && !menu.contains(e.target) && !btn) {
+      menu.classList.add('hidden');
+    }
+  });
+
 </script>
 </body>
 </html>

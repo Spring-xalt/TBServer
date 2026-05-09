@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4400',
+                        secondary: '#f5f5f5',
+                        dark: '#333333',
+                        light: '#666666',
+                        border: '#dddddd'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- 头部 -->
+<header class="bg-white border-b border-border">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/taobao/index.html" class="text-primary text-xl font-bold">
+            <i class="fa fa-shopping-bag mr-2"></i>返回首页
+        </a>
+        <h1 class="text-dark text-2xl font-bold">个人中心</h1>
+        <div></div>
+    </div>
+</header>
+
+<!-- 主内容 -->
+<main class="container mx-auto px-4 py-8">
+    <div id="loading" class="text-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+        <p class="text-light mt-4">加载中...</p>
+    </div>
+
+    <div id="content" class="hidden max-w-md mx-auto bg-white rounded-lg shadow-sm p-6">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm text-dark mb-1">用户名</label>
+                <input type="text" id="username" class="w-full border border-border rounded px-3 py-2 bg-gray-100" disabled>
+            </div>
+            <div>
+                <label class="block text-sm text-dark mb-1">昵称</label>
+                <input type="text" id="nickname" class="w-full border border-border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block text-sm text-dark mb-1">账户余额</label>
+                <input type="number" id="balance" class="w-full border border-border rounded px-3 py-2" min="0" step="0.01">
+            </div>
+            <div class="flex justify-end space-x-2 pt-4">
+                <a href="/taobao/index.html" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</a>
+                <button onclick="saveProfile()" class="px-4 py-2 bg-primary text-white rounded hover:bg-orange-600">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorBox" class="hidden text-center py-12">
+        <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+        <p class="text-light">加载失败，请先登录</p>
+        <a href="/taobao/login.html" class="text-primary hover:underline mt-2 inline-block">去登录</a>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+    axios.defaults.baseURL = window.location.origin + '/taobao';
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
+
+    function loadProfile() {
+        axios.get('/consumer/me')
+            .then(resp => {
+                document.getElementById('loading').classList.add('hidden');
+                if (resp.data.code === 200) {
+                    const data = resp.data.data;
+                    document.getElementById('username').value = data.username;
+                    document.getElementById('nickname').value = data.consumer_name;
+                    document.getElementById('balance').value = data.account_balance;
+                    document.getElementById('content').classList.remove('hidden');
+                } else {
+                    document.getElementById('errorBox').classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('errorBox').classList.remove('hidden');
+            });
+    }
+
+    function saveProfile() {
+        const updatedData = {
+            id: null,  // 将从原数据获取
+            consumer_name: document.getElementById('nickname').value.trim(),
+            account_balance: parseFloat(document.getElementById('balance').value)
+        };
+
+        // 先获取一次数据以拿到 id
+        axios.get('/consumer/me')
+            .then(resp => {
+                if (resp.data.code !== 200) {
+                    alert('请重新登录');
+                    window.location.href = '/taobao/login.html';
+                    return;
+                }
+                updatedData.id = resp.data.data.id;
+                // 保留原用户名等其他字段
+                updatedData.username = resp.data.data.username;
+                updatedData.password = resp.data.data.password;
+
+                return axios.put('/consumer/update', updatedData);
+            })
+            .then(resp => {
+                if (resp && resp.data && resp.data.code === 200) {
+                    alert('个人信息已更新');
+                    window.location.href = '/taobao/index.html';
+                }
+            })
+            .catch(err => {
+                console.error('更新失败:', err);
+                alert('更新失败，请重试');
+            });
+    }
+</script>
+</body>
+</html>
