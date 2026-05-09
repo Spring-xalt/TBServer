@@ -28,6 +28,7 @@ public class ProductController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "8") int size) {
 
+        //让如果要修改单页商品数 此处defaultValue和前端的pageSize都要修改
         IPage<Product> result = productService.getProductsByPage(page, size);
 
         Map<String, Object> data = new HashMap<>();
