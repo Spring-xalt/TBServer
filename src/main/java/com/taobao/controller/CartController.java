@@ -10,6 +10,7 @@ import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Product;
+import com.taobao.mapper.CartMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.ProductMapper;
 import com.taobao.service.CartService;
@@ -32,6 +33,9 @@ public class CartController {
 
     @Autowired
     private MerchantMapper merchantMapper;
+
+    @Autowired
+    private CartMapper cartMapper;
 
     //根据登录校验拿到消费者id
     private Integer getConsumerId(HttpSession session) {
@@ -126,13 +130,16 @@ public class CartController {
         return R.success("已删除");
     }
 
-    //session层面的清空，还未提交
+    // 清空购物车 ---数据库层面
     @DeleteMapping("/clear")
     public R<String> clear(HttpSession session) {
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
+        // 1. 删除数据库记录
+        cartMapper.deleteByConsumerId(consumerId);
+        // 2. 清空 Session
         session.removeAttribute("cart");
         return R.success("购物车已清空");
     }
