@@ -243,7 +243,7 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
   // 基础配置：后端接口基础路径
-  axios.defaults.baseURL = 'http://localhost:8082/taobao';
+  axios.defaults.baseURL = 'http://localhost:8080/taobao';
   axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 
   // 页面元素
@@ -318,15 +318,15 @@
 
       const response = await axios.post('/auth/consumer/register', registerData);
 
-      if (response.data.success || response.status === 200) {
-        showSuccessMessage('消费者注册成功，正在跳转到登录页...');
-        // 注册成功跳转登录页（路径适配新结构）
+      if (response.data.code === 200) {
+        showSuccessMessage(response.data.msg || '注册成功');
         setTimeout(() => {
           window.location.href = '/taobao/login.html';
         }, 3000);
       } else {
-        showErrorMessage(response.data.message || '注册失败，请重试');
+        showErrorMessage(response.data.msg || '注册失败，请重试');
       }
+
     } catch (error) {
       console.error('消费者注册失败:', error);
       const errorMsg = error.response?.data?.message || '网络错误，请稍后重试';
