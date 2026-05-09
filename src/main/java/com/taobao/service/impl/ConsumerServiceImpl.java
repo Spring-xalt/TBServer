@@ -2,14 +2,17 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
+import com.taobao.dto.CartItem;
 import com.taobao.dto.UserLoginDto;
 import com.taobao.dto.UserRegisterDto;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Orders;
+import com.taobao.mapper.CartMapper;
 import com.taobao.mapper.ConsumerMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.OrdersMapper;
+import com.taobao.service.CartService;
 import com.taobao.service.ConsumerService;
 import com.taobao.service.OrdersService;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +31,9 @@ import java.util.List;
 public class ConsumerServiceImpl implements ConsumerService {
     @Autowired
     private ConsumerMapper consumerMapper;
+
+    @Autowired
+    private CartService cartService;
 
     @Autowired
     private OrdersMapper ordersMapper;
@@ -113,9 +119,11 @@ public class ConsumerServiceImpl implements ConsumerService {
 
         // 登录之后的关键，将消费者id写入session，后续需要靠这个校验查数据
         session.setAttribute("consumerId", consumer.getId());
-
-        // 前端角色判断
         session.setAttribute("role", "consumer");
+
+        //登陆后立即加载 之前用户提交过的购物车信息给临时对象 cartItem,将所有的数据库数据放入session供后续使用
+        List<CartItem> cartItems = cartService.loadCart(consumer.getId());
+        session.setAttribute("cart", cartItems);
 
         return R.success("登录成功!", consumer);
     }
