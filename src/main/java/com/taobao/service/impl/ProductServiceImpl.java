@@ -47,11 +47,18 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getAllProducts() {
         return productMapper.selectList(null);
     }
-//    @Override
-//    public IPage<Product> getProductsByPage(int page, int size) {
-//        Page<Product> p = new Page<>(page, size);
-//        return productMapper.selectPage(p, null);
-//    }
+
+    @Override
+    public IPage<Product> getProductsByPage(int page, int size) {
+        //计算偏移
+        int offset = (page - 1) * size;
+        List<Product> records = productMapper.selectByPage(offset, size);
+        long total = productMapper.selectCount(null);
+        //偏移后将所有记录写入构造的Page对象
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
+    }
 
     @Override
     public List<Product> getProductsByMerchantId(Integer merchantId) {

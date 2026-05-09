@@ -24,29 +24,21 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("/all")
-    public R<List<Product>> getAllProducts(){
-        List<Product> products = productService.getAllProducts();
-        return R.success("共查询到" + products.size() + "件商品", products);
+    public R<Map<String, Object>> getAllProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size) {
+
+        IPage<Product> result = productService.getProductsByPage(page, size);
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("products", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+
+        return R.success("共查询到" + result.getTotal() + "件商品", data);
     }
-//    //优化为分页查询
-//    @GetMapping("/all")
-//    public R<Map<String, Object>> getAllProducts(
-//            @RequestParam(defaultValue = "1") int page,
-//            @RequestParam(defaultValue = "8") int size) {
-//        IPage<Product> result = productService.getProductsByPage(page, size);
-//
-//        Map<String, Object> data = new HashMap<>();
-//        // 当前页商品列表
-//        data.put("products", result.getRecords());
-//        // 总条数
-//        data.put("total", result.getTotal());
-//        // 当前页码
-//        data.put("page", result.getCurrent());
-//        // 总页数
-//        data.put("pages", result.getPages());
-//
-//        return R.success("共查询到" + result.getTotal() + "件商品", data);
-//    }
 
     @GetMapping("/{id}")
     public R<Product> getProductById(@PathVariable Integer id){

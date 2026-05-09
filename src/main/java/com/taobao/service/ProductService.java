@@ -15,7 +15,9 @@ public interface ProductService {
     Product getProductById(Integer id);
 
     List<Product> getAllProducts();
-//    IPage<Product> getProductsByPage(int page, int size);
+
+    //分页
+    IPage<Product> getProductsByPage(int page, int size);
 
     List<Product> getProductsByMerchantId(Integer merchantId);
 
