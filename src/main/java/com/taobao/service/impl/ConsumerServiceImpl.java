@@ -66,9 +66,9 @@ public class ConsumerServiceImpl implements ConsumerService {
             }
             return consumerMapper.deleteById(id)==1;
         }
+
         //没有就删除
-        consumerMapper.deleteById(id);
-        return consumerMapper.deleteById(id) == 1;
+        return consumerMapper.deleteById(id)>0;
     }
 
     @Override
@@ -91,6 +91,12 @@ public class ConsumerServiceImpl implements ConsumerService {
         if(count>0){
             return R.error("您已经注册过消费者账号了,请跳转登录界面");
         }
+
+        String pwd = registerDto.getPassword();
+        if (pwd.length() < 6 || pwd.length() > 18) {
+            return R.error("密码长度应当在6-18位之间,请重新输入!");
+        }
+
         //没有就注册并入库
         Consumer c = new Consumer();
 //        merchant.setUsername(registerDto.getUsername());直接复制写法

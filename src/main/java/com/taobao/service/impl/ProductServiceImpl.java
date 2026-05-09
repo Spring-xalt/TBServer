@@ -29,7 +29,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean updateProduct(Product product) {
-        return productMapper.insert(product) > 0;
+        return productMapper.updateById(product) > 0;
     }
 
     @Override

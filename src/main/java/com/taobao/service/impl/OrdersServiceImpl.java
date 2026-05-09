@@ -63,7 +63,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean deleteOrder(Integer id) {
-        return ordersMapper.deleteById(id) == 0;
+        return ordersMapper.deleteById(id) >0;
     }
 
     //支付接口必须保证事务支持 (数据库新建订单时默认status为 1 )
