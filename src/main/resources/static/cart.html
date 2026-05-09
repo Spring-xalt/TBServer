@@ -31,7 +31,7 @@
             <i class="fa fa-shopping-bag mr-2"></i>返回首页
         </a>
         <h1 class="text-dark text-2xl font-bold">我的购物车</h1>
-        <div></div> <!-- 占位 -->
+        <div></div>
     </div>
 </header>
 
@@ -50,7 +50,10 @@
 
     <div id="cartContent" class="hidden">
         <div id="cartItems" class="space-y-4"></div>
-        <div class="flex justify-end mt-8">
+        <div class="flex justify-end mt-8 space-x-4">
+            <button onclick="clearCart()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-md transition-colors">
+                清空购物车
+            </button>
             <button onclick="saveCart()" class="bg-primary hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-md text-lg transition-colors">
                 保存购物车
             </button>
@@ -100,10 +103,25 @@
                 <div class="flex-1">
                     <h3 class="font-medium text-dark">${item.productName}</h3>
                     <p class="text-light text-sm">商户：${item.merchantName}</p>
-                    <p class="text-primary font-bold mt-1">¥${item.price.toFixed(2)}</p>
+                    <p class="text-primary font-bold mt-1">¥${item.price ? item.price.toFixed(2) : '0.00'}</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span class="text-dark">数量：${item.quantity}</span>
+                <div class="flex items-center space-x-4">
+                    <!-- 数量调节 -->
+                    <div class="flex items-center space-x-1">
+
+                        <button onclick="changeQty(${index}, ${item.quantity - 1})"
+                            class="w-8 h-8 border border-border rounded bg-white
+                             text-dark hover:bg-gray-100">−</button>
+
+
+                        <span class="w-10 text-center">${item.quantity}</span>
+                        <button onclick="changeQty(${index}, ${item.quantity + 1})"
+                            class="w-8 h-8 border border-border rounded bg-white text-dark
+                            hover:bg-gray-100">+</button>
+                    </div>
+                    <button onclick="deleteItem(${index})" class="text-red-500 hover:text-red-700 transition-colors">
+                        <i class="fa fa-trash"></i> 删除
+                    </button>
                 </div>
             `;
             container.appendChild(div);
@@ -112,13 +130,75 @@
         document.getElementById('cartContent').classList.remove('hidden');
     }
 
+    // 修改数量
+    function changeQty(index, newQty) {
+        if (newQty < 1) {
+            // 数量减到 0 以下 → 直接删除该项
+            deleteItem(index);
+            return;
+        }
+        // 正常更新数量
+        axios.put('/cart/update', null, { params: { index, quantity: newQty } })
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    loadCart();
+                    showMessage('数量已更新');
+                } else {
+                    alert(resp.data.msg || '操作失败');
+                }
+            })
+            .catch(err => {
+                console.error('更新失败:', err);
+                alert('更新失败，请重试');
+            });
+    }
+
+    // 删除一项
+    function deleteItem(index) {
+        if (!confirm('确定要删除这个商品吗？')) return;
+
+        axios.delete('/cart/delete/' + index)
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    loadCart();
+                    showMessage('已删除');
+                } else {
+                    alert(resp.data.msg || '删除失败');
+                }
+            })
+            .catch(err => {
+                console.error('删除失败:', err);
+                alert('删除失败，请重试');
+            });
+    }
+
+    // 清空购物车（未保存直接清 Session）
+    function clearCart() {
+        if (!confirm('确定清空购物车吗？未保存的修改将丢失！')) return;
+
+        axios.delete('/cart/clear')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    loadCart();
+                    showMessage('购物车已清空');
+                } else {
+                    alert(resp.data.msg || '清空失败');
+                }
+            })
+            .catch(err => {
+                console.error('清空失败:', err);
+                alert('清空失败，请重试');
+            });
+    }
+
     function saveCart() {
         axios.post('/cart/save')
             .then(resp => {
                 if (resp.data.code === 200) {
                     showMessage('购物车已保存！');
-                    // 保存后重新加载，可能清空
-                    setTimeout(() => { window.location.reload(); }, 800);
+                    // 保存后重新加载，可能清空（取决于后端 saveCart 后是否清空 Session）
+                    // 我们之前设计是保存后清空 Session，所以重新加载会显示空
+                    setTimeout(() => { window.location.href = '/taobao/index.html'; }, 1000);
                 } else {
                     alert(resp.data.msg || '保存失败');
                 }

@@ -77,6 +77,7 @@ public class AuthController {
         log.info("收到前端消费者注册请求!");
         return consumerService.register(registerDto);
     }
+
     @PostMapping("/consumer/login")
     public R<Consumer> loginConsumer(@RequestBody UserLoginDto loginDto,HttpSession session) {
         return consumerService.login(loginDto,session);
