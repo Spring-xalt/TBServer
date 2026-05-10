@@ -7,6 +7,7 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePrecreateRequest;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.taobao.common.R;
+import com.taobao.entity.Consumer;
 import com.taobao.service.AlipayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +35,11 @@ public class AlipayServiceImpl implements AlipayService {
     @Autowired
     private ConsumerMapper consumerMapper;
 
+
     @Override
     public R<String> createPayQrCode(int consumerId, BigDecimal amount, String subject) {
-        //  生成唯一订单号(时间+消费者id)
-        String outTradeNo = "RECHARGE" + System.currentTimeMillis() + consumerId;
+        //  生成唯一订单号(recharge_ + 时间_ + 消费者id) 方便后续直接利用第二个_split解析(T113)
+        String outTradeNo = "RECHARGE_" + System.currentTimeMillis() + "_" + consumerId;;
 
         // 创建沙箱版支付宝客户端(根据yml配置)
         AlipayClient alipayClient = new DefaultAlipayClient(
@@ -99,11 +101,30 @@ public class AlipayServiceImpl implements AlipayService {
             if (signVerified) {
                 String tradeStatus = params.get("trade_status");
                 String outTradeNo = params.get("out_trade_no");
+                //充值额度
+                String totalAmount = params.get("total_amount");
 
                 if ("TRADE_SUCCESS".equals(tradeStatus)) {
                     // 充值到账：解析订单号中的消费者ID，累加余额
                     // 根据 outTradeNo 找到消费者并充值
                     System.out.println("充值记录" + outTradeNo + "充值成功！");
+
+                    //充值完成后要对consumer余额++,通过订单号的订单号的后戳中解析consumerId
+                    int consumerId = Integer.parseInt(outTradeNo.split("_")[2]);
+
+
+                    BigDecimal amount = new BigDecimal(totalAmount);
+                    Consumer consumer = consumerMapper.selectById(consumerId);
+                    if (consumer != null) {
+                        // 更新余额
+                        consumer.setAccount_balance(consumer.getAccount_balance().add(amount));
+                        consumerMapper.updateById(consumer);
+                        System.out.println("消费者 " + consumerId + " 充值 " + amount + " 元到账成功");
+                    } else {
+                        System.out.println("警告：消费者 " + consumerId + " 不存在，订单号：" + outTradeNo);
+                    }
+
+
                 }
                 return "success";
             } else {
