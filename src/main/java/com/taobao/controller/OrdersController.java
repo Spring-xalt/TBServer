@@ -1,6 +1,7 @@
 package com.taobao.controller;
 
 import com.taobao.common.R;
+import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
 import com.taobao.entity.Orders;
 import com.taobao.service.OrdersService;
@@ -86,11 +87,39 @@ public class OrdersController {
         return R.success(list);
     }
 
-    @PutMapping("/{orderId}/pay")
-    public R<String> payOrder(@PathVariable Integer orderId) {
-        return ordersService.payOrder(orderId);
+
+    @PostMapping("/createAndPay")
+    public R<String> createAndPay(@RequestParam String password, HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+
+        // 获取 Session 购物车数据
+        @SuppressWarnings("unchecked")
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        if (cart == null || cart.isEmpty()) {
+            return R.error("购物车为空");
+        }
+
+        // 生成未支付订单
+        List<Orders> newOrders = ordersService.createOrdersFromCart(consumerId, cart);
+
+        // 执行支付
+        R<String> payResult = ordersService.payOrders(consumerId, newOrders, password);
+
+        // 根据支付结果处理 Session 购物车
+        if (payResult.getCode() == 200) {
+            // 支付成功，清空 Session 购物车
+            session.removeAttribute("cart");
+        }
+
+        // 支付失败时，购物车保持原样，订单已经存在（未支付），不用额外操作
+        return payResult;
     }
 
+
+    // 待修改
     @PutMapping("/{orderId}/confirm")
     public R<String> confirmReciveOrder(@PathVariable Integer orderId) {
         return ordersService.confirm(orderId);

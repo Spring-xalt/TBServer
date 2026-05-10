@@ -155,13 +155,14 @@ public class CartController {
         return cartService.saveCart(consumerId, cart);
     }
 
-    // 购物车角标数字
+    // 购物车角标数字 从加载的session中动态获取
     @GetMapping("/count")
     public R<Integer> count(HttpSession session) {
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.success(0);
         }
+
         List<CartItem> cart = getCartFromSession(session);
         return R.success(cart.size());
     }

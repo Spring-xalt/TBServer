@@ -2,10 +2,12 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
+import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Orders;
+import com.taobao.mapper.CartMapper;
 import com.taobao.mapper.ConsumerMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.OrdersMapper;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -31,6 +34,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Autowired
     private MerchantMapper merchantMapper;
+
+    @Autowired
+    private CartMapper cartMapper;
 
     @Override
     public List<Orders> getAllOrders() {
@@ -73,35 +79,69 @@ public class OrdersServiceImpl implements OrdersService {
         return ordersMapper.selectOrdersWithMerchant(consumerId);
     }
 
-    //支付接口必须保证事务支持 (数据库新建订单时默认status为 1 )
-    @Transactional
+
     @Override
-    public R<String> payOrder(Integer id) {
-        QueryWrapper<Orders> oqw = new QueryWrapper<>();
-        oqw.eq("id", id);
-        Orders order = ordersMapper.selectOne(oqw);
-        Integer consumerId=order.getConsumer_id();
+    @Transactional
+    public List<Orders> createOrdersFromCart(int consumerId, List<CartItem> items) {
+        // 根据购物车生成新订单
+        List<Orders> newOrders = new ArrayList<>();
+        for (CartItem item : items) {
+            Orders order = new Orders();
+            order.setConsumer_id(consumerId);
+            order.setMerchant_id(item.getMerchantId());
+            order.setProduct_name(item.getProductName());
+            order.setTotal_amount(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            // 先生成未支付订单
+            order.setStatus(1);
 
-        BigDecimal money=order.getTotal_amount();
-
-        QueryWrapper<Consumer> cqw = new QueryWrapper<>();
-        cqw.eq("id", consumerId);
-        Consumer consumer = consumerMapper.selectOne(cqw);
-
-        //钱不够
-        if(consumer.getAccount_balance().compareTo(money)<0){
-            return R.error("余额不足，支付失败!");
+            //持久化
+            ordersMapper.insert(order);
+            // 回填自增 id
+            newOrders.add(order);
         }
-        //钱够 转换orders的status状态 把钱暂存到temp_amount中
-        consumer.setAccount_balance(consumer.getAccount_balance().subtract(money));
+        return newOrders;
+    }
+
+    @Override
+    @Transactional
+    public R<String> payOrders(int consumerId, List<Orders> orders, String password) {
+        // 校验密码（简单和用户密码做校验）
+        Consumer consumer = consumerMapper.selectById(consumerId);
+        if (!consumer.getPassword().equals(password)) {
+            return R.error("密码错误");
+        }
+
+        // 计算本次支付总金额
+        BigDecimal totalToPay = orders.stream()
+                .map(Orders::getTotal_amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        //  余额检查
+        if (consumer.getAccount_balance().compareTo(totalToPay) < 0) {
+            return R.error("余额不足，还差 " + totalToPay.subtract(consumer.getAccount_balance()) + " 元");
+        }
+
+        // 扣款
+        consumer.setAccount_balance(consumer.getAccount_balance().subtract(totalToPay));
         consumerMapper.updateById(consumer);
 
-        order.setStatus(2);
-        order.setTemp_amount(money);
-        ordersMapper.updateById(order);
+        // 更新订单状态为已支付，记录暂存金额
+        for (Orders order : orders) {
+            order.setStatus(2);
+            // 支付之后金额暂存在order 的 temp_amount，之后reset订单
+            order.setTemp_amount(order.getTotal_amount());
+            ordersMapper.updateById(order);
+        }
 
-        return R.success("支付成功!");
+        // 清空购物车数据库记录
+        cartMapper.deleteByConsumerId(consumerId);
+
+        return R.success("支付成功，共 " + totalToPay + " 元");
     }
+
+
+
+
 
     //签收接口 改变status为3 同时把数据库表中的temp_amount数据减掉 去到 merchant 的账户中
     @Transactional
