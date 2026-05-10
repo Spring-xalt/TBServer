@@ -1,6 +1,5 @@
 package com.taobao.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.taobao.dto.CartVO;
 import com.taobao.entity.Cart;
 import org.apache.ibatis.annotations.*;
 

@@ -7,6 +7,7 @@ import lombok.Data;
  *@version:1.0
  *@description:
  */
+//保持独立类 不继承实体
 @Data
 public class SubmitReviewDto {
     private Integer orderId;
