@@ -40,7 +40,7 @@ public class RefundController {
     }
 
 
-    @GetMapping("/available-orders")
+    @GetMapping("/consumer/available-orders")
     public R<List<Orders>> availableOrders(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
@@ -48,7 +48,21 @@ public class RefundController {
         }
         List<Orders> list = refundService.getAvailableOrders(consumerId);
         return R.success(list);
+
     }
+
+
+    @GetMapping("/consumer/list")
+    public R<List<Refund>> consumerRefundList(HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+        List<Refund> list = refundService.listByConsumerId(consumerId);
+        return R.success(list);
+    }
+
+
 
     // 查询某个订单的退换货申请状态（返回完整 Refund 对象，供消费者或商户使用）
     @GetMapping("/status")

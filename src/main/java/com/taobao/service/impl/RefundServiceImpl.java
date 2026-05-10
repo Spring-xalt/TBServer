@@ -98,6 +98,11 @@ public class RefundServiceImpl implements RefundService {
         return null;  // 表示可以申请
     }
 
+    @Override
+    public List<Refund> listByConsumerId(int consumerId) {
+        return refundMapper.selectByConsumerId(consumerId);
+    }
+
 
     @Override
     public List<Orders> getAvailableOrders(int consumerId) {

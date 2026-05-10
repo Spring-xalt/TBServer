@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的售后</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ff4400',
+            secondary: '#f5f5f5',
+            dark: '#333333',
+            light: '#666666',
+            border: '#dddddd'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header class="bg-white border-b border-border">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/taobao/index.html" class="text-primary text-xl font-bold">
+      <i class="fa fa-shopping-bag mr-2"></i>返回首页
+    </a>
+    <h1 class="text-dark text-2xl font-bold">我的售后</h1>
+    <div></div>
+  </div>
+</header>
+
+<main class="container mx-auto px-4 py-8">
+  <!-- 加载提示 -->
+  <div id="loading" class="text-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+    <p class="text-light mt-4">加载中...</p>
+  </div>
+
+  <!-- 可申请订单列表 -->
+  <div id="orderList" class="hidden space-y-4"></div>
+
+  <!-- 空状态 -->
+  <div id="emptyState" class="hidden text-center py-12">
+    <i class="fa fa-check-circle text-5xl text-gray-300 mb-4"></i>
+    <p class="text-light text-lg">暂无需要售后的订单</p>
+    <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去购物</a>
+  </div>
+</main>
+
+<!-- 申请退换货弹窗 -->
+<div id="refundModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+  <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
+    <h2 class="text-xl font-bold text-dark mb-6">申请退换货</h2>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm text-dark mb-1">商品名称</label>
+        <input type="text" id="refundProductName" class="w-full border border-border rounded px-3 py-2 bg-gray-100" disabled>
+      </div>
+      <div>
+        <label class="block text-sm text-dark mb-1">申请类型</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="refundType" value="1" checked>
+            <span>退货退款</span>
+          </label>
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="refundType" value="2">
+            <span>换货</span>
+          </label>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm text-dark mb-1">申请原因</label>
+        <textarea id="refundReason" rows="4" class="w-full border border-border rounded px-3 py-2" placeholder="请输入申请原因..."></textarea>
+      </div>
+      <div class="flex justify-end space-x-2 pt-4">
+        <button onclick="closeRefundModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
+        <button onclick="submitRefund()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">提交申请</button>
+      </div>
+    </div>
+    <button onclick="closeRefundModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
+      <i class="fa fa-close"></i>
+    </button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+  axios.defaults.baseURL = window.location.origin + '/taobao';
+  let currentRefundOrderId = null;
+
+  document.addEventListener('DOMContentLoaded', loadOrders);
+
+  function loadOrders() {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('orderList').classList.add('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+
+    axios.get('/refund/available-orders')
+            .then(resp => {
+              document.getElementById('loading').classList.add('hidden');
+              if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+                const orders = resp.data.data;
+                const listEl = document.getElementById('orderList');
+                listEl.innerHTML = '';
+                orders.forEach(order => {
+                  listEl.appendChild(createOrderCard(order));
+                });
+                listEl.classList.remove('hidden');
+              } else {
+                document.getElementById('emptyState').classList.remove('hidden');
+              }
+            })
+            .catch(err => {
+              document.getElementById('loading').classList.add('hidden');
+              document.getElementById('emptyState').classList.remove('hidden');
+              document.getElementById('emptyState').innerHTML =
+                      '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
+                      '<p class="text-light">加载失败，请先登录</p>';
+            });
+  }
+
+  function createOrderCard(order) {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-sm p-4 flex justify-between items-center';
+    card.innerHTML = `
+            <div>
+                <h3 class="font-medium text-dark">${order.product_name}</h3>
+                <p class="text-light text-sm mt-1">商户：${order.merchant_name || '未知'}</p>
+                <p class="text-primary font-bold mt-1">¥${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}</p>
+                <p class="text-light text-xs mt-2">下单时间：${formatTime(order.create_time)}</p>
+            </div>
+            <button onclick="openRefundModal(${order.id}, '${order.product_name.replace(/'/g, "\\'")}')"
+                class="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors">
+                申请退换货
+            </button>
+        `;
+    return card;
+  }
+
+  function openRefundModal(orderId, productName) {
+    currentRefundOrderId = orderId;
+    document.getElementById('refundProductName').value = productName;
+    document.getElementById('refundReason').value = '';
+    document.getElementById('refundModal').classList.remove('hidden');
+  }
+
+  function closeRefundModal() {
+    document.getElementById('refundModal').classList.add('hidden');
+    currentRefundOrderId = null;
+  }
+
+  function submitRefund() {
+    const type = parseInt(document.querySelector('input[name="refundType"]:checked').value);
+    const reason = document.getElementById('refundReason').value.trim();
+    if (!reason) {
+      alert('请填写申请原因');
+      return;
+    }
+
+    axios.post('/refund/apply', {
+      orderId: currentRefundOrderId,
+      type: type,
+      reason: reason
+    })
+            .then(resp => {
+              if (resp.data.code === 200) {
+                alert('退换货申请已提交');
+                closeRefundModal();
+                loadOrders(); // 刷新列表，该订单将消失
+              } else {
+                alert(resp.data.msg || '申请失败');
+              }
+            })
+            .catch(err => {
+              console.error('申请失败:', err);
+              alert('申请失败，请重试');
+            });
+  }
+
+  function formatTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+</script>
+</body>
+</html>

@@ -20,4 +20,8 @@ public interface RefundService {
 
     //用于展示售后页面可退换货的订单
     List<Orders> getAvailableOrders(int consumerId);
+
+
+    //展示所有退换货订单
+    List<Refund> listByConsumerId(int consumerId);
 }
