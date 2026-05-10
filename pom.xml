@@ -66,6 +66,15 @@
         </dependency>
 
 
+        <!--支付环境 集成-->
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+            <version>4.39.271.ALL</version>
+            <scope>compile</scope>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
