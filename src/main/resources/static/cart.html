@@ -51,12 +51,26 @@
     <div id="cartContent" class="hidden">
         <div id="cartItems" class="space-y-4"></div>
         <div class="flex justify-end mt-8 space-x-4">
-            <button onclick="clearCart()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-md transition-colors">
+
+
+            <button onclick="clearCart()"
+                    class="bg-gray-500 hover:bg-gray-600 text-white
+                    font-bold py-3 px-6 rounded-md transition-colors">
                 清空购物车
             </button>
-            <button onclick="saveCart()" class="bg-primary hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-md text-lg transition-colors">
+
+            <button onclick="saveCart()"
+                    class="bg-primary hover:bg-orange-600 text-white
+                    font-bold py-3 px-8 rounded-md text-lg transition-colors">
                 保存购物车
             </button>
+            <button onclick="goPay()"
+                    class="bg-green-500 hover:bg-green-600 text-white
+                    font-bold py-3 px-8 rounded-md text-lg transition-colors">
+                去支付
+            </button>
+
+
         </div>
     </div>
 
@@ -215,6 +229,30 @@
         box.classList.remove('hidden');
         setTimeout(() => box.classList.add('hidden'), 2000);
     }
+
+
+    //去支付模块
+
+    function goPay() {
+        const password = prompt('请输入登录密码确认支付：');
+        if (!password) return;
+
+        axios.post('/order/createAndPay', { password: password })
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    alert(resp.data.msg || '支付成功！');
+                    window.location.href = '/taobao/orders.html';
+                } else {
+                    alert(resp.data.msg || '支付失败');
+                }
+            })
+            .catch(err => {
+                console.error('支付失败:', err);
+                alert('支付失败，请重试');
+            });
+    }
+
+
 </script>
 </body>
 </html>
