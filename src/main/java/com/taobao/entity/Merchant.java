@@ -26,6 +26,13 @@ public class Merchant {
     // 营收
     private BigDecimal revenue;
 
+
+
+    /*
+    MP的自动填充机制存在一个问题：如果为空是可以填充当下时间，
+    但是只做改动不会触发时间覆盖机制，所以每次做修改后都应该reset为null，
+    然后触发自动填充
+    */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
     @TableField(fill = FieldFill.INSERT_UPDATE)

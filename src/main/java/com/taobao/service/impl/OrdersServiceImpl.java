@@ -148,7 +148,6 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public R<String> confirm(Integer id) {
         Orders order = ordersMapper.selectById(id);
-
         if(order==null){
             return R.error("订单不存在");
         }
@@ -160,8 +159,14 @@ public class OrdersServiceImpl implements OrdersService {
         BigDecimal money=order.getTemp_amount();
         //签收后商户的金额++
         Merchant merchant = merchantMapper.selectById(order.getMerchant_id());
+
+        // reset为空，触发自动填充
+        merchant.setUpdate_time(null);
+        order.setUpdate_time(null);
+
         merchant.setRevenue(merchant.getRevenue().add(money));
         merchantMapper.updateById(merchant);
+
 
 
         order.setStatus(3);
