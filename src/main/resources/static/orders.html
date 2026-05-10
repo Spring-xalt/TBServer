@@ -58,42 +58,114 @@
     <p class="text-light text-lg">暂无相关订单</p>
     <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去购物</a>
   </div>
+
+  <!-- 评价弹窗 -->
+  <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+    <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
+      <h2 class="text-xl font-bold text-dark mb-6">评价商品</h2>
+      <div class="space-y-4">
+
+        <div>
+          <label class="block text-sm text-dark mb-1">商品名称</label>
+          <input type="text" id="reviewProductName" class="w-full border border-border rounded px-3 py-2 bg-gray-100" disabled>
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">评分</label>
+          <div class="flex space-x-1" id="starRating">
+            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="1"></i>
+            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="2"></i>
+            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="3"></i>
+            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="4"></i>
+            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="5"></i>
+          </div>
+          <input type="hidden" id="reviewScore" value="0">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">评价内容</label>
+          <textarea id="reviewContent" rows="4" class="w-full border border-border rounded px-3 py-2" placeholder="请输入您的评价..."></textarea>
+        </div>
+        <div class="flex justify-end space-x-2 pt-4">
+          <button onclick="closeReviewModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
+          <button onclick="submitReview()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">提交评价</button>
+        </div>
+      </div>
+      <button onclick="closeReviewModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
+        <i class="fa fa-close"></i>
+      </button>
+
+    </div>
+  </div>
+
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+
+
 <script>
   axios.defaults.baseURL = window.location.origin + '/taobao';
   let allOrders = [];
   let currentFilter = 0;  // 0全部,1待支付,2已支付,3已签收
+  let currentReviewOrderId = null;
+  let reviewableOrderIds = [];
+  let reviewedOrderIds = [];
+
 
   document.addEventListener('DOMContentLoaded', () => {
     loadOrders();
   });
 
-  function loadOrders() {
-    document.getElementById('loading').classList.remove('hidden');
-    document.getElementById('orderList').innerHTML = '';
-    document.getElementById('emptyState').classList.add('hidden');
 
-    // 修正点：改为 /order/consumerSelf
-    axios.get('/order/consumerSelf')
-            .then(resp => {
-              document.getElementById('loading').classList.add('hidden');
-              if (resp.data.code === 200) {
-                allOrders = resp.data.data || [];
+    function loadOrders() {
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('orderList').innerHTML = '';
+      document.getElementById('emptyState').classList.add('hidden');
+
+      // axios并行请求：订单列表 + 可评价订单列表
+      Promise.all([
+        axios.get('/order/consumerSelf'),
+        axios.get('/review/reviewable'),
+        axios.get('/review/my')
+      ])
+              .then(([orderResp, reviewableResp, myReviewResp]) => {
+                document.getElementById('loading').classList.add('hidden');
+
+
+
+                if (orderResp.data.code === 200) {
+                  allOrders = orderResp.data.data || [];
+                }
+                else {
+                  allOrders = [];
+                }
+
+                if (reviewableResp.data.code === 200) {
+                  const reviewableOrders = reviewableResp.data.data || [];
+                  reviewableOrderIds = reviewableOrders.map(order => order.id);
+                }
+                else {
+                  reviewableOrderIds = [];
+                }
+
+                if (myReviewResp.data.code === 200) {
+                  const myReviews = myReviewResp.data.data || [];
+                  reviewedOrderIds = myReviews.map(r => r.order_id);
+                }
+                else {
+                  reviewedOrderIds = [];
+                }
+
+
                 applyFilter();
-              } else {
+              })
+              .catch(err => {
+                document.getElementById('loading').classList.add('hidden');
                 document.getElementById('emptyState').classList.remove('hidden');
-              }
-            })
-            .catch(err => {
-              document.getElementById('loading').classList.add('hidden');
-              document.getElementById('emptyState').classList.remove('hidden');
-              document.getElementById('emptyState').innerHTML =
-                      '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
-                      '<p class="text-light">加载失败，请先登录</p>';
-            });
-  }
+                document.getElementById('emptyState').innerHTML =
+                        '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
+                        '<p class="text-light">加载失败，请先登录</p>';
+              });
+    }
 
   function filterOrders(status) {
     // 更新按钮样式
@@ -163,6 +235,19 @@
                             确认签收
                         </button>
                     ` : ''}
+
+
+                    ${order.status === 3 ? (reviewedOrderIds.includes(order.id) ? `
+                        <span class="block mt-2 px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded">已评价</span>
+                            ` : (reviewableOrderIds.includes(order.id) ? `
+                        <button onclick="openReviewModal(${order.id}, '${order.product_name.replace(/'/g, "\\'")}')"
+                            class="block mt-2 px-3 py-1 bg-orange-500 text-white text-sm rounded hover:bg-orange-600">
+                            评价
+                        </button>
+                    ` : '')
+            ) : ''}
+
+
                 </div>
             </div>
         `;
@@ -186,11 +271,88 @@
             });
   }
 
+
+  // 打开评价弹窗
+  function openReviewModal(orderId, productName) {
+    currentReviewOrderId = orderId;
+    document.getElementById('reviewProductName').value = productName;
+    document.getElementById('reviewScore').value = 0;
+    document.getElementById('reviewContent').value = '';
+    // 重置星星
+    document.querySelectorAll('#starRating i').forEach(star => {
+      star.classList.remove('text-orange-400');
+      star.classList.add('text-gray-300');
+    });
+    document.getElementById('reviewModal').classList.remove('hidden');
+  }
+
+  // 关闭评价弹窗
+  function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    currentReviewOrderId = null;
+  }
+
+  // 星星点击事件
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('#starRating i')) {
+      const star = e.target.closest('i');
+      const score = parseInt(star.getAttribute('data-score'));
+      document.getElementById('reviewScore').value = score;
+      const stars = document.querySelectorAll('#starRating i');
+      stars.forEach((s, index) => {
+        if (index < score) {
+          s.classList.remove('text-gray-300');
+          s.classList.add('text-orange-400');
+        } else {
+          s.classList.remove('text-orange-400');
+          s.classList.add('text-gray-300');
+        }
+      });
+    }
+  });
+
+  // 提交评价
+  function submitReview() {
+    const score = parseInt(document.getElementById('reviewScore').value);
+    const content = document.getElementById('reviewContent').value.trim();
+
+    if (score === 0) {
+      alert('请选择评分');
+      return;
+    }
+    if (!content) {
+      alert('请输入评价内容');
+      return;
+    }
+
+    axios.post('/review/submit', {
+      orderId: currentReviewOrderId,
+      score: score,
+      content: content
+    })
+            .then(resp => {
+              if (resp.data.code === 200) {
+                alert('评价成功！');
+                closeReviewModal();
+                loadOrders();
+              } else {
+                alert(resp.data.msg || '评价失败');
+              }
+            })
+            .catch(err => {
+              console.error('评价失败:', err);
+              alert('评价失败，请重试');
+            });
+  }
+
   function formatTime(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
+
+
+
 </script>
 </body>
 </html>
