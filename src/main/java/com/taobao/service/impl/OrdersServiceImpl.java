@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,15 +149,15 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     public R<String> confirm(Integer id) {
         Orders order = ordersMapper.selectById(id);
-        if(order==null){
+        if (order == null) {
             return R.error("订单不存在");
         }
-        if(order.getStatus()!=2){
+        if (order.getStatus() != 2) {
             return R.error("只有已支付的订单才能签收!");
         }
 
         //要转移的钱
-        BigDecimal money=order.getTemp_amount();
+        BigDecimal money = order.getTemp_amount();
         //签收后商户的金额++
         Merchant merchant = merchantMapper.selectById(order.getMerchant_id());
 
@@ -167,13 +168,12 @@ public class OrdersServiceImpl implements OrdersService {
         merchant.setRevenue(merchant.getRevenue().add(money));
         merchantMapper.updateById(merchant);
 
-
-
         order.setStatus(3);
         order.setTemp_amount(BigDecimal.valueOf(0.00));
+        //set签收时间
+        order.setReceive_time(LocalDateTime.now());
         ordersMapper.updateById(order);
 
         return R.success("签收成功!");
-
     }
 }
