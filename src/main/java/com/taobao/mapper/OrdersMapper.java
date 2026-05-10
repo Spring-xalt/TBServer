@@ -35,4 +35,9 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Delete("DELETE FROM orders WHERE status = 3 AND create_time < DATE_SUB(NOW(), INTERVAL 3 MONTH)")
     int deleteExpiredReceivedOrders();
 
+    // 超过三个月的订单
+    @Select("SELECT * FROM orders WHERE consumer_id = #{consumerId} AND status = 3 " +
+            "AND create_time > DATE_SUB(NOW(), INTERVAL 3 MONTH)")
+    List<Orders> selectReceivedRecentByConsumerId(@Param("consumerId") int consumerId);
+
 }

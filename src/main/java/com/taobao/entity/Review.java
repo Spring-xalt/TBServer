@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
  *@description:
  */
 
+@SuppressWarnings("all")
 @Data
 public class Review {
 
