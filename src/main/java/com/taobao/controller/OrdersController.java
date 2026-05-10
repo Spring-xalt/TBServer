@@ -3,6 +3,7 @@ package com.taobao.controller;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
+import com.taobao.dto.PayRequestDto;
 import com.taobao.entity.Orders;
 import com.taobao.service.OrdersService;
 import jakarta.servlet.http.HttpSession;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /*
  @auther:Jimi
@@ -22,7 +24,7 @@ public class OrdersController {
     @Autowired
     private OrdersService ordersService;
 
-    
+
     @GetMapping("/all")
     public R<List<Orders>> getAllOrders() {
         List<Orders> orders = ordersService.getAllOrders();
@@ -90,7 +92,12 @@ public class OrdersController {
 
 
     @PostMapping("/createAndPay")
-    public R<String> createAndPay(@RequestParam String password, HttpSession session) {
+    public R<String> createAndPay(@RequestBody PayRequestDto payRequest, HttpSession session) {
+        //通过map传入不可以，泛型在编译后会被擦除，不宜使用 改用dto传参
+        //String password = body.get("password");
+
+        String password = payRequest.getPassword();
+
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
             return R.error(401, "请先登录");
