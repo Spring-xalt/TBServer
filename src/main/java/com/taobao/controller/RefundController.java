@@ -2,11 +2,14 @@ package com.taobao.controller;
 
 import com.taobao.common.R;
 import com.taobao.dto.RefundApplyDto;
+import com.taobao.entity.Orders;
 import com.taobao.entity.Refund;
 import com.taobao.service.RefundService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /*
  *@auther:Jimi
@@ -34,6 +37,17 @@ public class RefundController {
                 dto.getType(),
                 dto.getReason()
         );
+    }
+
+
+    @GetMapping("/available-orders")
+    public R<List<Orders>> availableOrders(HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+        List<Orders> list = refundService.getAvailableOrders(consumerId);
+        return R.success(list);
     }
 
     // 查询某个订单的退换货申请状态（返回完整 Refund 对象，供消费者或商户使用）
