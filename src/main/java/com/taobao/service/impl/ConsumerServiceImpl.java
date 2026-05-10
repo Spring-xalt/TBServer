@@ -135,20 +135,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         return R.success("登录成功!", consumer);
     }
 
-    //充值接口
-    @Override
-    public R<String> recharge(int consumerId, BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            return R.error("充值金额必须大于0");
-        }
-        Consumer consumer = consumerMapper.selectById(consumerId);
-        if (consumer == null) {
-            return R.error("用户不存在");
-        }
-        consumer.setAccount_balance(consumer.getAccount_balance().add(amount));
-        consumerMapper.updateById(consumer);
-        return R.success("充值成功，" + amount + " 元已到账");
-    }
+
 
 
 }

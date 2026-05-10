@@ -22,6 +22,4 @@ public interface ConsumerService {
     R<Consumer> login(UserLoginDto loginDto, HttpSession session);
 
 
-    //个人中心的充值接口
-    R<String> recharge(int consumerId, BigDecimal amount);
 }

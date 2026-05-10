@@ -78,14 +78,5 @@ public class ConsumerController {
     }
 
 
-    //充值
-    @PostMapping("/recharge")
-    public R<String> recharge(@RequestBody RechargeDto rechargeDto, HttpSession session) {
-        Integer consumerId = (Integer) session.getAttribute("consumerId");
-        if (consumerId == null) {
-            return R.error(401, "请先登录");
-        }
-        return consumerService.recharge(consumerId, rechargeDto.getAmount());
-    }
 
 }
