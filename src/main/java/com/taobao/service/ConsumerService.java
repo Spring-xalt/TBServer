@@ -7,6 +7,7 @@ import com.taobao.entity.Consumer;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ConsumerService {
@@ -19,4 +20,8 @@ public interface ConsumerService {
 
     R<String> register(UserRegisterDto registerDto);
     R<Consumer> login(UserLoginDto loginDto, HttpSession session);
+
+
+    //个人中心的充值接口
+    R<String> recharge(int consumerId, BigDecimal amount);
 }

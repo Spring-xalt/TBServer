@@ -1,6 +1,7 @@
 package com.taobao.controller;
 
 import com.taobao.common.R;
+import com.taobao.dto.RechargeDto;
 import com.taobao.entity.Consumer;
 import com.taobao.service.ConsumerService;
 import jakarta.servlet.http.HttpSession;
@@ -75,4 +76,16 @@ public class ConsumerController {
         boolean done=consumerService.updateConsumer(consumer);
         return done ? R.success("个人信息已更新") : R.error("更新失败");
     }
+
+
+    //充值
+    @PostMapping("/recharge")
+    public R<String> recharge(@RequestBody RechargeDto rechargeDto, HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+        return consumerService.recharge(consumerId, rechargeDto.getAmount());
+    }
+
 }
