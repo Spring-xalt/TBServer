@@ -13,6 +13,9 @@
     http://pa26a287.natappfree.cc -> http://127.0.0.1:8080
     注意：NATApp 必须一直保持运行，不能关窗口。
 
-演示时需要的账号信息：
+演示时需要的账号信息(内网支付这些)：
     沙箱支付宝APP	dggleh9671@sandbox.com/11111
-
+    authtoken	8c8cec195b2882b1 
+    当前域名	pa26a287.natappfree.cc 
+    notify-url	http://pa26a287.natappfree.cc/taobao/alipay/notify
+    启动命令	.\natapp.exe -authtoken=8c8cec195b2882b1
