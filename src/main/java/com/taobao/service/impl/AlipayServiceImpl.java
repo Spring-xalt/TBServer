@@ -5,9 +5,7 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePrecreateRequest;
-import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
-import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.taobao.common.R;
 import com.taobao.entity.Consumer;
 import com.taobao.service.AlipayService;
@@ -16,9 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.taobao.config.AlipayConfig;
 import com.taobao.mapper.ConsumerMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -143,8 +138,6 @@ public class AlipayServiceImpl implements AlipayService {
             return "failure";
         }
     }
-
-
 
 
 }

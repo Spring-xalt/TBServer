@@ -2,17 +2,16 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
-import com.taobao.entity.Orders;
-import com.taobao.entity.Product;
-import com.taobao.entity.Review;
-import com.taobao.mapper.OrdersMapper;
-import com.taobao.mapper.ProductMapper;
-import com.taobao.mapper.ReviewMapper;
+import com.taobao.dto.ReviewVO;
+import com.taobao.entity.*;
+import com.taobao.mapper.*;
 import com.taobao.service.ReviewService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +33,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private MerchantMapper merchantMapper;
+
+    @Autowired
+    private ConsumerMapper consumerMapper;
 
     @Override
     @Transactional
@@ -97,4 +102,36 @@ public class ReviewServiceImpl implements ReviewService {
                 .filter(o -> !reviewedSet.contains(o.getId()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<ReviewVO> getConsumerReviewsDetail(int consumerId) {
+        List<Review> reviews = reviewMapper.selectByConsumerId(consumerId);
+        List<ReviewVO> vos = new ArrayList<>();
+
+        for (Review r : reviews) {
+            ReviewVO vo = new ReviewVO();
+            // 基础属性拷贝
+            BeanUtils.copyProperties(r, vo);
+
+            // 商品名
+            Product product = productMapper.selectById(r.getProduct_id());
+            if (product != null) {
+                vo.setProductName(product.getProduct_name());
+            }
+            // 商户名
+            Merchant merchant = merchantMapper.selectById(r.getMerchant_id());
+            if (merchant != null) {
+                vo.setMerchantName(merchant.getMerchant_name());
+            }
+
+            // 消费者昵称
+            Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
+            if (consumer != null) {
+                vo.setConsumerName(consumer.getConsumer_name());
+            }
+            vos.add(vo);
+        }
+        return vos;
+    }
+
 }

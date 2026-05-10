@@ -1,6 +1,7 @@
 package com.taobao.controller;
 
 import com.taobao.common.R;
+import com.taobao.dto.ReviewVO;
 import com.taobao.dto.SubmitReviewDto;
 import com.taobao.entity.Orders;
 import com.taobao.entity.Review;
@@ -48,7 +49,7 @@ public class ReviewController {
         return R.success(list);
     }
 
-    // 查询消费者本人的所有评价
+    // 查询消费者本人的所有评价,返回code和成功信息的
     @GetMapping("/my")
     public R<List<Review>> myReviews(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -58,4 +59,17 @@ public class ReviewController {
         List<Review> list = reviewService.getConsumerReviews(consumerId);
         return R.success(list);
     }
+
+    //用于评价中心的 返回每一条详细信息的
+    @GetMapping("/myDetail")
+    public R<List<ReviewVO>> myReviewDetails(HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录");
+        }
+        List<ReviewVO> list = reviewService.getConsumerReviewsDetail(consumerId);
+        return R.success(list);
+    }
+
+
 }
