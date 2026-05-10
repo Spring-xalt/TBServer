@@ -5,7 +5,9 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePrecreateRequest;
+import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradePrecreateResponse;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.taobao.common.R;
 import com.taobao.entity.Consumer;
 import com.taobao.service.AlipayService;
@@ -14,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.taobao.config.AlipayConfig;
 import com.taobao.mapper.ConsumerMapper;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ public class AlipayServiceImpl implements AlipayService {
     private ConsumerMapper consumerMapper;
 
 
+    //二维码qr也传入amount
     @Override
     public R<String> createPayQrCode(int consumerId, BigDecimal amount, String subject) {
         //  生成唯一订单号(recharge_ + 时间_ + 消费者id) 方便后续直接利用第二个_split解析(T113)
@@ -53,8 +58,10 @@ public class AlipayServiceImpl implements AlipayService {
 
         //预创建接口
         AlipayTradePrecreateRequest request = new AlipayTradePrecreateRequest();
-        //支付成功后的通知返回地址，返回一个json
+        //提前设置通知返回地址
         request.setNotifyUrl(alipayConfig.getNotifyUrl());
+
+        //注入依赖的订单号，订单额，充值主体，超时时间
         request.setBizContent("{" +
                 "\"out_trade_no\":\"" + outTradeNo + "\"," +
                 "\"total_amount\":\"" + amount.toString() + "\"," +
@@ -67,7 +74,8 @@ public class AlipayServiceImpl implements AlipayService {
             AlipayTradePrecreateResponse response = alipayClient.execute(request);
             if (response.isSuccess()) {
                 // 收到请求并返回给前端一个 二维码链接
-                return R.success(response.getQrCode());
+
+                return R.success(outTradeNo + "," + response.getQrCode());
             } else {
                 return R.error("生成支付二维码失败: " + response.getMsg());
             }
@@ -135,4 +143,38 @@ public class AlipayServiceImpl implements AlipayService {
             return "failure";
         }
     }
+
+    @GetMapping("/status")
+    public R<String> checkPayStatus(@RequestParam String outTradeNo) {
+        try {
+            // 创建支付宝客户端
+            AlipayClient alipayClient = new DefaultAlipayClient(
+                    alipayConfig.getGatewayUrl(),
+                    alipayConfig.getAppId(),
+                    alipayConfig.getMerchantPrivateKey(),
+                    "json", "UTF-8",
+                    alipayConfig.getAlipayPublicKey(),
+                    "RSA2"
+            );
+
+            // 交易查询请求
+            AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+            request.setBizContent("{\"out_trade_no\":\"" + outTradeNo + "\"}");
+
+            // 执行查询
+            AlipayTradeQueryResponse response = alipayClient.execute(request);
+
+            // 判断是否支付成功
+            if (response.isSuccess() && "TRADE_SUCCESS".equals(response.getTradeStatus())) {
+                return R.success("SUCCESS");
+            } else {
+                return R.success("WAITING");
+            }
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+            return R.error("查询失败");
+        }
+    }
+
+
 }

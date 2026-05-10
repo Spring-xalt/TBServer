@@ -1,5 +1,6 @@
 package com.taobao.controller;
 
+
 import com.taobao.common.R;
 import com.taobao.service.AlipayService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,4 +41,7 @@ public class AlipayController {
     public String notify(HttpServletRequest request) {
         return alipayService.handleNotify(request);
     }
+
+
+
 }

@@ -90,25 +90,23 @@
                         </div>
                     </div>
 
-                    <!-- 扫码支付 -->
+
+
+                    <!-- 扫码支付（新版：动态二维码） -->
                     <div id="rechargeStep2" class="hidden space-y-4">
-                        <p class="text-base text-dark text-center">请使用微信扫一扫支付</p>
-                        <img src="/taobao/images/recharge.jpg" alt="收款码" class="max-w-full h-auto max-h-80 mx-auto border border-border rounded">
-                        <p class="text-sm text-light text-center">支付完成后，请点击下方按钮</p>
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button onclick="closeRechargeModal()" class="px-6 py-3 border border-border rounded-md text-base hover:bg-gray-100">取消</button>
-                            <button onclick="rechargeDone()" class="px-6 py-3 bg-green-500 text-white rounded-md text-base hover:bg-green-600">我已扫码支付</button>
-                        </div>
+                        <p class="text-base text-dark text-center">请使用沙箱支付宝扫一扫支付</p>
+                        <div id="qrcodeContainer" class="flex justify-center my-4"></div>
+                        <p class="text-sm text-light text-center">支付金额：<span id="payAmountDisplay"></span> 元</p>
+                        <p class="text-xs text-light text-center">支付成功后自动确认</p>
                     </div>
+
+
 
                     <button onclick="closeRechargeModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
                         <i class="fa fa-close"></i>
                     </button>
                 </div>
             </div>
-
-
-
 
 
 
@@ -127,12 +125,14 @@
 </main>
 
 
-
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+
+
 <script>
 
 
-    let rechargeAmountValue = 0;
+
 
     axios.defaults.baseURL = window.location.origin + '/taobao';
     let currentConsumerId = null;   // 保存当前消费者 id
@@ -190,14 +190,46 @@
 
     function openRechargeModal() {
         document.getElementById('rechargeModal').classList.remove('hidden');
+        document.getElementById('rechargeModal').classList.add('flex');
         document.getElementById('rechargeStep1').classList.remove('hidden');
         document.getElementById('rechargeStep2').classList.add('hidden');
         document.getElementById('rechargeAmount').value = '';
+        document.getElementById('qrcodeContainer').innerHTML = '';  // 清理旧二维码
+        if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
+        currentPayOutTradeNo = null;
     }
 
     function closeRechargeModal() {
+        if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
         document.getElementById('rechargeModal').classList.add('hidden');
+        document.getElementById('rechargeModal').classList.remove('flex');
     }
+
+    function startPolling() {
+        //关掉其他定时器
+        if (pollingTimer) clearInterval(pollingTimer);
+        pollingTimer = setInterval(() => {
+            //每两秒发请求给status确认状态
+            axios.get('/alipay/status', { params: { outTradeNo: currentPayOutTradeNo } })
+                .then(resp => {
+                    if (resp.data.code === 200 && resp.data.data === 'SUCCESS') {
+                        clearInterval(pollingTimer);
+                        pollingTimer = null;
+                        alert('支付成功！');
+                        closeRechargeModal();
+                        // 刷新余额
+                        loadProfile();
+                    }
+                })
+                .catch(err => {
+                    console.error('查询支付状态失败:', err);
+                });
+        }, 2000);//每两秒轮询一次
+    }
+
+
+    let currentPayOutTradeNo = null;
+    let pollingTimer = null;
 
     function showQRCode() {
         const amount = parseFloat(document.getElementById('rechargeAmount').value);
@@ -205,27 +237,50 @@
             alert('请输入有效的充值金额');
             return;
         }
-        rechargeAmountValue = amount;
-        document.getElementById('rechargeStep1').classList.add('hidden');
-        document.getElementById('rechargeStep2').classList.remove('hidden');
-    }
 
-    function rechargeDone() {
-        axios.post('/consumer/recharge', { amount: rechargeAmountValue })
+        // 用户发起充值请求，调后端生成支付二维码(只传金额，订单由后端产生)
+        axios.post('/alipay/recharge', null, { params: { amount: amount } })
             .then(resp => {
                 if (resp.data.code === 200) {
-                    alert(resp.data.msg);
-                    closeRechargeModal();
-                    loadProfile(); // 重新加载个人信息，刷新余额
+                    /*
+                    resp最初会返回"code": 200,"msg": "success",
+                       "data": "https://qr.alipay.com/bax02025yfug6xpwmvda00bd"
+                        后端会将这个变为 "订单号,data"
+                     */
+                    const data = resp.data.data.split(',');
+                    if (data.length !== 2) {
+                        alert('返回支付信息异常');
+                        return;
+                    }
+                    //存的订单号
+                    const outTradeNo = data[0];
+                    //存的二维码的地址
+                    const qrCodeUrl = data[1];
+                    currentPayOutTradeNo = outTradeNo;
+
+                    // 页面切换 ，显示金额，生成二维码...
+                    document.getElementById('rechargeStep1').classList.add('hidden');
+                    document.getElementById('rechargeStep2').classList.remove('hidden');
+                    document.getElementById('payAmountDisplay').innerText = amount;
+
+                    const container = document.getElementById('qrcodeContainer');
+                    container.innerHTML = '';
+                    new QRCode(container, { text: qrCodeUrl, width: 200, height: 200 });
+
+                    // 开始轮询支付状态,支付成功后自动关闭弹窗
+                    startPolling();
+
+
                 } else {
-                    alert(resp.data.msg || '充值失败');
+                    alert(resp.data.msg || '生成支付订单失败');
                 }
             })
             .catch(err => {
-                console.error('充值失败:', err);
-                alert('充值失败，请重试');
+                console.error('充值请求失败:', err);
+                alert('系统繁忙，请稍后再试');
             });
     }
+
 
 
 </script>
