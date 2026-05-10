@@ -22,6 +22,7 @@ public class OrdersController {
     @Autowired
     private OrdersService ordersService;
 
+    
     @GetMapping("/all")
     public R<List<Orders>> getAllOrders() {
         List<Orders> orders = ordersService.getAllOrders();
