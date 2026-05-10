@@ -1,7 +1,13 @@
 package com.taobao.controller;
 
 
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.taobao.common.R;
+import com.taobao.config.AlipayConfig;
 import com.taobao.service.AlipayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -20,6 +26,9 @@ public class AlipayController {
 
     @Autowired
     private AlipayService alipayService;
+
+    @Autowired
+    private AlipayConfig alipayConfig;
 
     //前端弹出充值弹窗，用户输入金额后调用此接口
     @PostMapping("/recharge")
@@ -43,5 +52,36 @@ public class AlipayController {
     }
 
 
+    @GetMapping("/status")
+    public R<String> checkPayStatus(@RequestParam String outTradeNo) {
+        try {
+            // 创建支付宝客户端
+            AlipayClient alipayClient = new DefaultAlipayClient(
+                    alipayConfig.getGatewayUrl(),
+                    alipayConfig.getAppId(),
+                    alipayConfig.getMerchantPrivateKey(),
+                    "json", "UTF-8",
+                    alipayConfig.getAlipayPublicKey(),
+                    "RSA2"
+            );
+
+            // 交易查询请求
+            AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+            request.setBizContent("{\"out_trade_no\":\"" + outTradeNo + "\"}");
+
+            // 执行查询
+            AlipayTradeQueryResponse response = alipayClient.execute(request);
+
+            // 判断是否支付成功
+            if (response.isSuccess() && "TRADE_SUCCESS".equals(response.getTradeStatus())) {
+                return R.success("SUCCESS");
+            } else {
+                return R.success("WAITING");
+            }
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+            return R.error("查询失败");
+        }
+    }
 
 }

@@ -144,37 +144,7 @@ public class AlipayServiceImpl implements AlipayService {
         }
     }
 
-    @GetMapping("/status")
-    public R<String> checkPayStatus(@RequestParam String outTradeNo) {
-        try {
-            // 创建支付宝客户端
-            AlipayClient alipayClient = new DefaultAlipayClient(
-                    alipayConfig.getGatewayUrl(),
-                    alipayConfig.getAppId(),
-                    alipayConfig.getMerchantPrivateKey(),
-                    "json", "UTF-8",
-                    alipayConfig.getAlipayPublicKey(),
-                    "RSA2"
-            );
 
-            // 交易查询请求
-            AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
-            request.setBizContent("{\"out_trade_no\":\"" + outTradeNo + "\"}");
-
-            // 执行查询
-            AlipayTradeQueryResponse response = alipayClient.execute(request);
-
-            // 判断是否支付成功
-            if (response.isSuccess() && "TRADE_SUCCESS".equals(response.getTradeStatus())) {
-                return R.success("SUCCESS");
-            } else {
-                return R.success("WAITING");
-            }
-        } catch (AlipayApiException e) {
-            e.printStackTrace();
-            return R.error("查询失败");
-        }
-    }
 
 
 }
