@@ -83,5 +83,17 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.selectList(queryWrapper);
     }
 
+    //某个商户的搜索功能(商户id+关键词)
+    @Override
+    public List<Product> searchByMerchant(int merchantId, String keyword) {
+        QueryWrapper<Product> wrapper = new QueryWrapper<>();
+        //本商户 同时匹配商品名和描述
+        wrapper.eq("merchant_id", merchantId)
+                .and(w -> w.like("product_name", keyword)
+                        .or()
+                        .like("description", keyword));
+        return productMapper.selectList(wrapper);
+
+    }
 
 }

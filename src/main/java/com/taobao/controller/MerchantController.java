@@ -88,6 +88,23 @@ public class MerchantController {
         }
     }
 
+
+    @GetMapping("/my-products/search")
+    public R<List<Product>> searchMyProducts(@RequestParam String keyword, HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录");
+        }
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // 如果关键词为空，直接返回全部商品
+            return R.success(productService.getProductsByMerchantId(merchantId));
+        }
+        List<Product> result = productService.searchByMerchant(merchantId, keyword.trim());
+        return R.success(result);
+    }
+
+
+
     // 删除商户(其对应的产品也应当下架)
     @DeleteMapping("/delete/{id}")
     public R<String> deleteMerchant(@PathVariable Integer id) {

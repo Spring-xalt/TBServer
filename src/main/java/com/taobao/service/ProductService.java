@@ -22,4 +22,9 @@ public interface ProductService {
     List<Product> getProductsByMerchantId(Integer merchantId);
 
     List<Product> searchProducts(String msg);
+
+
+
+    List<Product> searchByMerchant(int merchantId, String keyword);
+
 }
