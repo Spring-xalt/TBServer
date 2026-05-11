@@ -2,6 +2,7 @@ package com.taobao.controller;
 
 import com.taobao.common.R;
 import com.taobao.dto.RefundApplyDto;
+import com.taobao.dto.RefundListVO;
 import com.taobao.entity.Orders;
 import com.taobao.entity.Refund;
 import com.taobao.service.RefundService;
@@ -24,7 +25,7 @@ public class RefundController {
     @Autowired
     private RefundService refundService;
 
-    // 提交退换货申请
+    // 消费者提交退换货申请
     @PostMapping("/apply")
     public R<String> apply(@RequestBody RefundApplyDto dto, HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -39,7 +40,7 @@ public class RefundController {
         );
     }
 
-
+    // 展示可提交退换货申请的订单(消费者端)
     @GetMapping("/consumer/available-orders")
     public R<List<Orders>> availableOrders(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -50,8 +51,7 @@ public class RefundController {
         return R.success(list);
 
     }
-
-
+    // 展示消费者退换货申请
     @GetMapping("/consumer/list")
     public R<List<Refund>> consumerRefundList(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -71,5 +71,35 @@ public class RefundController {
         // 未申请时 refund 为 null，直接返回
         return R.success(refund);
     }
+
+
+
+    // 查询商户的售后订单(商家端售后管理)
+    @GetMapping("/merchant/list")
+    public R<List<RefundListVO>> merchantList(
+            @RequestParam(required = false) Integer status,
+            HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        List<RefundListVO> list = refundService.listMerchantRefunds(merchantId, status);
+        return R.success(list);
+    }
+    // 商户处理售后订单
+    @PutMapping("/audit")
+    public R<String> audit(
+            @RequestParam int refundId,
+            @RequestParam String action,
+            HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        return refundService.auditRefund(merchantId, refundId, action);
+    }
+
+
+
 
 }

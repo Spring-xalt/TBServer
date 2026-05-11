@@ -2,19 +2,16 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
-import com.taobao.entity.Orders;
-import com.taobao.entity.Product;
-import com.taobao.entity.Refund;
-import com.taobao.entity.Review;
-import com.taobao.mapper.OrdersMapper;
-import com.taobao.mapper.ProductMapper;
-import com.taobao.mapper.RefundMapper;
-import com.taobao.mapper.ReviewMapper;
+import com.taobao.dto.RefundListVO;
+import com.taobao.entity.*;
+import com.taobao.mapper.*;
 import com.taobao.service.RefundService;
+import com.taobao.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +31,12 @@ public class RefundServiceImpl implements RefundService {
     private ReviewMapper reviewMapper;
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private MerchantMapper merchantMapper;
+
+    @Autowired
+    private ConsumerMapper consumerMapper;
 
     //事务级支持 防止有些写入了有些回滚了
     @Override
@@ -123,10 +126,117 @@ public class RefundServiceImpl implements RefundService {
     }
 
 
-
-
     @Override
     public Refund getByOrderId(int orderId) {
         return refundMapper.selectByOrderId(orderId);
     }
+
+
+
+    @Override
+    public List<RefundListVO> listMerchantRefunds(int merchantId, Integer status) {
+        QueryWrapper<Refund> wrapper = new QueryWrapper<>();
+
+        //查看自己的售后订单(分状态的)
+        wrapper.eq("merchant_id", merchantId);
+        if (status != null) {
+            wrapper.eq("status", status);
+        }
+        wrapper.orderByDesc("create_time");
+        List<Refund> refunds = refundMapper.selectList(wrapper);
+
+        List<RefundListVO> voList = new ArrayList<>();
+        for (Refund r : refunds) {
+            RefundListVO vo = new RefundListVO();
+            vo.setId(r.getId());
+            vo.setOrderId(r.getOrder_id());
+            vo.setConsumerId(r.getConsumer_id());
+            vo.setProductId(r.getProduct_id());
+            vo.setType(r.getType());
+            vo.setReason(r.getReason());
+            vo.setStatus(r.getStatus());
+            vo.setCreateTime(r.getCreate_time());
+
+            // 填充消费者昵称
+            Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
+            vo.setConsumerName(consumer != null ? consumer.getConsumer_name() : "未知");
+
+            // 填充商品名
+            Product product = productMapper.selectById(r.getProduct_id());
+            vo.setProductName(product != null ? product.getProduct_name() : "未知");
+
+            // 填充订单金额
+            Orders order = ordersMapper.selectById(r.getOrder_id());
+            vo.setOrderAmount(order != null ? order.getTotal_amount() : BigDecimal.ZERO);
+
+            voList.add(vo);
+        }
+        return voList;
+    }
+
+    @Override
+    @Transactional
+    public R<String> auditRefund(int merchantId, int refundId, String action) {
+        Refund refund = refundMapper.selectById(refundId);
+        if (refund == null || refund.getMerchant_id() != merchantId) {
+            return R.error("退款单不存在或无权操作");
+        }
+        if (refund.getStatus() != 1) {
+            return R.error("该申请已被处理，无法重复审核");
+        }
+
+        // 校验前端传来的 action
+        if (!"agree".equals(action) && !"reject".equals(action)) {
+            return R.error("无效操作，请传 agree 或 reject");
+        }
+
+        if ("agree".equals(action)) {
+            refund.setStatus(2); // 已同意
+            refundMapper.updateById(refund);
+
+            if (refund.getType() == 1) {
+                // 退货退款：退款给消费者 + 扣减商户营收
+                Orders order = ordersMapper.selectById(refund.getOrder_id());
+                if (order == null) {
+                    return R.error("关联订单不存在");
+                }
+                BigDecimal amount = order.getTotal_amount();
+
+                Consumer consumer = consumerMapper.selectById(refund.getConsumer_id());
+                if (consumer != null) {
+                    consumer.setAccount_balance(consumer.getAccount_balance().add(amount));
+                    consumerMapper.updateById(consumer);
+                }
+
+                Merchant merchant = merchantMapper.selectById(merchantId);
+                if (merchant != null) {
+                    BigDecimal newRevenue = merchant.getRevenue().subtract(amount);
+                    if (newRevenue.compareTo(BigDecimal.ZERO) < 0) {
+                        newRevenue = BigDecimal.ZERO;
+                    }
+                    merchant.setRevenue(newRevenue);
+                    merchant.setUpdate_time(null);
+                    merchantMapper.updateById(merchant);
+                }
+
+                return R.success("已同意退货退款申请，钱款已退给消费者，请注意查收！");
+
+            } else if (refund.getType() == 2) {
+                // 换货：不涉及资金变动
+                return R.success("已同意换货申请");
+            }
+        }
+        else {
+            //  拒绝情况
+            refund.setStatus(3);
+            refundMapper.updateById(refund);
+            return R.success("已拒绝退换货申请");
+        }
+
+
+        return R.success("操作成功");
+    }
+
+
+
 }

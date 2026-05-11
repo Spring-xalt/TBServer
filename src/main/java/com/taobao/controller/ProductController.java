@@ -3,8 +3,10 @@ package com.taobao.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
+import com.taobao.dto.RefundListVO;
 import com.taobao.entity.Product;
 import com.taobao.service.ProductService;
+import com.taobao.service.RefundService;
 import jakarta.servlet.http.HttpSession;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,10 @@ import java.util.Map;
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private RefundService refundService;
+
 
     @GetMapping("/all")
     public R<Map<String, Object>> getAllProducts(
@@ -147,12 +153,16 @@ public class ProductController {
     }
 
 
-
     // 获取某商户的所有商品
     @GetMapping("/{merchantId}/products")
     public R<List<Product>> getProductsByMerchantId(@PathVariable Integer merchantId) {
         List<Product> products = productService.getProductsByMerchantId(merchantId);
         return R.success("共查询到该商户的" + products.size() + "件商品", products);
     }
+
+
+
+
+
 
 }

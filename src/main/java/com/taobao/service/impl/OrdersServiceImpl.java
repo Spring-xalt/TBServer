@@ -158,6 +158,7 @@ public class OrdersServiceImpl implements OrdersService {
 
         //要转移的钱
         BigDecimal money = order.getTemp_amount();
+
         //签收后商户的金额++
         Merchant merchant = merchantMapper.selectById(order.getMerchant_id());
 
