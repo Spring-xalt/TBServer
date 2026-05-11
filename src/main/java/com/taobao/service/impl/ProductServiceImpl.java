@@ -27,10 +27,6 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.insert(product) > 0;
     }
 
-    @Override
-    public boolean updateProduct(Product product) {
-        return productMapper.updateById(product) > 0;
-    }
 
     @Override
     public boolean deleteProduct(Integer id) {
@@ -95,5 +91,43 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.selectList(wrapper);
 
     }
+
+
+    @Override
+    public boolean updateProductByMerchant(Product product, Integer merchantId) {
+        Product existing = productMapper.selectById(product.getId());
+        if (existing == null) {
+            return false;
+        }
+        // 必须是自家的商品(虽然前端展示的是自己家的 双重校验保证一下)
+        if (!existing.getMerchant_id().equals(merchantId)) {
+            return false;
+        }
+        // 只覆盖允许修改的字段
+        existing.setProduct_name(product.getProduct_name());
+        existing.setPrice(product.getPrice());
+        existing.setStock(product.getStock());
+        existing.setDescription(product.getDescription());
+        return productMapper.updateById(existing) > 0;
+    }
+
+
+
+
+    @Override
+    public boolean updateProductByAdmin(Product product) {
+        Product existing = productMapper.selectById(product.getId());
+        if (existing == null) {
+            return false;
+        }
+        // 管理员可以修改所有字段（不校验 merchant）
+        existing.setProduct_name(product.getProduct_name());
+        existing.setPrice(product.getPrice());
+        existing.setStock(product.getStock());
+        existing.setDescription(product.getDescription());
+        return productMapper.updateById(existing) > 0;
+    }
+
+
 
 }

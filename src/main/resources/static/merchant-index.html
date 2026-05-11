@@ -88,6 +88,43 @@
     <i class="fa fa-shopping-bag text-5xl text-gray-300 mb-4"></i>
     <p class="text-light text-lg">还没有商品，快去上架吧</p>
   </div>
+
+  <!-- 编辑商品弹窗 -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+    <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
+      <h2 class="text-xl font-bold text-dark mb-6">编辑商品</h2>
+      <div class="space-y-4">
+        <input type="hidden" id="editProductId">
+        <div>
+          <label class="block text-sm text-dark mb-1">商品名称</label>
+          <input type="text" id="editProductName" class="w-full border border-border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">价格</label>
+          <input type="number" id="editPrice" class="w-full border border-border rounded px-3 py-2" min="0" step="0.01">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">库存</label>
+          <input type="number" id="editStock" class="w-full border border-border rounded px-3 py-2" min="0">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">描述</label>
+          <textarea id="editDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
+        </div>
+        <div class="flex justify-end space-x-2 pt-4">
+          <button onclick="closeEditModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
+          <button onclick="saveEdit()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">保存</button>
+        </div>
+      </div>
+      <button onclick="closeEditModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
+        <i class="fa fa-close"></i>
+      </button>
+    </div>
+  </div>
+
+
+
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
@@ -167,19 +204,76 @@
   }
 
 
+
+
   function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1';
     card.innerHTML = `
-            <img src="https://picsum.photos/seed/${product.id}/300/200" alt="${product.product_name}" class="w-full h-40 object-cover">
-            <div class="p-4">
-                <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
-                <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
-                <p class="text-light text-sm mt-1">库存：${product.stock}</p>
-            </div>
-        `;
+    <img src="https://picsum.photos/seed/${product.id}/300/200" class="w-full h-40 object-cover">
+    <div class="p-4">
+        <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
+        <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
+        <p class="text-light text-sm mt-1">库存：${product.stock}</p>
+        <button onclick="openEditModal(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, ${product.stock}, '${(product.description || '').replace(/'/g, "\\'")}')"
+            class="mt-2 px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+            编辑
+        </button>
+    </div>
+`;
+
     return card;
   }
+
+
+  // 打开编辑弹窗，预填当前值
+  function openEditModal(id, name, price, stock, description) {
+    document.getElementById('editProductId').value = id;
+    document.getElementById('editProductName').value = name;
+    document.getElementById('editPrice').value = price;
+    document.getElementById('editStock').value = stock;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editModal').classList.remove('hidden');
+  }
+
+  // 关闭编辑弹窗
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+  }
+
+  // 保存编辑
+  function saveEdit() {
+    const productId = document.getElementById('editProductId').value;
+    const product = {
+      id: parseInt(productId),
+      product_name: document.getElementById('editProductName').value.trim(),
+      price: parseFloat(document.getElementById('editPrice').value),
+      stock: parseInt(document.getElementById('editStock').value),
+      description: document.getElementById('editDescription').value.trim()
+    };
+
+    if (!product.product_name || isNaN(product.price) || isNaN(product.stock)) {
+      alert('请完整填写商品信息');
+      return;
+    }
+
+    axios.put('/product/update', product)
+            .then(resp => {
+              if (resp.data.code === 200) {
+                alert('更新成功');
+                closeEditModal();
+                loadProducts(); // 重新加载列表
+              } else {
+                alert(resp.data.msg || '更新失败');
+              }
+            })
+            .catch(err => {
+              console.error('更新失败:', err);
+              alert('更新失败，请重试');
+            });
+  }
+
+
 
   // 切换商家账户下拉菜单
   function toggleMerchantMenu() {

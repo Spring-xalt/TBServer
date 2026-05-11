@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.entity.Product;
 import com.taobao.service.ProductService;
+import jakarta.servlet.http.HttpSession;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -59,14 +60,29 @@ public class ProductController {
 
 
     @PutMapping("/update")
-    public R<String> updateProduct(@RequestBody Product product){
+    public R<String> updateProduct(@RequestBody Product product, HttpSession session) {
         if (product.getId() == null) {
-            return R.error(400, "更新操作必须传入商品ID");
+            return R.error("更新必须传入商品ID");
         }
-        if(productService.updateProduct(product)){
-            return R.success("商品[" + product.getProduct_name() + "]更新成功");
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
         }
-        return R.error(404, "更新失败");
+        boolean success = productService.updateProductByMerchant(product, merchantId);
+        return success ? R.success("更新成功") : R.error("更新失败，商品不存在或无权修改");
+    }
+
+    // 储备管理员更新的接口
+    @PutMapping("/adminUpdate")
+    public R<String> adminUpdateProduct(@RequestBody Product product, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return R.error(403, "无管理员权限");
+        }
+        if (product.getId() == null) {
+            return R.error("更新必须传入商品ID");
+        }
+        boolean success = productService.updateProductByAdmin(product);
+        return success ? R.success("管理员更新成功") : R.error("更新失败，商品不存在");
     }
 
     @PostMapping("/add")
