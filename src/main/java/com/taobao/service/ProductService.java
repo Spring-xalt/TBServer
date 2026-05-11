@@ -1,6 +1,7 @@
 package com.taobao.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.taobao.common.R;
 import com.taobao.entity.Product;
 
 import java.util.List;
@@ -25,8 +26,7 @@ public interface ProductService {
     boolean updateProductByMerchant(Product product, Integer merchantId);
 
     boolean updateProductByAdmin(Product product);
-
-
+    
 
     List<Product> searchByMerchant(int merchantId, String keyword);
 

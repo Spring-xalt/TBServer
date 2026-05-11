@@ -58,6 +58,23 @@ public class ProductController {
     }
 
 
+    @PostMapping("/add")
+    public R<String> addProductForMerchant(@RequestBody Product product, HttpSession session) {
+        // 校验商户身份（Controller 层负责权限）
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+
+        //  强制绑定商品到当前商户（防止前端篡改）
+        product.setMerchant_id(merchantId);
+
+        boolean success = productService.addProduct(product);
+        return success
+                ? R.success("商品[" + product.getProduct_name() + "]上架成功")
+                : R.error("商品新增失败，请重试");
+    }
+
 
     @PutMapping("/update")
     public R<String> updateProduct(@RequestBody Product product, HttpSession session) {
@@ -85,7 +102,7 @@ public class ProductController {
         return success ? R.success("管理员更新成功") : R.error("更新失败，商品不存在");
     }
 
-    @PostMapping("/add")
+    @PostMapping("/adminAdd")
     public R<String> addProduct(@RequestBody Product product,HttpSession session){
         if (!"admin".equals(session.getAttribute("role"))) {
             return R.error(403, "无管理员权限");
