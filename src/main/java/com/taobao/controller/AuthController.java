@@ -61,9 +61,12 @@ public class AuthController {
         log.info("收到前端商户注册请求!");
         return merchantService.register(registerDto);
     }
+
+
+
     @PostMapping("/merchant/login")
-    public R<String> loginMerchant(@RequestBody UserLoginDto loginDto) {
-        return merchantService.login(loginDto);
+    public R<String> loginMerchant(@RequestBody UserLoginDto loginDto,HttpSession session) {
+        return merchantService.login(loginDto,session);
     }
 
 

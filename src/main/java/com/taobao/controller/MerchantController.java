@@ -11,6 +11,7 @@ import com.taobao.entity.Merchant;
 import com.taobao.entity.Product;
 import com.taobao.service.MerchantService;
 import com.taobao.service.ProductService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -54,6 +55,18 @@ public class MerchantController {
         return R.success(msg, products);
     }
 
+    @GetMapping("/my-products")
+    public R<List<Product>> myProducts(HttpSession session) {
+        //从session中获取本人商铺信息
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录");
+        }
+        List<Product> products = productService.getProductsByMerchantId(merchantId);
+        return R.success(products);
+    }
+
+
     @PostMapping("/add")
     //json要求
     public R<String> addMerchant(@RequestBody  MerchantDto merchantDto) {
@@ -87,9 +100,14 @@ public class MerchantController {
         }
         return R.error("删除失败：系统异常，请稍后重试");
     }
+
+
+
 }
 
     /*
-        @PathVariable:
-        与@RequestParam 不同 @RequestParam适用于表单参数 search?name=测试&page=2 这样的(问号后)
+        @PathVariable:遵循restful风格的资源表示形式（"/delete/{id}"）
+        @RequestParam:适用于表单参数"search?name=测试&page=2"这样的(问号后)
+        @RequestBody:适用去传输json数据的 post
+
      */

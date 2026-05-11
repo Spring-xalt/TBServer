@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商家中心</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ff4400',
+            secondary: '#f5f5f5',
+            dark: '#333333',
+            light: '#666666',
+            border: '#dddddd'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header class="bg-white border-b border-border">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- 左侧 Logo -->
+    <a href="/taobao/merchant-index.html" class="text-primary text-2xl font-bold flex items-center">
+      <i class="fa fa-shopping-bag mr-2"></i>
+      <span>商家中心</span>
+    </a>
+
+    <!-- 中间搜索框（暂时禁用） -->
+    <div class="hidden md:block flex-1 max-w-xl mx-8">
+      <div class="relative">
+        <input type="text" placeholder="搜索商品（暂未开放）"
+               class="w-full pl-4 pr-10 py-2 border border-border rounded-md bg-gray-50 text-light cursor-not-allowed" disabled>
+        <button class="absolute right-0 top-0 h-full px-4 text-gray-400 cursor-not-allowed" disabled>
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右侧商家账户下拉菜单 -->
+    <div class="relative group">
+            <span class="text-dark hover:text-primary cursor-pointer">
+                <i class="fa fa-user-circle mr-1"></i>商家账户
+            </span>
+      <div class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-2 hidden group-hover:block z-10">
+        <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">账户设置</a>
+        <div class="border-t border-gray-100 my-1"></div>
+        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100">退出登录</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容区 -->
+<main class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-dark mb-6">我的商品</h1>
+
+  <!-- 加载提示 -->
+  <div id="loading" class="text-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+    <p class="text-light mt-4">加载中...</p>
+  </div>
+
+  <!-- 商品列表容器 -->
+  <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 hidden"></div>
+
+  <!-- 空状态 -->
+  <div id="emptyState" class="hidden text-center py-12">
+    <i class="fa fa-shopping-bag text-5xl text-gray-300 mb-4"></i>
+    <p class="text-light text-lg">还没有商品，快去上架吧</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+  axios.defaults.baseURL = window.location.origin + '/taobao';
+  document.addEventListener('DOMContentLoaded', loadProducts);
+
+  function loadProducts() {
+    const loading = document.getElementById('loading');
+    const productList = document.getElementById('productList');
+    const emptyState = document.getElementById('emptyState');
+
+    loading.classList.remove('hidden');
+    productList.classList.add('hidden');
+    emptyState.classList.add('hidden');
+
+    axios.get('/merchant/my-products')
+            .then(resp => {
+              loading.classList.add('hidden');
+              if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+                const products = resp.data.data;
+                productList.innerHTML = '';
+                products.forEach(product => {
+                  productList.appendChild(createProductCard(product));
+                });
+                productList.classList.remove('hidden');
+              } else {
+                emptyState.classList.remove('hidden');
+              }
+            })
+            .catch(err => {
+              loading.classList.add('hidden');
+              emptyState.classList.remove('hidden');
+              emptyState.innerHTML = `
+                    <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+                    <p class="text-light">加载失败，请先登录</p>
+                `;
+            });
+  }
+
+  function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1';
+    card.innerHTML = `
+            <img src="https://picsum.photos/seed/${product.id}/300/200" alt="${product.product_name}" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
+                <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
+                <p class="text-light text-sm mt-1">库存：${product.stock}</p>
+            </div>
+        `;
+    return card;
+  }
+
+  function logout() {
+    if (confirm('确定退出登录吗？')) {
+      axios.post('/auth/merchant/logout')
+              .then(() => {
+                window.location.href = '/taobao/login.html';
+              })
+              .catch(err => {
+                console.error('退出失败:', err);
+                alert('退出登录失败，请重试');
+              });
+    }
+  }
+</script>
+</body>
+</html>

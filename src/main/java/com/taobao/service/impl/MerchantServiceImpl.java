@@ -11,6 +11,7 @@ import com.taobao.entity.Product;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.ProductMapper;
 import com.taobao.service.MerchantService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,7 +141,10 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public R<String> login(UserLoginDto loginDto) {
+    public R<String> login(UserLoginDto loginDto,HttpSession session) {
+
+
+
         QueryWrapper<Merchant> mqw = new QueryWrapper<>();
         mqw.eq("username", loginDto.getUsername());
         Merchant merchant = merchantMapper.selectOne(mqw);
@@ -151,6 +155,10 @@ public class MerchantServiceImpl implements MerchantService {
         if(!merchant.getPassword().equals(loginDto.getPassword())){
             return R.error("密码错误，请重试!");
         }
+        // 保存商户状态给session
+        session.setAttribute("merchantId", merchant.getId());
+        session.setAttribute("role", "merchant");
+
         return R.success("登录成功!");
     }
 

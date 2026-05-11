@@ -5,6 +5,7 @@ import com.taobao.dto.MerchantDto;
 import com.taobao.dto.UserLoginDto;
 import com.taobao.dto.UserRegisterDto;
 import com.taobao.entity.Merchant;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -18,5 +19,5 @@ public interface MerchantService {
 
 
     R<String> register(UserRegisterDto registerDto);
-    R<String> login(UserLoginDto loginDto);
+    R<String> login(UserLoginDto loginDto, HttpSession session);
 }
