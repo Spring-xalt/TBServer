@@ -79,11 +79,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private String getUserId(WebSocketSession session) {
         // 解析url参数，类似userId=7&role=consumer，用于map的key
+        // "userId=6&role=consumer"
         String query = session.getUri().getQuery();
-        if (query != null && query.contains("userId")) {
-            return query;
-        }
-        return null;
+        String[] parts = query.split("&");
+        String userId = parts[0].split("=")[1];
+        String role = parts[1].split("=")[1];
+        //改为 role_split
+        return role + "_" + userId;
     }
 
     // 公共方法：向指定用户发送消息

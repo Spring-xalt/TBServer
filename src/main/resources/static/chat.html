@@ -85,15 +85,16 @@
 
   // 解析 URL 参数
   const params = new URLSearchParams(window.location.search);
-  const CURRENT_ROLE = params.get('role');           // consumer 或 merchant
+
   const TARGET_MERCHANT = params.get('merchantId');  // 从商品卡片进来时会有
 
+  let CURRENT_ROLE = null;
   let currentUserId   = null;
   let currentUserName = null;
   let contacts = [];
   let activeContactId = null;
   let ws = null;
-  let CURRENT_ROLE = null;
+
 
   // ================= 初始化 =================
   document.addEventListener('DOMContentLoaded', async () => {
@@ -232,7 +233,7 @@
   }
 
   function appendMessage(senderId, senderRole, content, time) {
-    const isMine = (senderId === currentUserId);
+    const isMine = (senderId === currentUserId && senderRole === CURRENT_ROLE);
     const div = document.createElement('div');
     div.className = `flex ${isMine ? 'justify-end' : ''}`;
     div.innerHTML = `
@@ -242,6 +243,7 @@
             </div>
         `;
     document.getElementById('messageList').appendChild(div);
+
   }
 
   function sendMessage() {
@@ -251,11 +253,14 @@
 
     const contact = contacts.find(c => c.id === activeContactId) || { role: 'merchant' };
     const msg = {
+
       senderId: currentUserId,
       senderRole: CURRENT_ROLE,
+
       receiverId: activeContactId,
       receiverRole: contact.role,
       content: content
+
     };
     ws.send(JSON.stringify(msg));
     // 立即显示在自己的窗口
