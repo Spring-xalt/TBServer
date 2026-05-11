@@ -23,4 +23,7 @@ public interface MerchantService {
     R<Merchant> login(UserLoginDto loginDto, HttpSession session);
 
 
+    Merchant getById(int merchantId);
+    boolean updateMerchantName(int merchantId, String merchantName);
+
 }

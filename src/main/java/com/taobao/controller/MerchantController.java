@@ -83,7 +83,7 @@ public class MerchantController {
 
 
     @PostMapping("/add")
-    //json要求
+    //json要求的body体提交方式
     public R<String> addMerchant(@RequestBody  MerchantDto merchantDto) {
         if (merchantService.addMerchant(merchantDto)) {
             return R.success("商户[" + merchantDto.getMerchant_name() + "]创建成功，可继续添加产品");
@@ -91,6 +91,23 @@ public class MerchantController {
         return R.error("商户创建失败，请检查信息后重试");
     }
 
+
+    // 查询当前商户信息
+    @GetMapping("/myInfo")
+    public R<Merchant> myInfo(HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        Merchant merchant = merchantService.getById(merchantId);
+        if (merchant == null) {
+            return R.error("商户信息不存在");
+        }
+        return R.success(merchant);
+    }
+
+
+    //管理员用于商家管理的
     @PutMapping("/update")
     public R<String> updateMerchant(@RequestBody MerchantDto merchantDto) {
         try {
@@ -102,6 +119,24 @@ public class MerchantController {
             return R.error("更新失败：" + e.getMessage());
         }
     }
+
+
+    //商户个人中心用于修改个人信息(商家个人修改信息只能修改店铺名，故选择url传参最方便)
+    @PutMapping("/updateInfo")
+    public R<String> updateInfo(@RequestParam String merchantName, HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+
+        if (merchantName == null || merchantName.trim().isEmpty()) {
+            return R.error("店铺名称不能为空");
+        }
+        boolean success = merchantService.updateMerchantName(merchantId, merchantName.trim());
+        return success ? R.success("店铺名称已更新") : R.error("更新失败");
+    }
+
 
 
     @GetMapping("/my-products/search")
@@ -132,6 +167,9 @@ public class MerchantController {
         }
         return R.error("删除失败：系统异常，请稍后重试");
     }
+
+
+
 
 
 

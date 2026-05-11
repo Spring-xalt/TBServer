@@ -161,4 +161,25 @@ public class MerchantServiceImpl implements MerchantService {
         return R.success("登录成功！",merchant);
     }
 
+
+    //根据商户id找商户，用于展示信息
+    @Override
+    public Merchant getById(int merchantId) {
+        return merchantMapper.selectById(merchantId);
+    }
+
+    @Override
+    public boolean updateMerchantName(int merchantId, String merchantName) {
+        Merchant merchant = merchantMapper.selectById(merchantId);
+        if (merchant == null) {
+            return false;
+        }
+        // 只修改商户名称，不碰 revenue、username、password 等字段
+        merchant.setMerchant_name(merchantName);
+
+        // 触发自动填充 update_time
+        merchant.setUpdate_time(null);
+        return merchantMapper.updateById(merchant) > 0;
+    }
+
 }
