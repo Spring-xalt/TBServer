@@ -72,7 +72,14 @@
 
 <!-- 主内容区 -->
 <main class="container mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold text-dark mb-6">我的商品</h1>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-dark">我的商品</h1>
+    <button onclick="openAddModal()"
+            class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+      <i class="fa fa-plus mr-1"></i>上架商品
+    </button>
+  </div>
+
 
   <!-- 加载提示 -->
   <div id="loading" class="text-center py-12">
@@ -122,6 +129,38 @@
     </div>
   </div>
 
+
+  <!-- 新增商品弹窗 -->
+  <div id="addModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+    <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
+      <h2 class="text-xl font-bold text-dark mb-6">上架商品</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-dark mb-1">商品名称</label>
+          <input type="text" id="addProductName" class="w-full border border-border rounded px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">价格</label>
+          <input type="number" id="addPrice" class="w-full border border-border rounded px-3 py-2" min="0" step="0.01">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">库存</label>
+          <input type="number" id="addStock" class="w-full border border-border rounded px-3 py-2" min="0">
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">描述</label>
+          <textarea id="addDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
+        </div>
+        <div class="flex justify-end space-x-2 pt-4">
+          <button onclick="closeAddModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
+          <button onclick="submitAdd()" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">确认上架</button>
+        </div>
+      </div>
+      <button onclick="closeAddModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
+        <i class="fa fa-close"></i>
+      </button>
+    </div>
+  </div>
 
 
 
@@ -290,6 +329,53 @@
       menu.classList.add('hidden');
     }
   });
+
+
+
+  // 打开新增弹窗
+  function openAddModal() {
+    document.getElementById('addProductName').value = '';
+    document.getElementById('addPrice').value = '';
+    document.getElementById('addStock').value = '';
+    document.getElementById('addDescription').value = '';
+    document.getElementById('addModal').classList.remove('hidden');
+  }
+
+  // 关闭新增弹窗
+  function closeAddModal() {
+    document.getElementById('addModal').classList.add('hidden');
+  }
+
+  // 提交新增
+  function submitAdd() {
+    const product = {
+      product_name: document.getElementById('addProductName').value.trim(),
+      price: parseFloat(document.getElementById('addPrice').value),
+      stock: parseInt(document.getElementById('addStock').value),
+      description: document.getElementById('addDescription').value.trim()
+    };
+
+    if (!product.product_name || isNaN(product.price) || isNaN(product.stock)) {
+      alert('请完整填写商品信息');
+      return;
+    }
+
+    axios.post('/product/add', product)
+            .then(resp => {
+              if (resp.data.code === 200) {
+                alert(resp.data.msg || '上架成功');
+                closeAddModal();
+                loadProducts();
+              } else {
+                alert(resp.data.msg || '上架失败');
+              }
+            })
+            .catch(err => {
+              console.error('上架失败:', err);
+              alert('上架失败，请重试');
+            });
+  }
+
 
 
   function logout() {
