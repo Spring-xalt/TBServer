@@ -26,7 +26,10 @@ public interface ProductService {
     boolean updateProductByMerchant(Product product, Integer merchantId);
 
     boolean updateProductByAdmin(Product product);
-    
+
+
+    boolean deleteProductByMerchant(Integer productId, Integer merchantId);
+
 
     List<Product> searchByMerchant(int merchantId, String keyword);
 

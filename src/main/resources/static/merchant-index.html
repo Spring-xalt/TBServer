@@ -256,10 +256,22 @@
         <p class="text-light text-sm mt-1">库存：${product.stock}</p>
         <p class="text-light text-sm mt-1">${product.description ? product.description : '暂无描述'}</p>
 
+
+        <div class="flex space-x-2 mt-2">
         <button onclick="openEditModal(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, ${product.stock}, '${(product.description || '').replace(/'/g, "\\'")}')"
-            class="mt-2 px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+            class="px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
             编辑
         </button>
+
+        <button onclick="delistProduct(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, '${(product.description || '').replace(/'/g, "\\'")}')"
+            class="px-4 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
+            下架
+        </button>
+
+
+</div>
+
+
     </div>
 `;
 
@@ -377,6 +389,24 @@
   }
 
 
+
+  function delistProduct(id, name, price, description) {
+    if (!confirm(`确定下架商品"${name}"吗？此操作不可恢复！`)) return;
+
+    axios.delete('/product/delete/' + id)
+            .then(resp => {
+              if (resp.data.code === 200) {
+                alert('商品已下架');
+                loadProducts();
+              } else {
+                alert(resp.data.msg || '下架失败');
+              }
+            })
+            .catch(err => {
+              console.error('下架失败:', err);
+              alert('下架失败，请重试');
+            });
+  }
 
   function logout() {
     if (confirm('确定退出登录吗？')) {

@@ -129,6 +129,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Override
+    public boolean deleteProductByMerchant(Integer productId, Integer merchantId) {
+        //拿到商品
+        Product existing = productMapper.selectById(productId);
+        if (existing == null || !existing.getMerchant_id().equals(merchantId)) {
+            return false;
+        }
+        return productMapper.deleteById(productId) > 0;
+    }
+
 
 
 

@@ -115,8 +115,11 @@ public class ProductController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public R<String> deleteProduct(@PathVariable Integer id){
+    @DeleteMapping("/adminDelete/{id}")
+    public R<String> deleteProductForAdmin(@PathVariable Integer id,HttpSession session){
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return R.error(403, "无管理员权限");
+        }
         Product product = productService.getProductById(id);
         if (product == null) {
             return R.error(404, "未找到ID为" + id + "的商品，删除失败");
@@ -129,6 +132,17 @@ public class ProductController {
         }
     }
 
+
+    @DeleteMapping("/delete/{id}")
+    public R<String> deleteProduct(@PathVariable Integer id, HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        // 安全删除
+        boolean success = productService.deleteProductByMerchant(id, merchantId);
+        return success ? R.success("商品已成功下架") : R.error("删除失败，商品不存在或无权操作");
+    }
 
     // 获取某商户的所有商品
     @GetMapping("/{merchantId}/products")
