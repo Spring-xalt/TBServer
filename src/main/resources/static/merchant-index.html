@@ -35,11 +35,16 @@
     <!-- 中间搜索框（暂时禁用） -->
     <div class="hidden md:block flex-1 max-w-xl mx-8">
       <div class="relative">
-        <input type="text" placeholder="搜索商品（暂未开放）"
-               class="w-full pl-4 pr-10 py-2 border border-border rounded-md bg-gray-50 text-light cursor-not-allowed" disabled>
-        <button class="absolute right-0 top-0 h-full px-4 text-gray-400 cursor-not-allowed" disabled>
+
+        <input id="searchInput" type="text" placeholder="搜索我的商品..."
+               class="w-full pl-4 pr-10 py-2 border border-border rounded-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+               onkeydown="if(event.key === 'Enter') searchMyProducts()">
+        <button onclick="searchMyProducts()" class="absolute right-0 top-0 h-full px-4 text-primary hover:text-orange-600">
           <i class="fa fa-search"></i>
         </button>
+
+
+
       </div>
     </div>
 
@@ -114,6 +119,45 @@
                 `;
             });
   }
+
+
+  function searchMyProducts() {
+    const keyword = document.getElementById('searchInput').value.trim();
+    const loading = document.getElementById('loading');
+    const productList = document.getElementById('productList');
+    const emptyState = document.getElementById('emptyState');
+
+    loading.classList.remove('hidden');
+    productList.classList.add('hidden');
+    emptyState.classList.add('hidden');
+
+    axios.get('/merchant/my-products/search', { params: { keyword: keyword } })
+            .then(resp => {
+              loading.classList.add('hidden');
+              if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+                productList.innerHTML = '';
+                resp.data.data.forEach(product => {
+                  productList.appendChild(createProductCard(product));
+                });
+                productList.classList.remove('hidden');
+              } else {
+                emptyState.classList.remove('hidden');
+                emptyState.innerHTML = `
+                    <i class="fa fa-search text-5xl text-gray-300 mb-4"></i>
+                    <p class="text-light text-lg">未找到相关商品</p>
+                `;
+              }
+            })
+            .catch(err => {
+              loading.classList.add('hidden');
+              emptyState.classList.remove('hidden');
+              emptyState.innerHTML = `
+                <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+                <p class="text-light">搜索失败，请重试</p>
+            `;
+            });
+  }
+
 
   function createProductCard(product) {
     const card = document.createElement('div');

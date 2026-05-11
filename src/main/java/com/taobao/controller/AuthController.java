@@ -89,6 +89,7 @@ public class AuthController {
         return consumerService.register(registerDto);
     }
 
+
     @PostMapping("/consumer/login")
     public R<Consumer> loginConsumer(@RequestBody UserLoginDto loginDto,HttpSession session) {
         return consumerService.login(loginDto,session);
