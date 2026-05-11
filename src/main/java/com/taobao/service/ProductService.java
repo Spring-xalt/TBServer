@@ -8,7 +8,6 @@ import java.util.List;
 public interface ProductService {
     boolean addProduct(Product product);
 
-
     boolean deleteProduct(Integer id);
 
     Product getProductById(Integer id);

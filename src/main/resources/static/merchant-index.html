@@ -215,6 +215,8 @@
         <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
         <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
         <p class="text-light text-sm mt-1">库存：${product.stock}</p>
+        <p class="text-light text-sm mt-1">${product.description ? product.description : '暂无描述'}</p>
+
         <button onclick="openEditModal(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, ${product.stock}, '${(product.description || '').replace(/'/g, "\\'")}')"
             class="mt-2 px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
             编辑

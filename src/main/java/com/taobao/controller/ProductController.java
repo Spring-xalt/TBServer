@@ -86,7 +86,10 @@ public class ProductController {
     }
 
     @PostMapping("/add")
-    public R<String> addProduct(@RequestBody Product product){
+    public R<String> addProduct(@RequestBody Product product,HttpSession session){
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return R.error(403, "无管理员权限");
+        }
         boolean isSuccess = productService.addProduct(product);
         if (isSuccess) {
             return R.success("商品[" + product.getProduct_name() + "]新增成功");
