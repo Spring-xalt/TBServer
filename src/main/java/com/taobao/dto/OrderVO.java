@@ -17,6 +17,7 @@ public class OrderVO {
     private Integer merchant_id;
     private Integer consumer_id;
     private String product_name;
+    private String consumer_name;
     private BigDecimal total_amount;
 
     // 1未支付 2已支付 3已签收

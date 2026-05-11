@@ -127,6 +127,19 @@ public class OrdersController {
     }
 
 
+    // 某商家的订单list
+    @GetMapping("/merchant/list")
+    public R<List<OrderVO>> merchantOrders(HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        List<OrderVO> list = ordersService.listMerchantOrders(merchantId);
+        return R.success(list);
+    }
+
+
+
     // 待修改
     @PutMapping("/{orderId}/confirm")
     public R<String> confirmReciveOrder(@PathVariable Integer orderId) {

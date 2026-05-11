@@ -12,6 +12,7 @@ import com.taobao.mapper.ConsumerMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.OrdersMapper;
 import com.taobao.service.OrdersService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,4 +178,32 @@ public class OrdersServiceImpl implements OrdersService {
 
         return R.success("签收成功!");
     }
+
+
+
+    @Override
+    public List<OrderVO> listMerchantOrders(int merchantId) {
+        List<Orders> orders = ordersMapper.selectOrdersByMerchantId(merchantId);
+        List<OrderVO> voList = new ArrayList<>();
+
+        for (Orders o : orders) {
+            OrderVO vo = new OrderVO();
+            BeanUtils.copyProperties(o, vo);
+
+            // 填充消费者昵称
+            Consumer consumer = consumerMapper.selectById(o.getConsumer_id());
+            vo.setConsumer_name(consumer != null ? consumer.getConsumer_name() : "未知");
+
+
+
+
+            Merchant merchant = merchantMapper.selectById(o.getMerchant_id());
+            vo.setMerchant_name(merchant != null ? merchant.getMerchant_name() : "未知");
+
+            voList.add(vo);
+        }
+        return voList;
+    }
+
+
 }
