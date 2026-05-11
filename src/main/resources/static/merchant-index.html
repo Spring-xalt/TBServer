@@ -48,15 +48,23 @@
       </div>
     </div>
 
-    <!-- 右侧商家账户下拉菜单 -->
+    <!-- 右侧商家账户下拉菜单（点击切换 ）-->
     <div class="relative group">
-            <span class="text-dark hover:text-primary cursor-pointer">
+
+
+            <span onclick="toggleMerchantMenu()" class="text-dark hover:text-primary cursor-pointer">
                 <i class="fa fa-user-circle mr-1"></i>商家账户
             </span>
-      <div class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-2 hidden group-hover:block z-10">
+
+
+      <div id="merchantDropdown" class="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-md py-2 hidden z-10">
+
         <a href="#" class="block px-4 py-2 text-sm text-dark hover:bg-gray-100">账户设置</a>
+
         <div class="border-t border-gray-100 my-1"></div>
+
         <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100">退出登录</a>
+
       </div>
     </div>
   </div>
@@ -173,9 +181,24 @@
     return card;
   }
 
+  // 切换商家账户下拉菜单
+  function toggleMerchantMenu() {
+    document.getElementById('merchantDropdown').classList.toggle('hidden');
+  }
+
+  // 点击页面其他地方关闭菜单
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('merchantDropdown');
+    const btn = e.target.closest('[onclick="toggleMerchantMenu()"]');
+    if (menu && !menu.contains(e.target) && !btn) {
+      menu.classList.add('hidden');
+    }
+  });
+
+
   function logout() {
     if (confirm('确定退出登录吗？')) {
-      axios.post('/auth/merchant/logout')
+      axios.post('/auth/logout')
               .then(() => {
                 window.location.href = '/taobao/login.html';
               })
