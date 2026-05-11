@@ -60,7 +60,7 @@ public class ReviewController {
         return R.success(list);
     }
 
-    //用于评价中心的 返回每一条详细信息的
+    //用于消费者评价中心的 返回每一条详细信息的
     @GetMapping("/myDetail")
     public R<List<ReviewVO>> myReviewDetails(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -70,6 +70,23 @@ public class ReviewController {
         List<ReviewVO> list = reviewService.getConsumerReviewsDetail(consumerId);
         return R.success(list);
     }
+
+
+
+
+
+
+    // 商家端 查看某商户的评价
+    @GetMapping("/merchant/list")
+    public R<List<ReviewVO>> merchantReviews(HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) {
+            return R.error(401, "请先登录商家账号");
+        }
+        List<ReviewVO> list = reviewService.getMerchantReviewsDetail(merchantId);
+        return R.success(list);
+    }
+
 
 
 }

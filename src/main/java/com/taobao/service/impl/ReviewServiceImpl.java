@@ -134,4 +134,31 @@ public class ReviewServiceImpl implements ReviewService {
         return vos;
     }
 
+
+    @Override
+    public List<ReviewVO> getMerchantReviewsDetail(int merchantId) {
+        List<Review> reviews = reviewMapper.selectByMerchantId(merchantId);
+        List<ReviewVO> voList = new ArrayList<>();
+
+        for (Review r : reviews) {
+            //复制基础评价表里的内容
+            ReviewVO vo = new ReviewVO();
+            BeanUtils.copyProperties(r, vo);
+
+            // 填充商品名，消费者名
+            Product product = productMapper.selectById(r.getProduct_id());
+            if (product != null) {
+                vo.setProductName(product.getProduct_name());
+            }
+            Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
+            if (consumer != null) {
+                vo.setConsumerName(consumer.getConsumer_name());
+            }
+            // 商户看自己的评价，可以不用，但 VO 有这个字段，留空即可
+            voList.add(vo);
+        }
+        return voList;
+    }
+
+
 }

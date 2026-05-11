@@ -23,4 +23,10 @@ public interface ReviewService {
 
     //根据消费者id拿
     List<ReviewVO> getConsumerReviewsDetail(int consumerId);
+
+
+
+    //根据商户id拿所有细节评价
+    List<ReviewVO> getMerchantReviewsDetail(int merchantId);
+
 }
