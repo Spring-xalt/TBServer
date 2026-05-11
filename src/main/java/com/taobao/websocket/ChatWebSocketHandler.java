@@ -59,6 +59,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 转发给对方
         String targetKey = receiverRole + "_" + receiverId;
         sendToUser(targetKey, payload);
+
+
+        System.out.println("转发消息给: " + targetKey
+                + "，对方是否在线: " + (onlineUsers.containsKey(targetKey)));
     }
 
 

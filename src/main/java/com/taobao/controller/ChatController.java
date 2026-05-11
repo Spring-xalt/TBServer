@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/chat")
@@ -42,21 +43,17 @@ public class ChatController {
 
     // 查联系人列表
     @GetMapping("/contacts")
-    public R<List<Integer>> contacts(HttpSession session) {
+    public R<List<Map<String, Object>>> contacts(HttpSession session) {
         String role = (String) session.getAttribute("role");
         Object myId = session.getAttribute(role + "Id");
         if (myId == null) {
             return R.error(401, "请先登录");
         }
         int userId = (Integer) myId;
-        List<Integer> contacts;
-        if ("consumer".equals(role)) {
-            contacts = chatService.getConsumerContacts(userId);
-        } else if ("merchant".equals(role)) {
-            contacts = chatService.getMerchantContacts(userId);
-        } else {
-            return R.error("未知角色");
-        }
+        List<Map<String, Object>> contacts = chatService.getContactsWithName(userId, role);
         return R.success(contacts);
     }
+
+
+
 }

@@ -2,15 +2,16 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.entity.ChatMessage;
+import com.taobao.entity.Consumer;
+import com.taobao.entity.Merchant;
 import com.taobao.mapper.ChatMessageMapper;
+import com.taobao.mapper.ConsumerMapper;
+import com.taobao.mapper.MerchantMapper;
 import com.taobao.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /*
  *@auther:Jimi
@@ -22,6 +23,15 @@ import java.util.Set;
 public class ChatServiceImpl implements ChatService {
     @Autowired
     private ChatMessageMapper chatMessageMapper;
+
+    @Autowired
+    private ConsumerMapper consumerMapper;
+
+    @Autowired
+    private MerchantMapper merchantMapper;
+
+
+
 
     @Override
     public ChatMessage sendMessage(int senderId, String senderRole,
@@ -44,14 +54,16 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<Integer> getConsumerContacts(int consumerId) {
-        // 查所有发过或收过消息的商户ID(查chatMessage表内的)
+        // 存消费者的聊过天的商家的ID（去重后的）（因为可能聊天记录有很多）
         Set<Integer> contactSet = new HashSet<>();
 
+        //如果是发送方
         QueryWrapper<ChatMessage> wrapper1 = new QueryWrapper<>();
         wrapper1.eq("sender_id", consumerId).eq("sender_role", "consumer");
         List<ChatMessage> sentList = chatMessageMapper.selectList(wrapper1);
 
         for (ChatMessage msg : sentList) {
+            // 入set
             contactSet.add(msg.getReceiver_id());
         }
 
@@ -67,6 +79,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<Integer> getMerchantContacts(int merchantId) {
+        // 存的是去重之后的商家联系过的消费者
         Set<Integer> contactSet = new HashSet<>();
 
         QueryWrapper<ChatMessage> wrapper1 = new QueryWrapper<>();
@@ -83,6 +96,39 @@ public class ChatServiceImpl implements ChatService {
             contactSet.add(msg.getSender_id());
         }
 
+        //最后从set---->list的
         return new ArrayList<>(contactSet);
     }
+
+
+    @Override
+    public List<Map<String, Object>> getContactsWithName(int userId, String role) {
+        List<Integer> contactIds;
+        if ("consumer".equals(role)) {
+            contactIds = getConsumerContacts(userId);
+        } else {
+            contactIds = getMerchantContacts(userId);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Integer contactId : contactIds) {
+            Map<String, Object> contact = new HashMap<>();
+            contact.put("id", contactId);
+
+            if ("consumer".equals(role)) {
+                // 联系人都是商户
+                Merchant merchant = merchantMapper.selectById(contactId);
+                contact.put("name", merchant != null ? merchant.getMerchant_name() : "商户" + contactId);
+                contact.put("role", "merchant");
+            } else {
+                // 联系人都是消费者
+                Consumer consumer = consumerMapper.selectById(contactId);
+                contact.put("name", consumer != null ? consumer.getConsumer_name() : "用户" + contactId);
+                contact.put("role", "consumer");
+            }
+            result.add(contact);
+        }
+        return result;
+    }
+
 }

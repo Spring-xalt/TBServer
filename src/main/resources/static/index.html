@@ -422,11 +422,18 @@
                     <p class="text-primary font-bold mt-2">¥${price}</p>
                     <p class="text-light text-sm mt-1 line-clamp-2 h-10">${product.description || '暂无描述'}</p>
                     <div class="mt-4">
+
                         <button class="btn-primary w-full ${product.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}"
-                                ${product.stock <= 0 ? 'disabled' : `onclick="addToCart(${product.id})"`}>
-                            <i class="fa fa-shopping-cart mr-1"></i>
-                            ${product.stock <= 0 ? '已售罄' : '加入购物车'}
+                                        ${product.stock <= 0 ? 'disabled' : `onclick="addToCart(${product.id})"`}>
+                                    <i class="fa fa-shopping-cart mr-1"></i>
+                                        ${product.stock <= 0 ? '已售罄' : '加入购物车'}
                         </button>
+                        <a href="/taobao/chat.html?merchantId=${product.merchant_id}&role=consumer"
+                           class="block mt-2 text-center px-4 py-2 border border-blue-500 text-blue-500 rounded-md text-sm hover:bg-blue-50 transition-colors">
+                            <i class="fa fa-comments mr-1"></i>联系卖家
+                        </a>
+
+
                     </div>
                 </div>
             `;
