@@ -229,12 +229,24 @@
                 </div>
                 <div class="text-right">
                     <span class="inline-block px-2 py-1 rounded text-xs font-medium ${st.color}">${st.text}</span>
+
+                    <!--  设计一个定时任务，签收后10s的订单发送一个商家已经发货的文本  -->
                     ${order.status === 2 ? `
-                        <button onclick="confirmReceive(${order.id})"
-                            class="block mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
-                            确认签收
-                        </button>
-                    ` : ''}
+                            ${(() => {
+                            const now = new Date().getTime();
+                            const createTime = new Date(order.create_time).getTime();
+                            if ((now - createTime) > 10000) {
+                             return '<p class="text-green-600 text-sm mt-1">商家已发货，等待收货</p>';
+                            }
+                          return '';
+                    })()}
+
+
+    <button onclick="confirmReceive(${order.id})"
+        class="block mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+        确认签收
+    </button>
+` : ''}
 
 
                     ${order.status === 3 ? (reviewedOrderIds.includes(order.id) ? `
