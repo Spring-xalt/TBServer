@@ -89,6 +89,8 @@ public class ProductController {
         return success ? R.success("更新成功") : R.error("更新失败，商品不存在或无权修改");
     }
 
+
+
     // 储备管理员更新的接口
     @PutMapping("/adminUpdate")
     public R<String> adminUpdateProduct(@RequestBody Product product, HttpSession session) {
@@ -144,10 +146,13 @@ public class ProductController {
         return success ? R.success("商品已成功下架") : R.error("删除失败，商品不存在或无权操作");
     }
 
+
+
     // 获取某商户的所有商品
     @GetMapping("/{merchantId}/products")
     public R<List<Product>> getProductsByMerchantId(@PathVariable Integer merchantId) {
         List<Product> products = productService.getProductsByMerchantId(merchantId);
         return R.success("共查询到该商户的" + products.size() + "件商品", products);
     }
+
 }

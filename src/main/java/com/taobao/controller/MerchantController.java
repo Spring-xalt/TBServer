@@ -5,6 +5,7 @@ package com.taobao.controller;
  @description:商户表controller层
  */
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.MerchantDto;
 import com.taobao.entity.Merchant;
@@ -14,7 +15,10 @@ import com.taobao.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/merchant")
@@ -56,14 +60,25 @@ public class MerchantController {
     }
 
     @GetMapping("/my-products")
-    public R<List<Product>> myProducts(HttpSession session) {
-        //从session中获取本人商铺信息
+    public R<Map<String, Object>> myProducts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size,
+            HttpSession session) {
+
         Integer merchantId = (Integer) session.getAttribute("merchantId");
         if (merchantId == null) {
             return R.error(401, "请先登录");
         }
-        List<Product> products = productService.getProductsByMerchantId(merchantId);
-        return R.success(products);
+
+        IPage<Product> result = productService.getProductsByMerchantIdAndPage(merchantId, page, size);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("products", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+
+        return R.success("共查询到" + result.getTotal() + "件商品", data);
     }
 
 

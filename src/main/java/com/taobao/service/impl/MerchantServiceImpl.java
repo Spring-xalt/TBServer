@@ -153,6 +153,7 @@ public class MerchantServiceImpl implements MerchantService {
         if(!merchant.getPassword().equals(loginDto.getPassword())){
             return R.error("密码错误，请重试!");
         }
+
         // 保存商户状态给session
         session.setAttribute("merchantId", merchant.getId());
         session.setAttribute("role", "merchant");

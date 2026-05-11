@@ -33,4 +33,7 @@ public interface ProductService {
 
     List<Product> searchByMerchant(int merchantId, String keyword);
 
+
+    IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size);
+
 }

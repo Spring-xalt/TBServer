@@ -8,7 +8,18 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 public interface ProductMapper extends BaseMapper<Product> {
-    // sql原生分页功能 等同于分页查询（每一页取八条数据） SELECT * FROM product LIMIT 0, 8;
+    // sql原生分页功能(从所有的product中选 ) 等同于分页查询（每一页取八条数据） SELECT * FROM product LIMIT 0, 8;
     @Select("SELECT * FROM product LIMIT #{offset}, #{size}")
     List<Product> selectByPage(@Param("offset") int offset, @Param("size") int size);
+
+
+    // 限定某个商户的分页
+    @Select("SELECT * FROM product WHERE merchant_id = #{merchantId} LIMIT #{offset}, #{size}")
+    List<Product> selectByMerchantIdAndPage(@Param("merchantId") int merchantId,
+                                            @Param("offset") int offset,
+                                            @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM product WHERE merchant_id = #{merchantId}")
+    long selectCountByMerchantId(@Param("merchantId") int merchantId);
+
 }

@@ -140,6 +140,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Override
+    public IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size) {
+        /*因为那个sql是从第几条开始取，取几条，因此每size个数据都必须减去偏移后计算
+            比如page=2，size=8 就是从第八条开始 取八条数据 9-16(sql的limit)
+         */
+        int offset = (page - 1) * size;
+        List<Product> records = productMapper.selectByMerchantIdAndPage(merchantId, offset, size);
+        long total = productMapper.selectCountByMerchantId(merchantId);
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
+    }
+
 
 
 }
