@@ -105,5 +105,20 @@ public class ChatController {
     }
 
 
+    @GetMapping("/consumerNewChat")
+    public R<ChatContactDto> consumerNewChat(@RequestParam int targetId, HttpSession session) {
+        Integer consumerId = (Integer) session.getAttribute("consumerId");
+        if (consumerId == null) {
+            return R.error(401, "请先登录消费者账号");
+        }
+
+        ChatContactDto dto = chatService.startNewChat(consumerId, targetId);
+        if (dto == null) {
+            return R.error("商户不存在");
+        }
+        return R.success(dto);
+    }
+
+
 
 }

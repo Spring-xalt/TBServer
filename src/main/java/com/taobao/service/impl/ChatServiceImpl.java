@@ -1,6 +1,7 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.taobao.dto.ChatContactDto;
 import com.taobao.entity.ChatMessage;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
@@ -101,6 +102,20 @@ public class ChatServiceImpl implements ChatService {
         return new ArrayList<>(contactSet);
     }
 
+
+
+    @Override
+    public ChatContactDto startNewChat(int consumerId, int merchantId) {
+        Merchant merchant = merchantMapper.selectById(merchantId);
+        if (merchant == null) {
+            return null;
+        }
+        ChatContactDto dto = new ChatContactDto();
+        dto.setId(merchantId);
+        dto.setName(merchant.getMerchant_name());
+        dto.setRole("merchant");
+        return dto;
+    }
 
 
 }

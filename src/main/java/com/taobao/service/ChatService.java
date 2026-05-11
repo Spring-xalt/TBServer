@@ -1,5 +1,6 @@
 package com.taobao.service;
 
+import com.taobao.dto.ChatContactDto;
 import com.taobao.entity.ChatMessage;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public interface ChatService {
     // 商户的联系人列表
     List<Integer> getMerchantContacts(int merchantId);
 
-
+    //消费者可以拉起一个新聊天
+    ChatContactDto startNewChat(int consumerId, int merchantId);
 
 }

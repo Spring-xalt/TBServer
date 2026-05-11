@@ -137,7 +137,7 @@
 
   }
 
-  // 2. 加载联系人列表
+  //  加载联系人列表
   async function loadContacts() {
     try {
       const resp = await axios.get('/chat/contacts');
@@ -175,11 +175,21 @@
   function connectWebSocket() {
     if (!currentUserId) return;
     ws = new WebSocket(`ws://localhost:8080/taobao/chat?userId=${currentUserId}&role=${CURRENT_ROLE}`);
-    ws.onopen  = () => console.log('WebSocket 已连接');
+
+    ws.onopen = () => {
+      console.log('WebSocket 已连接');
+      // 做个定时任务 每10s检测自己的联系人列表
+      setInterval(async () => {
+        await loadContacts();
+        renderContactList();
+      }, 10000);
+    };
+
     ws.onerror = err => console.error('WebSocket 错误', err);
     ws.onclose = () => console.log('WebSocket 关闭');
     ws.onmessage = event => {
       try {
+
         const msg = JSON.parse(event.data);
         // 如果当前正好在和这个人聊天，直接展示
         if (activeContactId === msg.senderId) {
@@ -194,18 +204,36 @@
 
   // 如果消费者从商品卡片进来，自动打开对应商户的聊天
   function autoOpenTarget() {
+
     if (CURRENT_ROLE !== 'consumer' || !TARGET_MERCHANT) return;
     const id = parseInt(TARGET_MERCHANT);
+
+    // 检查是否已在联系人列表中
     const existing = contacts.find(c => c.id === id && c.role === 'merchant');
     if (existing) {
       openChat(existing.id, existing.name, existing.role);
-    } else {
-      // 还没聊过天，直接临时打开
-      openChat(id, '商家', 'merchant');
+      return;
     }
+
+    // 不在列表中，调后端获取商户名称
+    axios.get('/chat/consumerNewChat', { params: { targetId: id } })
+            .then(resp => {
+              if (resp.data.code === 200) {
+                const dto = resp.data.data;
+                const newContact = { id: dto.id, name: dto.name, role: dto.role };
+                contacts.unshift(newContact);
+                renderContactList();
+                openChat(newContact.id, newContact.name, newContact.role);
+              }
+            })
+            .catch(err => {
+              console.error('获取商户信息失败', err);
+            });
+
+
   }
 
-  // =============== 聊天功能 ===============
+
   async function openChat(contactId, contactName, contactRole) {
     activeContactId = contactId;
     document.getElementById('chatTitle').innerText = contactName;
