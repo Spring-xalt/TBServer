@@ -36,6 +36,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatMessage sendMessage(int senderId, String senderRole,
                                    int receiverId, String receiverRole, String content) {
+        //sendmessage就一个存储功能
         ChatMessage msg = new ChatMessage();
         msg.setSender_id(senderId);
         msg.setSender_role(senderRole);
@@ -101,34 +102,5 @@ public class ChatServiceImpl implements ChatService {
     }
 
 
-    @Override
-    public List<Map<String, Object>> getContactsWithName(int userId, String role) {
-        List<Integer> contactIds;
-        if ("consumer".equals(role)) {
-            contactIds = getConsumerContacts(userId);
-        } else {
-            contactIds = getMerchantContacts(userId);
-        }
-
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Integer contactId : contactIds) {
-            Map<String, Object> contact = new HashMap<>();
-            contact.put("id", contactId);
-
-            if ("consumer".equals(role)) {
-                // 联系人都是商户
-                Merchant merchant = merchantMapper.selectById(contactId);
-                contact.put("name", merchant != null ? merchant.getMerchant_name() : "商户" + contactId);
-                contact.put("role", "merchant");
-            } else {
-                // 联系人都是消费者
-                Consumer consumer = consumerMapper.selectById(contactId);
-                contact.put("name", consumer != null ? consumer.getConsumer_name() : "用户" + contactId);
-                contact.put("role", "consumer");
-            }
-            result.add(contact);
-        }
-        return result;
-    }
 
 }

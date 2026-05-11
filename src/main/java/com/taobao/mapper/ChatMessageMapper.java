@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 public interface ChatMessageMapper extends BaseMapper<ChatMessage> {
+
+
     // 查两个用户之间的聊天记录
     @Select("SELECT * FROM chat_message " +
             "WHERE ((sender_id = #{userId1} AND receiver_id = #{userId2}) " +

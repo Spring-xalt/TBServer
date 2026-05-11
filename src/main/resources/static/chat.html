@@ -1,299 +1,279 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的聊天</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#ff4400',
-                        secondary: '#f5f5f5',
-                        dark: '#333333',
-                        light: '#666666',
-                        border: '#dddddd'
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的聊天</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ff4400',
+            secondary: '#f5f5f5',
+            dark: '#333333',
+            light: '#666666',
+            border: '#dddddd'
+          }
         }
-    </script>
-    <style>
-        .chat-message-left { @apply bg-gray-100 rounded-lg p-3 max-w-[70%] self-start; }
-        .chat-message-right { @apply bg-blue-500 text-white rounded-lg p-3 max-w-[70%] self-end; }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    .msg-left  { background:#f3f4f6; border-radius:8px; padding:8px 12px; max-width:70%; }
+    .msg-right { background:#3b82f6; color:#fff; border-radius:8px; padding:8px 12px; max-width:70%; }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
 <header class="bg-white border-b border-border">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="javascript:history.back()" class="text-primary text-xl font-bold">
-            <i class="fa fa-arrow-left mr-2"></i>返回
-        </a>
-        <h1 class="text-dark text-2xl font-bold">我的聊天</h1>
-        <div></div>
-    </div>
+  <div class="container mx-auto px-4 py-4 flex items-center">
+    <a href="javascript:history.back()" class="text-primary text-xl font-bold mr-4">
+      <i class="fa fa-arrow-left"></i> 返回
+    </a>
+    <h1 class="text-dark text-2xl font-bold">我的聊天</h1>
+  </div>
 </header>
 
 <main class="container mx-auto px-4 py-4">
-    <div class="flex h-[calc(100vh-140px)] bg-white rounded-lg shadow-sm overflow-hidden">
+  <div class="flex h-[calc(100vh-140px)] bg-white rounded-lg shadow-sm overflow-hidden">
 
-        <!-- 左侧联系人列表 -->
-        <div class="w-80 border-r border-border flex flex-col">
-            <div class="p-4 border-b border-border">
-                <h2 class="font-medium text-dark">联系人</h2>
-            </div>
-            <div id="contactList" class="flex-1 overflow-y-auto p-2 space-y-1">
-                <div class="text-center text-light text-sm py-8">加载中...</div>
-            </div>
-        </div>
-
-        <!-- 右侧聊天窗口 -->
-        <div class="flex-1 flex flex-col">
-            <!-- 聊天头部 -->
-            <div id="chatHeader" class="p-4 border-b border-border flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <i class="fa fa-user text-gray-500"></i>
-                </div>
-                <div>
-                    <h3 id="chatTitle" class="font-medium text-dark">请选择联系人</h3>
-                    <p id="chatSubtitle" class="text-xs text-light">选择一个联系人开始聊天</p>
-                </div>
-            </div>
-
-            <!-- 消息列表 -->
-            <div id="messageList" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <div class="text-center text-light text-sm py-8">选择一个联系人开始聊天</div>
-            </div>
-
-            <!-- 输入框 -->
-            <div id="inputArea" class="p-4 border-t border-border flex space-x-3 hidden">
-                <input type="text" id="messageInput"
-                       class="flex-1 border border-border rounded-md px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-                       placeholder="输入消息..."
-                       onkeydown="if(event.key === 'Enter') sendMessage()">
-                <button onclick="sendMessage()"
-                        class="px-6 py-2 bg-primary text-white rounded-md hover:bg-orange-600 transition-colors">
-                    发送
-                </button>
-            </div>
-        </div>
+    <!-- ========= 左侧联系人列表 ========= -->
+    <div class="w-72 border-r border-border flex flex-col">
+      <div class="p-4 border-b border-border font-medium text-dark">联系人</div>
+      <div id="contactList" class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div class="text-center text-light text-sm py-8">加载中...</div>
+      </div>
     </div>
+
+    <!-- ========= 右侧聊天窗口 ========= -->
+    <div class="flex-1 flex flex-col">
+      <!-- 聊天头部 -->
+      <div id="chatHeader" class="p-4 border-b border-border flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+          <i class="fa fa-user text-gray-500"></i>
+        </div>
+        <div>
+          <h3 id="chatTitle" class="font-medium text-dark">请选择联系人</h3>
+          <p id="chatSubtitle" class="text-xs text-light">在左侧选择一位联系人</p>
+        </div>
+      </div>
+
+      <!-- 消息区域 -->
+      <div id="messageList" class="flex-1 overflow-y-auto p-4 space-y-3">
+        <div class="text-center text-light text-sm py-8">选择一个联系人开始聊天</div>
+      </div>
+
+      <!-- 输入区域 -->
+      <div id="inputArea" class="p-4 border-t border-border flex space-x-3 hidden">
+        <input type="text" id="messageInput" class="flex-1 border border-border rounded-md px-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+               placeholder="输入消息..." onkeydown="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-orange-600 transition-colors">
+          发送
+        </button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
-    axios.defaults.baseURL = window.location.origin + '/taobao';
-
-    // 从 URL 参数获取当前用户信息
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentRole = urlParams.get('role');
-    const targetMerchantId = urlParams.get('merchantId');
-
-    let currentUserId = null;
-    let currentUserName = null;
-
-    // 联系人列表 { id, name, role }
-    let contacts = [];
-    let activeContactId = null;
-
-    // WebSocket 连接
-    let ws = null;
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        await initCurrentUser();
-        await loadContacts();
+  axios.defaults.baseURL = window.location.origin + '/taobao';
 
 
+  // 解析 URL 参数
+  const params = new URLSearchParams(window.location.search);
+  const CURRENT_ROLE = params.get('role');           // consumer 或 merchant
+  const TARGET_MERCHANT = params.get('merchantId');  // 从商品卡片进来时会有
 
+  let currentUserId   = null;
+  let currentUserName = null;
+  let contacts = [];
+  let activeContactId = null;
+  let ws = null;
+  let CURRENT_ROLE = null;
 
-        // 如果从商品卡片跳转过来，自动打开对应商户的聊天
-        if (targetMerchantId && currentRole === 'consumer') {
-            const merchantId = parseInt(targetMerchantId);
-            // 检查该商户是否已在联系人列表中
-            const existing = contacts.find(c => c.id === merchantId && c.role === 'merchant');
-            if (existing) {
-                openChat(existing);
-            } else {
-                // 新建联系人（即使没聊过天，也能主动发起）
-                openChat({ id: merchantId, name: '商家', role: 'merchant' });
-            }
-        }
-    });
+  // ================= 初始化 =================
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchMyInfo();
+    await loadContacts();
+    connectWebSocket();
+    autoOpenTarget();
+  });
 
-    // 获取当前登录用户信息
-    async function initCurrentUser() {
+  // 获取自己的 ID
+  async function fetchMyInfo() {
 
-        try {
-            if (currentRole === 'consumer') {
-                const resp = await axios.get('/consumer/me');
-                if (resp.data.code === 200) {
-                    currentUserId = resp.data.data.id;
-                    currentUserName = resp.data.data.consumer_name;
-                }
-            } else if (currentRole === 'merchant') {
-                const resp = await axios.get('/merchant/myInfo');
-                if (resp.data.code === 200) {
-                    currentUserId = resp.data.data.id;
-                    currentUserName = resp.data.data.merchant_name;
-                }
-            }
-            connectWebSocket();
-        } catch (err) {
-            console.error('获取用户信息失败:', err);
-            alert('请先登录');
-            window.location.href = '/taobao/login.html';
-        }
+    try {
+      // 先尝试消费者
+      let resp = await axios.get('/consumer/me');
+      if (resp.data.code === 200) {
+        CURRENT_ROLE = 'consumer';
+        currentUserId = resp.data.data.id;
+        currentUserName = resp.data.data.consumer_name;
+        return;
+      }
+    } catch (e) {}
 
-
+    try {
+      // 再尝试商户
+      let resp = await axios.get('/merchant/myInfo');
+      if (resp.data.code === 200) {
+        CURRENT_ROLE = 'merchant';
+        currentUserId = resp.data.data.id;
+        currentUserName = resp.data.data.merchant_name;
+        return;
+      }
+    } catch (e) {
+      alert('请先登录');
+      window.location.href = '/taobao/login.html';
     }
 
-    // 加载联系人列表
-    async function loadContacts() {
-        try {
-            const resp = await axios.get('/chat/contacts');
-            if (resp.data.code === 200 && resp.data.data) {
-                // 后端直接返回 [{id, name, role}, ...]
-                contacts = resp.data.data;
-                renderContactList();
-            }
-        } catch (err) {
-            console.error('加载联系人失败:', err);
-        }
-    }
 
-    // 渲染联系人列表
-    function renderContactList() {
-        const listEl = document.getElementById('contactList');
-        if (contacts.length === 0) {
-            listEl.innerHTML = '<div class="text-center text-light text-sm py-8">暂无联系人</div>';
-            return;
-        }
-        listEl.innerHTML = contacts.map(contact => `
-            <div onclick="openChat({id:${contact.id}, name:'${contact.name}', role:'${contact.role}'})"
-                 class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${activeContactId === contact.id ? 'bg-blue-50' : ''}">
+
+
+  }
+
+  // 2. 加载联系人列表
+  async function loadContacts() {
+    try {
+      const resp = await axios.get('/chat/contacts');
+      if (resp.data.code === 200) {
+        contacts = resp.data.data || [];
+      }
+      renderContactList();
+    } catch (e) {
+      console.error('加载联系人失败', e);
+    }
+  }
+
+  function renderContactList() {
+    const el = document.getElementById('contactList');
+    if (!contacts.length) {
+      el.innerHTML = '<div class="text-center text-light text-sm py-8">暂无联系人</div>';
+      return;
+    }
+    el.innerHTML = contacts.map(c => `
+            <div onclick="openChat(${c.id},'${c.name}','${c.role}')"
+                 class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors
+                        ${activeContactId===c.id ? 'bg-blue-50 border border-blue-200' : ''}">
                 <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                     <i class="fa fa-user text-gray-500"></i>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium text-dark text-sm truncate">${contact.name}</p>
-                    <p class="text-xs text-light">${contact.role === 'merchant' ? '商家' : '买家'}</p>
+                <div>
+                    <p class="font-medium text-dark text-sm">${c.name}</p>
+                    <p class="text-xs text-light">${c.role==='merchant'?'商家':'买家'}</p>
                 </div>
             </div>
         `).join('');
-    }
+  }
 
-    // 打开聊天
-    function openChat(contact) {
-        activeContactId = contact.id;
-        document.getElementById('chatTitle').innerText = contact.name;
-        document.getElementById('chatSubtitle').innerText = contact.role === 'merchant' ? '商家' : '买家';
-        document.getElementById('inputArea').classList.remove('hidden');
-        document.getElementById('messageList').innerHTML = '';
-        renderContactList();
-        loadHistory(contact);
-    }
-
-    // 加载历史消息
-    async function loadHistory(contact) {
-        try {
-            const userId1 = currentUserId;
-            const userId2 = contact.id;
-            const resp = await axios.get('/chat/conversation', { params: { userId1, userId2 } });
-            if (resp.data.code === 200 && resp.data.data) {
-                const listEl = document.getElementById('messageList');
-                listEl.innerHTML = '';
-                resp.data.data.forEach(msg => {
-                    appendMessage(msg);
-                });
-                listEl.scrollTop = listEl.scrollHeight;
-            }
-        } catch (err) {
-            console.error('加载历史消息失败:', err);
+  // 3. WebSocket
+  function connectWebSocket() {
+    if (!currentUserId) return;
+    ws = new WebSocket(`ws://localhost:8080/taobao/chat?userId=${currentUserId}&role=${CURRENT_ROLE}`);
+    ws.onopen  = () => console.log('WebSocket 已连接');
+    ws.onerror = err => console.error('WebSocket 错误', err);
+    ws.onclose = () => console.log('WebSocket 关闭');
+    ws.onmessage = event => {
+      try {
+        const msg = JSON.parse(event.data);
+        // 如果当前正好在和这个人聊天，直接展示
+        if (activeContactId === msg.senderId) {
+          appendMessage(msg.senderId, msg.senderRole, msg.content, new Date().toISOString());
+          scrollToBottom();
         }
+      } catch (e) {
+        console.error('消息解析失败', e);
+      }
+    };
+  }
+
+  // 如果消费者从商品卡片进来，自动打开对应商户的聊天
+  function autoOpenTarget() {
+    if (CURRENT_ROLE !== 'consumer' || !TARGET_MERCHANT) return;
+    const id = parseInt(TARGET_MERCHANT);
+    const existing = contacts.find(c => c.id === id && c.role === 'merchant');
+    if (existing) {
+      openChat(existing.id, existing.name, existing.role);
+    } else {
+      // 还没聊过天，直接临时打开
+      openChat(id, '商家', 'merchant');
     }
+  }
 
-    // 添加一条消息到聊天窗口
-    function appendMessage(msg) {
-        const listEl = document.getElementById('messageList');
-        const div = document.createElement('div');
-        div.className = 'flex';
-        const isMine = (msg.sender_id === currentUserId && msg.sender_role === currentRole);
+  // =============== 聊天功能 ===============
+  async function openChat(contactId, contactName, contactRole) {
+    activeContactId = contactId;
+    document.getElementById('chatTitle').innerText = contactName;
+    document.getElementById('chatSubtitle').innerText = contactRole==='merchant'?'商家':'买家';
+    document.getElementById('inputArea').classList.remove('hidden');
+    document.getElementById('messageList').innerHTML = '';
+    renderContactList();
+    await loadHistory(contactId);
+  }
 
-        div.innerHTML = `
-            <div class="${isMine ? 'ml-auto' : 'mr-auto'} ${isMine ? 'chat-message-right' : 'chat-message-left'}">
-                <p class="text-sm">${msg.content}</p>
-                <p class="text-xs mt-1 ${isMine ? 'text-blue-100' : 'text-gray-400'}">${formatTime(msg.create_time)}</p>
+  async function loadHistory(targetId) {
+    try {
+      const resp = await axios.get('/chat/conversation', {
+        params: { userId1: currentUserId, userId2: targetId }
+      });
+      if (resp.data.code === 200 && resp.data.data) {
+        resp.data.data.forEach(msg => appendMessage(
+                msg.sender_id, msg.sender_role, msg.content, msg.create_time
+        ));
+        scrollToBottom();
+      }
+    } catch (e) {
+      console.error('加载历史消息失败', e);
+    }
+  }
+
+  function appendMessage(senderId, senderRole, content, time) {
+    const isMine = (senderId === currentUserId);
+    const div = document.createElement('div');
+    div.className = `flex ${isMine ? 'justify-end' : ''}`;
+    div.innerHTML = `
+            <div class="${isMine ? 'msg-right' : 'msg-left'}">
+                <p class="text-sm">${content}</p>
+                <p class="text-xs mt-1 ${isMine ? 'text-blue-200' : 'text-gray-400'}">${formatTime(time)}</p>
             </div>
         `;
-        listEl.appendChild(div);
-    }
+    document.getElementById('messageList').appendChild(div);
+  }
 
-    // 连接 WebSocket
-    function connectWebSocket() {
-        ws = new WebSocket(`ws://localhost:8080/taobao/chat?userId=${currentUserId}&role=${currentRole}`);
+  function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    if (!content || !activeContactId || !ws) return;
 
-        ws.onopen = () => {
-            console.log('WebSocket 连接成功');
-        };
+    const contact = contacts.find(c => c.id === activeContactId) || { role: 'merchant' };
+    const msg = {
+      senderId: currentUserId,
+      senderRole: CURRENT_ROLE,
+      receiverId: activeContactId,
+      receiverRole: contact.role,
+      content: content
+    };
+    ws.send(JSON.stringify(msg));
+    // 立即显示在自己的窗口
+    appendMessage(currentUserId, CURRENT_ROLE, content, new Date().toISOString());
+    scrollToBottom();
+    input.value = '';
+  }
 
-        ws.onmessage = (event) => {
-            try {
-                const msg = JSON.parse(event.data);
-                // 如果正在和发送者聊天，直接显示
-                if (activeContactId === msg.senderId) {
-                    appendMessage({
-                        sender_id: msg.senderId,
-                        sender_role: msg.senderRole,
-                        content: msg.content,
-                        create_time: new Date().toISOString()
-                    });
-                    document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
-                }
-                // 否则更新联系人列表（有新消息提示，暂不实现预览）
-            } catch (e) {
-                console.error('消息解析失败:', e);
-            }
-        };
+  function scrollToBottom() {
+    const el = document.getElementById('messageList');
+    el.scrollTop = el.scrollHeight;
+  }
 
-        ws.onerror = (err) => {
-            console.error('WebSocket 错误:', err);
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket 连接关闭');
-        };
-    }
-
-    // 发送消息
-    function sendMessage() {
-        const inputEl = document.getElementById('messageInput');
-        const content = inputEl.value.trim();
-        if (!content || !activeContactId) return;
-
-        const contact = contacts.find(c => c.id === activeContactId);
-        if (!contact) return;
-
-        const msg = {
-            senderId: currentUserId,
-            senderRole: currentRole,
-            receiverId: activeContactId,
-            receiverRole: contact.role,
-            content: content
-        };
-
-        ws.send(JSON.stringify(msg));
-        inputEl.value = '';
-    }
-
-    function formatTime(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    }
+  function formatTime(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
 </script>
 </body>
 </html>

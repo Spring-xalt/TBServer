@@ -20,6 +20,5 @@ public interface ChatService {
     List<Integer> getMerchantContacts(int merchantId);
 
 
-    // 根据当前的userid（consumer/merchant）匹配有过联系的商家(左侧列表)
-    List<Map<String, Object>> getContactsWithName(int userId, String role);
+
 }
