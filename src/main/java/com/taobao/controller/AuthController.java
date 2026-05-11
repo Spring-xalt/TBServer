@@ -65,7 +65,7 @@ public class AuthController {
 
 
     @PostMapping("/merchant/login")
-    public R<String> loginMerchant(@RequestBody UserLoginDto loginDto,HttpSession session) {
+    public R<Merchant> loginMerchant(@RequestBody UserLoginDto loginDto,HttpSession session) {
         return merchantService.login(loginDto,session);
     }
 

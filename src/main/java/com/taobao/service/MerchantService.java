@@ -20,7 +20,7 @@ public interface MerchantService {
 
 
     R<String> register(UserRegisterDto registerDto);
-    R<String> login(UserLoginDto loginDto, HttpSession session);
+    R<Merchant> login(UserLoginDto loginDto, HttpSession session);
 
 
 }

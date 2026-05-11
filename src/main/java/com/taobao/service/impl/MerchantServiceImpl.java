@@ -141,9 +141,7 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public R<String> login(UserLoginDto loginDto,HttpSession session) {
-
-
+    public R<Merchant> login(UserLoginDto loginDto,HttpSession session) {
 
         QueryWrapper<Merchant> mqw = new QueryWrapper<>();
         mqw.eq("username", loginDto.getUsername());
@@ -159,7 +157,7 @@ public class MerchantServiceImpl implements MerchantService {
         session.setAttribute("merchantId", merchant.getId());
         session.setAttribute("role", "merchant");
 
-        return R.success("登录成功!");
+        return R.success("登录成功！",merchant);
     }
 
 }
