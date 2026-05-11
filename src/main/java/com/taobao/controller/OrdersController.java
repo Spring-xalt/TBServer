@@ -136,10 +136,12 @@ public class OrdersController {
         }
         List<OrderVO> list = ordersService.listMerchantOrders(merchantId);
         return R.success(list);
+
     }
 
 
 
+    
     // 待修改
     @PutMapping("/{orderId}/confirm")
     public R<String> confirmReciveOrder(@PathVariable Integer orderId) {
