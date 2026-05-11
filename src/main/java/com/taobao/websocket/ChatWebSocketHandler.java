@@ -1,5 +1,6 @@
 package com.taobao.websocket;
 
+import com.taobao.service.ChatService;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -14,27 +15,57 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 // 负责连接，断开，收发消息
 public class ChatWebSocketHandler extends TextWebSocketHandler {
+
     // 存储所有在线用户（role_id,session）保证线程安全
     private static final ConcurrentHashMap<String, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
+    private final ChatService chatService;
+
+    public ChatWebSocketHandler(ChatService chatService) {
+        this.chatService = chatService;
+    }
+
 
     // 前端建立连接后 自动触发该钩子函数
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String userId = getUserId(session);
+        System.out.println("✅ WebSocket 连接成功！用户ID: " + userId);
         if (userId != null) {
             onlineUsers.put(userId, session);
         }
     }
 
+    // 负责消息转发与存储
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // 负责消息转发与存储
+        /*
+        拿到客户端发来的原始json
+        （"senderId":7, "senderRole":"consumer", "receiverId":5, "receiverRole":"merchant", "content":"你好"）
+         */
+        String payload = message.getPayload();
 
+        // 用 fastjson 解析
+        com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSON.parseObject(payload);
+
+        int senderId = json.getInteger("senderId");
+        String senderRole = json.getString("senderRole");
+        int receiverId = json.getInteger("receiverId");
+        String receiverRole = json.getString("receiverRole");
+        String content = json.getString("content");
+
+        // 持久化
+        chatService.sendMessage(senderId, senderRole, receiverId, receiverRole, content);
+
+        // 转发给对方
+        String targetKey = receiverRole + "_" + receiverId;
+        sendToUser(targetKey, payload);
     }
+
 
     // 客户端断开连接
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("WebSocket 已经建立链接");
         String userId = getUserId(session);
         if (userId != null) {
             // 断连了就剔除在线列表

@@ -32,7 +32,6 @@ public class CartServiceImpl implements CartService {
     private MerchantMapper merchantMapper;
 
     //用户二次登录需要回溯购物车信息
-
     @Override
     public List<CartItem> loadCart(int consumerId) {
         //此处不选择直接传入session是职责分离的考虑 ，由调用者（控制层来拿session进而取id）
