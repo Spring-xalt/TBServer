@@ -1,5 +1,7 @@
-package com.taobao.filter;
+package com.taobao.config;
 
+import com.taobao.filter.LoginFilter;
+import com.taobao.filter.RoleFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

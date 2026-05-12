@@ -80,6 +80,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
+
   axios.defaults.baseURL = window.location.origin + '/taobao';
 
 
@@ -174,7 +175,9 @@
   // 3. WebSocket
   function connectWebSocket() {
     if (!currentUserId) return;
-    ws = new WebSocket(`ws://localhost:8080/taobao/chat?userId=${currentUserId}&role=${CURRENT_ROLE}`);
+
+    const wsHost = window.location.host; // 自动获取当前页面的 IP:端口，如 10.102.30.109:8080
+    ws = new WebSocket(`ws://${wsHost}/taobao/chat?userId=${currentUserId}&role=${CURRENT_ROLE}`);
 
     ws.onopen = () => {
       console.log('WebSocket 已连接');

@@ -21,7 +21,8 @@ public class LoginFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         String path = request.getRequestURI();
 
-
+        // 可放行的请求（不需要登录校验的）
+        // auth以下的登录/注册，游客浏览搜索主页，模拟支付的支付宝回调接口，其他静态资源
         if (path.startsWith("/taobao/auth/") ||
                 path.equals("/taobao/product/all") ||
                 path.equals("/taobao/product/search") ||
