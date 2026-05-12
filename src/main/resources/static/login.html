@@ -270,9 +270,6 @@
 
       if (response.data.code == 200) {
 
-        showSuccessMessage('登录成功，正在跳转...');
-        setTimeout(() => {
-
           let targetUrl;
           if (role === 'merchant') {
             targetUrl = '/taobao/merchant-index.html';
@@ -283,9 +280,6 @@
             targetUrl='/taobao/index.html';
           }
           window.location.href = targetUrl;
-
-
-        }, 1500);
 
       } else {
         showErrorMessage(response.data.message || '登录失败，请重试');

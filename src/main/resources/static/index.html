@@ -87,7 +87,11 @@
             <a href="/taobao/cart.html" class="text-dark hover:text-primary transition-colors">
               <i class="fa fa-shopping-cart mr-1"></i>购物车
             </a>
-            <span id="cartCount" class="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+
+
+            <span id="cartCount"
+                  class="absolute -top-2 -right-2 bg-primary text-white text-xs
+                  rounded-full h-5 w-5 flex items-center justify-center">0</span>
 
           </div>
 
@@ -233,9 +237,12 @@
                   // 加载购物车角标
                   axios.get('/cart/count')
                           .then(resp => {
+
                             if (resp.data.code === 200) {
                               document.getElementById('cartCount').innerText = resp.data.data;
                             }
+
+
                           });
                 }
 
