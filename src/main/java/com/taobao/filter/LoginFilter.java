@@ -21,10 +21,11 @@ public class LoginFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         String path = request.getRequestURI();
 
-        // 没登陆时候可放行页面： 登录注册、商品浏览和搜索、静态资源
+
         if (path.startsWith("/taobao/auth/") ||
                 path.equals("/taobao/product/all") ||
                 path.equals("/taobao/product/search") ||
+                path.equals("/taobao/alipay/notify") ||
                 path.matches(".*\\.(html|css|js|jpg|png|ico|woff|ttf)$")) {
             chain.doFilter(request, response);
             return;
