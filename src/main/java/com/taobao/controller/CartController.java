@@ -133,6 +133,8 @@ public class CartController {
     // 清空购物车 ---数据库层面
     @DeleteMapping("/clear")
     public R<String> clear(HttpSession session) {
+
+
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.error(401, "请先登录");
@@ -142,7 +144,11 @@ public class CartController {
         // 清空 Session
         session.removeAttribute("cart");
         return R.success("购物车已清空");
+
+
     }
+
+
 
     //提交到数据库
     @PostMapping("/save")

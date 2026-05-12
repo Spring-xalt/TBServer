@@ -11,9 +11,11 @@ public interface CartMapper extends BaseMapper<Cart>{
     @Select("SELECT * FROM cart WHERE consumer_id = #{consumerId}")
     List<Cart> selectByConsumerId(@Param("consumerId") int consumerId);
 
+
     //   清空：删除某消费者在 cart 表中的所有记录（保存前使用）
     @Delete("DELETE FROM cart WHERE consumer_id = #{consumerId}")
     int deleteByConsumerId(@Param("consumerId") int consumerId);
+
 
     //   插入：插入一条新的购物车记录（保存时逐条插入）（对于cart和cartItem存在不同的采用先删除后插入的方法实现）
     @Insert("INSERT INTO cart (consumer_id, product_id, merchant_id, quantity) " +

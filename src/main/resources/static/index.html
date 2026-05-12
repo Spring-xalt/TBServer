@@ -91,7 +91,7 @@
 
             <span id="cartCount"
                   class="absolute -top-2 -right-2 bg-primary text-white text-xs
-                  rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                  rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
 
           </div>
 
@@ -193,8 +193,8 @@
 <footer class="bg-white border-t border-border mt-12">
   <div class="container mx-auto px-4 py-8">
     <div class="text-center text-light text-sm">
-      <p>© 2023 仿淘宝商城 版权所有</p>
-      <p class="mt-2">联系方式：service@example.com</p>
+      <p>© 2026 淘宝商城 版权所有</p>
+      <p class="mt-2">联系方式：9109223xxx@email.ncu.edu.cn</p>
     </div>
   </div>
 </footer>
@@ -238,9 +238,18 @@
                   axios.get('/cart/count')
                           .then(resp => {
 
+
                             if (resp.data.code === 200) {
-                              document.getElementById('cartCount').innerText = resp.data.data;
+                              const count = resp.data.data;
+                              const el = document.getElementById('cartCount');
+                              if (count > 0) {
+                                el.innerText = count;
+                                el.classList.remove('hidden');
+                              } else {
+                                el.classList.add('hidden');
+                              }
                             }
+
 
 
                           });
@@ -469,12 +478,21 @@
                           // 重新从后端获取准确的种类数，更新角标
                           axios.get('/cart/count')
                                   .then(countResp => {
+
                                     if (countResp.data.code === 200) {
+                                      const count = countResp.data.data;
                                       const countEl = document.getElementById('cartCount');
                                       if (countEl) {
-                                        countEl.innerText = countResp.data.data;
+                                        if (count > 0) {
+                                          countEl.innerText = count;
+                                          countEl.classList.remove('hidden');
+                                        } else {
+                                          countEl.classList.add('hidden');
+                                        }
                                       }
                                     }
+
+
                                   });
                         } else {
                           alert(resp.data.msg || '加入购物车失败');
