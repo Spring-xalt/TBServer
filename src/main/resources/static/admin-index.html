@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4400',
+                        dark: '#333333',
+                        light: '#666666',
+                        border: '#dddddd'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+
+<!-- ========= 左侧侧边栏 ========= -->
+<aside class="w-64 bg-dark text-white flex flex-col">
+    <div class="p-6 text-xl font-bold border-b border-gray-600">
+        <i class="fa fa-cog mr-2"></i>管理后台
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+        <a href="#" onclick="switchTab('products')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-products">
+            <i class="fa fa-shopping-bag mr-2"></i>商品概览
+        </a>
+        <a href="#" onclick="switchTab('consumers')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-consumers">
+            <i class="fa fa-users mr-2"></i>消费者概览
+        </a>
+        <a href="#" onclick="switchTab('merchants')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-merchants">
+            <i class="fa fa-store mr-2"></i>商户概览
+        </a>
+        <a href="#" onclick="switchTab('orders')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-orders">
+            <i class="fa fa-file-text mr-2"></i>订单概览
+        </a>
+        <a href="#" onclick="switchTab('today')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-today">
+            <i class="fa fa-line-chart mr-2"></i>今日交易额
+        </a>
+    </nav>
+    <div class="p-4 border-t border-gray-600">
+        <a href="#" onclick="logout()" class="text-gray-300 hover:text-white">
+            <i class="fa fa-sign-out mr-2"></i>退出登录
+        </a>
+    </div>
+</aside>
+
+<!-- ========= 右侧内容区 ========= -->
+<main class="flex-1 p-8 overflow-y-auto">
+
+    <!-- 商品概览 -->
+    <div id="tab-products" class="tab-content">
+        <h2 class="text-2xl font-bold text-dark mb-6">商品概览</h2>
+        <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="productLoading" class="text-center py-8 text-light">加载中...</div>
+    </div>
+
+    <!-- 消费者概览 -->
+    <div id="tab-consumers" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-dark mb-6">消费者概览</h2>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">用户名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">昵称</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">余额</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">注册时间</th>
+                </tr>
+                </thead>
+                <tbody id="consumerTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 商户概览 -->
+    <div id="tab-merchants" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-dark mb-6">商户概览</h2>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">用户名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">店铺名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">营收</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">注册时间</th>
+                </tr>
+                </thead>
+                <tbody id="merchantTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 订单概览 -->
+    <div id="tab-orders" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-dark mb-6">订单概览</h2>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">商品名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">金额</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">状态</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-dark uppercase">创建时间</th>
+                </tr>
+                </thead>
+                <tbody id="orderTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 今日交易额 -->
+    <div id="tab-today" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-dark mb-6">今日交易额</h2>
+        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p class="text-4xl font-bold text-primary" id="todayTotal">¥0.00</p>
+            <p class="text-light mt-2">今日已签收订单总金额</p>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+<script>
+    axios.defaults.baseURL = window.location.origin + '/taobao';
+    let currentTab = 'products';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        switchTab('products');
+    });
+
+    function switchTab(tab) {
+        // 更新导航高亮
+        document.querySelectorAll('nav a').forEach(el => el.classList.remove('bg-gray-700'));
+        document.getElementById('nav-' + tab).classList.add('bg-gray-700');
+        // 切换内容区
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        currentTab = tab;
+        // 加载对应数据
+        if (tab === 'products') loadProducts();
+        else if (tab === 'consumers') loadConsumers();
+        else if (tab === 'merchants') loadMerchants();
+        else if (tab === 'orders') loadOrders();
+        else if (tab === 'today') loadTodayTotal();
+    }
+
+    // ========== 商品概览 ==========
+    function loadProducts() {
+        const list = document.getElementById('productList');
+        const loading = document.getElementById('productLoading');
+        list.innerHTML = '';
+        loading.classList.remove('hidden');
+        axios.get('/product/all', { params: { page: 1, size: 100 } })
+            .then(resp => {
+                loading.classList.add('hidden');
+                if (resp.data.code === 200 && resp.data.data) {
+                    const products = resp.data.data.products || [];
+                    products.forEach(p => {
+                        list.appendChild(createProductCard(p));
+                    });
+                }
+            })
+            .catch(err => {
+                loading.innerHTML = '加载失败，请刷新重试';
+            });
+    }
+
+    function createProductCard(p) {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg shadow-sm overflow-hidden';
+        card.innerHTML = `
+            <img src="https://picsum.photos/seed/${p.id}/300/200" class="w-full h-40 object-cover">
+            <div class="p-4">
+                <h3 class="font-medium text-dark truncate">${p.product_name}</h3>
+                <p class="text-primary font-bold mt-1">¥${p.price.toFixed(2)}</p>
+                <p class="text-light text-sm mt-1">库存：${p.stock}</p>
+                <p class="text-light text-sm mt-1">商户ID：${p.merchant_id}</p>
+                <button onclick="deleteProduct(${p.id})" class="mt-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">删除</button>
+            </div>
+        `;
+        return card;
+    }
+
+    function deleteProduct(id) {
+        if (!confirm('确定删除该商品吗？')) return;
+        axios.delete('/product/adminDelete/' + id)
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    alert('已删除');
+                    loadProducts();
+                } else {
+                    alert(resp.data.msg || '删除失败');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('删除失败');
+            });
+    }
+
+    // ========== 消费者概览 ==========
+    function loadConsumers() {
+        axios.get('/admin/consumers')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    const tbody = document.getElementById('consumerTableBody');
+                    tbody.innerHTML = resp.data.data.map(c => `
+                        <tr class="border-b border-border">
+                            <td class="px-6 py-4">${c.id}</td>
+                            <td class="px-6 py-4">${c.username}</td>
+                            <td class="px-6 py-4">${c.consumer_name}</td>
+                            <td class="px-6 py-4">¥${c.account_balance.toFixed(2)}</td>
+                            <td class="px-6 py-4">${formatTime(c.create_time)}</td>
+                        </tr>
+                    `).join('');
+                }
+            });
+    }
+
+    // ========== 商户概览 ==========
+    function loadMerchants() {
+        axios.get('/admin/merchants')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    const tbody = document.getElementById('merchantTableBody');
+                    tbody.innerHTML = resp.data.data.map(m => `
+                        <tr class="border-b border-border">
+                            <td class="px-6 py-4">${m.id}</td>
+                            <td class="px-6 py-4">${m.username}</td>
+                            <td class="px-6 py-4">${m.merchant_name}</td>
+                            <td class="px-6 py-4">¥${m.revenue.toFixed(2)}</td>
+                            <td class="px-6 py-4">${formatTime(m.create_time)}</td>
+                        </tr>
+                    `).join('');
+                }
+            });
+    }
+
+    // ========== 订单概览 ==========
+    function loadOrders() {
+        axios.get('/admin/orders')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    const tbody = document.getElementById('orderTableBody');
+                    const statusMap = {1:'未支付',2:'已支付',3:'已签收'};
+                    tbody.innerHTML = resp.data.data.map(o => `
+                        <tr class="border-b border-border">
+                            <td class="px-6 py-4">${o.id}</td>
+                            <td class="px-6 py-4">${o.product_name}</td>
+                            <td class="px-6 py-4">¥${o.total_amount.toFixed(2)}</td>
+                            <td class="px-6 py-4">${statusMap[o.status] || '未知'}</td>
+                            <td class="px-6 py-4">${formatTime(o.create_time)}</td>
+                        </tr>
+                    `).join('');
+                }
+            });
+    }
+
+    // ========== 今日交易额 ==========
+    function loadTodayTotal() {
+        axios.get('/admin/today-total')
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    document.getElementById('todayTotal').innerText = '¥' + (resp.data.data || 0).toFixed(2);
+                }
+            });
+    }
+
+    // ========== 退出 ==========
+    function logout() {
+        if (confirm('确定退出吗？')) {
+            axios.post('/auth/logout')
+                .then(() => { window.location.href = '/taobao/login.html'; });
+        }
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+</script>
+</body>
+</html>

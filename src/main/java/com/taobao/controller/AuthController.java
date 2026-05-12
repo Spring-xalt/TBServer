@@ -4,8 +4,10 @@ import com.taobao.common.R;
 import com.taobao.dto.MerchantDto;
 import com.taobao.dto.UserLoginDto;
 import com.taobao.dto.UserRegisterDto;
+import com.taobao.entity.Admin;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
+import com.taobao.service.AdminService;
 import com.taobao.service.ConsumerService;
 import com.taobao.service.MerchantService;
 import jakarta.servlet.http.HttpSession;
@@ -30,6 +32,9 @@ public class AuthController {
 
     @Autowired
     private ConsumerService consumerService;
+
+    @Autowired
+    private AdminService adminService;
 
     // 游客登录
     @PostMapping("/guest")
@@ -70,17 +75,23 @@ public class AuthController {
     }
 
 
+    @PostMapping("/admin/login")
+    public R<Admin> loginAdmin(@RequestBody UserLoginDto dto, HttpSession session) {
+        R<Admin> result = adminService.login(dto.getUsername(), dto.getPassword());
+        if (result.getCode() == 200) {
+            session.setAttribute("adminId", result.getData().getId());
+            session.setAttribute("role", "admin");
+        }
+        return result;
+    }
+
+
     //消费者和商户的登出可以合并 销毁session即可
     @PostMapping("/logout")
     public R<String> logout(HttpSession session) {
         session.invalidate();
         return R.success("已退出登录");
     }
-//    @PostMapping("/merchant/logout")
-//    public R<String> logoutMerchant(HttpSession session) {
-//        session.invalidate();
-//        return R.success("退出成功!");
-//    }
 
 
     @PostMapping("/consumer/register")

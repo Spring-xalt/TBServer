@@ -276,9 +276,11 @@
           let targetUrl;
           if (role === 'merchant') {
             targetUrl = '/taobao/merchant-index.html';
-          } else {
-            // 消费者或管理员暂时都去首页
-            targetUrl = '/taobao/index.html';
+          } else if(role === 'admin') {
+            targetUrl = '/taobao/admin-index.html';
+          }
+          else{
+            targetUrl='/taobao/index.html';
           }
           window.location.href = targetUrl;
 
