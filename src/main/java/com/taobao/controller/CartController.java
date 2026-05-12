@@ -137,9 +137,9 @@ public class CartController {
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
-        // 1. 删除数据库记录
+        //  删除数据库记录
         cartMapper.deleteByConsumerId(consumerId);
-        // 2. 清空 Session
+        // 清空 Session
         session.removeAttribute("cart");
         return R.success("购物车已清空");
     }

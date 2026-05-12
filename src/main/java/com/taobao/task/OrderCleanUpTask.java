@@ -19,8 +19,8 @@ public class OrderCleanUpTask {
     private OrdersMapper ordersMapper;
 
 
-    // 清理未支付订单：每30秒执行一次
-    @Scheduled(fixedRate = 30000)
+    // 清理未支付订单：每10min秒执行一次
+    @Scheduled(fixedRate = 600000)
     public void cleanUnpaidOrders() {
         int deleted = ordersMapper.deleteExpiredUnpaidOrders();
         if (deleted > 0) {

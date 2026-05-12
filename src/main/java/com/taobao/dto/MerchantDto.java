@@ -25,3 +25,4 @@ public class MerchantDto {
     // 关联产品信息
     private List<Product> products;
 }
+    
