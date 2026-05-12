@@ -185,7 +185,7 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
 
-  axios.defaults.baseURL = 'http://localhost:8080/taobao';
+  axios.defaults.baseURL = window.location.origin + '/taobao';
   axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8';
 
   // 页面元素
