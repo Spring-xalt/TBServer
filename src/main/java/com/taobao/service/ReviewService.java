@@ -15,9 +15,6 @@ public interface ReviewService {
     // 查询消费者所有评价
     List<Review> getConsumerReviews(int consumerId);
 
-    // 查询商户所有评价
-    List<Review> getMerchantReviews(int merchantId);
-
     // 查询消费者可评价的订单列表（已签收+3个月内+未评价）
     List<Orders> getReviewableOrders(int consumerId);
 

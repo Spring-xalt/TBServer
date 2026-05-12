@@ -40,10 +40,13 @@ public class OrdersController {
         return R.success("查询订单成功", order);
     }
 
+
     @GetMapping("/consumer/{consumer_id}")
     public List<Orders> getOrdersByConsumer(@PathVariable Integer consumer_id) {
         return ordersService.getOrdersByConsumerId(consumer_id);
     }
+
+
 
     @GetMapping("/merchant/{merchant_id}")
     public List<Orders> getOrdersByMerchant(@PathVariable Integer merchant_id) {

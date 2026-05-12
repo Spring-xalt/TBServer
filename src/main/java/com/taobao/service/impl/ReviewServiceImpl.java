@@ -84,10 +84,6 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.selectByConsumerId(consumerId);
     }
 
-    @Override
-    public List<Review> getMerchantReviews(int merchantId) {
-        return reviewMapper.selectByMerchantId(merchantId);
-    }
 
     @Override
     public List<Orders> getReviewableOrders(int consumerId) {

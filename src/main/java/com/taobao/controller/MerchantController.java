@@ -45,19 +45,6 @@ public class MerchantController {
         return R.success("已查询到商户：" + merchant.getUsername(), merchant);
     }
 
-    @GetMapping("/{id}/products")
-    public R<List<Product>> getMerchantProducts(@PathVariable Integer id) {
-        // 1. 先通过Service验证商户是否存在（复用已有方法）
-        Merchant merchant = merchantService.getMerchantById(id);
-        if (merchant == null) {
-            return R.error("商户不存在");
-        }
-        List<Product> products = productService.getProductsByMerchantId(id);
-        String msg = products.isEmpty()
-                ? "该商户暂无产品"
-                : "共查询到" + products.size() + "个产品（商户：" + merchant.getMerchant_name()+ "）";
-        return R.success(msg, products);
-    }
 
     @GetMapping("/my-products")
     public R<Map<String, Object>> myProducts(
