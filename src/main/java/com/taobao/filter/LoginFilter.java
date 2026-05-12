@@ -1,0 +1,58 @@
+package com.taobao.filter;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+
+/*
+ *@auther:Jimi
+ *@version:1.0
+ *@description:
+ */
+public class LoginFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        String path = request.getRequestURI();
+
+        // 没登陆时候可放行页面： 登录注册、商品浏览和搜索、静态资源
+        if (path.startsWith("/taobao/auth/") ||
+                path.equals("/taobao/product/all") ||
+                path.equals("/taobao/product/search") ||
+                path.matches(".*\\.(html|css|js|jpg|png|ico|woff|ttf)$")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            send401(response);
+            return;
+        }
+
+        Object consumerId = session.getAttribute("consumerId");
+        Object merchantId = session.getAttribute("merchantId");
+        Object adminId = session.getAttribute("adminId");
+
+        if (consumerId == null && merchantId == null && adminId == null) {
+            send401(response);
+            return;
+        }
+
+        chain.doFilter(request, response);
+    }
+
+    private void send401(HttpServletResponse response) throws IOException {
+        response.setStatus(401);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"code\":401,\"msg\":\"请先登录\"}");
+    }
+
+
+}
