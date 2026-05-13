@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -107,9 +108,11 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     @Transactional
     public R<String> payOrders(int consumerId, List<Orders> orders, String password) {
-        // 校验密码（简单和用户密码做校验）
+        // 校验密码
         Consumer consumer = consumerMapper.selectById(consumerId);
-        if (!consumer.getPassword().equals(password)) {
+
+        String md5Input = DigestUtils.md5DigestAsHex(password.getBytes());
+        if (!consumer.getPassword().equals(md5Input)) {
             return R.error("密码错误");
         }
 

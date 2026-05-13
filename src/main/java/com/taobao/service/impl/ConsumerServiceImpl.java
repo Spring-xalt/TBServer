@@ -20,6 +20,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -103,8 +104,12 @@ public class ConsumerServiceImpl implements ConsumerService {
 //        merchant.setUsername(registerDto.getUsername());直接复制写法
 //        merchant.setPassword(registerDto.getPassword());
         //同时默认设置消费者名字也为username
-        c.setConsumer_name (registerDto.getUsername ());
-        BeanUtils.copyProperties(registerDto, c);
+
+        //MD5加密
+        c.setConsumer_name(registerDto.getUsername());
+        c.setPassword(DigestUtils.md5DigestAsHex(registerDto.getPassword().getBytes()));
+        c.setUsername(registerDto.getUsername());
+
 
         consumerMapper.insert(c);
         return R.success("注册成功!");
@@ -120,7 +125,8 @@ public class ConsumerServiceImpl implements ConsumerService {
             return R.error("您还未注册过消费者账号,请先注册");
         }
 
-        if(!consumer.getPassword().equals(loginDto.getPassword())){
+        String md5Input = DigestUtils.md5DigestAsHex(loginDto.getPassword().getBytes());
+        if(!consumer.getPassword().equals(md5Input)){
             return R.error("密码错误，请重试!");
         }
 

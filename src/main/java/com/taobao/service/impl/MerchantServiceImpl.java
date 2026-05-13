@@ -17,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 import java.util.List;
 
@@ -131,9 +132,10 @@ public class MerchantServiceImpl implements MerchantService {
         if(pwd.length()<6||pwd.length()>18){
             return R.error("密码长度应当在6-18位之间,请重新输入!");
         }
-        merchant.setPassword(pwd);
-        //BeanUtils.copyProperties(registerDto, merchant);简洁写法
-        //默认为username
+
+        merchant.setPassword(DigestUtils.md5DigestAsHex(pwd.getBytes()));
+
+
         merchant.setMerchant_name(registerDto.getUsername());
 
         merchantMapper.insert(merchant);
@@ -150,9 +152,11 @@ public class MerchantServiceImpl implements MerchantService {
             return R.error("您还未注册过商铺账号,请先注册");
         }
 
-        if(!merchant.getPassword().equals(loginDto.getPassword())){
+        String md5Input = DigestUtils.md5DigestAsHex(loginDto.getPassword().getBytes());
+        if(!merchant.getPassword().equals(md5Input)){
             return R.error("密码错误，请重试!");
         }
+
 
         // 保存商户状态给session
         session.setAttribute("merchantId", merchant.getId());
