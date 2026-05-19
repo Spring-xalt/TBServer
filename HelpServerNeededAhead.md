@@ -1,6 +1,6 @@
 演示前需要开启的服务
  MySQL 数据库
-   确保 MySQL 服务正在运行。如果没启，可以用命令行或服务面板开启。
+   确保 MySQL 服务正在运行。
 
  Spring Boot 项目
    在 IDEA 中启动你的 MysqlConnectedApplication（端口 8080）。
@@ -17,6 +17,6 @@
     沙箱支付宝APP	dggleh9671@sandbox.com/11111
     authtoken	8c8cec195b2882b1 
     当前域名	v59d3226.natappfree.cc
-    notify-url	http://v59d3226.natappfree.cc/taobao/alipay/notify
+    notify-url	http://q2c8a8d6.natappfree.cc/taobao/alipay/notify
     (注意：notify-url可能经常变化，每次启动natapp需要更新yml)
     启动命令	.\natapp.exe -authtoken=8c8cec195b2882b1

@@ -198,8 +198,6 @@ public class OrdersServiceImpl implements OrdersService {
             vo.setConsumer_name(consumer != null ? consumer.getConsumer_name() : "未知");
 
 
-
-
             Merchant merchant = merchantMapper.selectById(o.getMerchant_id());
             vo.setMerchant_name(merchant != null ? merchant.getMerchant_name() : "未知");
 

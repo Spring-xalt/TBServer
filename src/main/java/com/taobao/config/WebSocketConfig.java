@@ -24,8 +24,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         System.out.println("===== WebSocket 配置加载 =====");
-
-        registry.addHandler(new ChatWebSocketHandler(chatService), "/chat")  // 连接的路径
+        // 连接的路径
+        registry.addHandler(new ChatWebSocketHandler(chatService), "/chat")
                 .setAllowedOrigins("*");
     }
 
