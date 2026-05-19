@@ -251,7 +251,9 @@
         }
 
         // 用户发起充值请求，调后端生成支付二维码(只传金额，订单由后端产生)
-        axios.post('/alipay/recharge', null, { params: { amount: amount } })
+        axios.post('/alipay/recharge', { amount: amount }, {
+            headers: { 'Content-Type': 'application/json' }
+        })
             .then(resp => {
                 if (resp.data.code === 200) {
                     /*
