@@ -78,10 +78,12 @@ public class ConsumerServiceImpl implements ConsumerService {
         return consumerMapper.updateById(consumer) == 1;
     }
 
+
     @Override
     public Consumer getConsumerById(Integer id) {
         return consumerMapper.selectById(id);
     }
+
 
     @Override
     public R<String> register(UserRegisterDto registerDto) {
