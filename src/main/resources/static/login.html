@@ -14,11 +14,11 @@
       theme: {
         extend: {
           colors: {
-            primary: '#ff4400',
+            primary: '#ff6a00',
             secondary: '#f5f5f5',
-            dark: '#333333',
-            light: '#666666',
-            border: '#dddddd'
+            dark: '#1a1a1a',
+            light: '#888888',
+            border: '#e8e8e8'
           },
           fontFamily: {
             sans: ['Microsoft YaHei', 'Arial', 'sans-serif'],
@@ -30,14 +30,35 @@
 
   <style type="text/tailwindcss">
     @layer utilities {
+	      .tab-btn {
+	        transition: all 0.25s ease;
+	      }
+	      .tab-btn:hover {
+	        background: #fafafa;
+	      }
       .content-auto {
         content-visibility: auto;
       }
       .form-input-focus {
         @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
+	        border-radius: 8px;
+	        transition: all 0.25s ease;
       }
       .tab-active {
-        @apply text-primary border-primary font-medium bg-primary/5;
+        @apply text-primary border-primary font-semibold;
+	        background: #fff0e6;
+	        position: relative;
+	      }
+	      .tab-active::after {
+	        content: '';
+	        position: absolute;
+	        bottom: -1px;
+	        left: 50%;
+	        transform: translateX(-50%);
+	        width: 50%;
+	        height: 2px;
+	        background: #ff6a00;
+	        border-radius: 2px;
       }
     }
   </style>

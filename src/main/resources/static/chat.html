@@ -11,19 +11,37 @@
       theme: {
         extend: {
           colors: {
-            primary: '#ff4400',
+            primary: '#ff6a00',
             secondary: '#f5f5f5',
-            dark: '#333333',
-            light: '#666666',
-            border: '#dddddd'
+            dark: '#1a1a1a',
+            light: '#888888',
+            border: '#e8e8e8'
           }
         }
       }
     }
   </script>
   <style>
-    .msg-left  { background:#f3f4f6; border-radius:8px; padding:8px 12px; max-width:70%; }
-    .msg-right { background:#3b82f6; color:#fff; border-radius:8px; padding:8px 12px; max-width:70%; }
+    .msg-left {
+      background: #ffffff;
+      border: 1px solid #f0f0f0;
+      border-radius: 4px 14px 14px 14px;
+      padding: 10px 16px;
+      max-width: 70%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      word-break: break-word;
+    }
+    .msg-right {
+      background: linear-gradient(135deg, #ff6a00, #ff8533);
+      color: #fff;
+      border-radius: 14px 4px 14px 14px;
+      padding: 10px 16px;
+      max-width: 70%;
+      box-shadow: 0 2px 8px rgba(255,106,0,0.25);
+      word-break: break-word;
+    }
+    .msg-left p:first-child, .msg-right p:first-child { margin-top: 0; }
+    .msg-left p:last-child, .msg-right p:last-child { margin-bottom: 0; }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
