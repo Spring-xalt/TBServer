@@ -471,7 +471,8 @@
               }
 
               // 已登录，调后端加入购物车（URL 参数）
-              axios.post('/cart/add?productId=' + productId)
+
+              axios.post('/cart/add', { productId: productId })
                       .then(resp => {
                         if (resp.data.code === 200) {
                           alert(resp.data.msg || '已加入购物车');

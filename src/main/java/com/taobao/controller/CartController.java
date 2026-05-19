@@ -7,7 +7,9 @@ package com.taobao.controller;
  */
 
 import com.taobao.common.R;
+import com.taobao.dto.CartAddDto;
 import com.taobao.dto.CartItem;
+import com.taobao.dto.CartUpdateDto;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Product;
 import com.taobao.mapper.CartMapper;
@@ -55,7 +57,9 @@ public class CartController {
 
     // session层面的add，临时的cartItem层面处理
     @PostMapping("/add")
-    public R<String> add(@RequestParam int productId, HttpSession session) {
+    public R<String> add(@RequestBody CartAddDto dto, HttpSession session) {
+        int productId = dto.getProductId();
+
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.error(401, "请先登录");
@@ -97,14 +101,14 @@ public class CartController {
 
     //session层面的更新
     @PutMapping("/update")
-    public R<String> update(@RequestParam int index,
-                            @RequestParam int quantity,
-                            HttpSession session) {
+    public R<String> update(@RequestBody CartUpdateDto dto, HttpSession session) {
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
         List<CartItem> cart = getCartFromSession(session);
+        int index = dto.getIndex();
+        int quantity = dto.getQuantity();
         if (index < 0 || index >= cart.size()) {
             return R.error("无效的购物车项");
         }

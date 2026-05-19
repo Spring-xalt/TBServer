@@ -174,7 +174,7 @@
             return;
         }
         // 正常更新数量
-        axios.put('/cart/update', null, { params: { index, quantity: newQty } })
+        axios.put('/cart/update', { index: index, quantity: newQty })
             .then(resp => {
                 if (resp.data.code === 200) {
                     loadCart();
