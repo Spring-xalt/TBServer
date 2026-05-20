@@ -18,7 +18,6 @@ spring:
       minimum-idle: 5
       idle-timeout: 10000
       connection-timeout: 5000
-
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.taobao.entity
@@ -29,29 +28,25 @@ mybatis-plus:
     map-underscore-to-camel-case: false
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     call-setters-on-nulls: true
-
 file:
   upload-dir: uploads
-
 server:
   port: 8080
   address: 0.0.0.0
   servlet:
     context-path: /taobao
-
 logging:
   level:
     com.taobao.mapper: debug
     com.taobao.service: info
     root: warn
-
 alipay:
   app-id: 9021000163651438
   merchant-private-key: "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDAJpGjsgk1zZISfBINT9rqR/nkk2zUs1IEWBOv0MBbSEBSEDTy2F1LxM2a2vwa8Gzj99w0x+nY2EcY66qfWYV3Lupy02T1B98kDfxKMMd14UccFxyHYS58FFj0Gv6GPAH20XkOZIiikJUTIXRes1XbJkpbOdT6Zxcmwm/tBQpvBERA5qljSuVPx8RX+W9Z3YXdG+j8I9daY4wRgXD3VEySw51dTCzf9nLO83ozMzUY6Z4fCJDdjR9+1uLc9h87wPcMrl/P6BwazkHIycDSZHHgPBcNQt3O12hGyG+ED7/jX85lMkUWdtzN4QmC6wrGKdPLG06dBTQLuaA7HVPGxwAtAgMBAAECggEANMrj/MuviB7A4V9BPnMQPIol+E0g+5eBEzx3vDhogSvqsCFPyuDzURvzOXatCWHBKSkyUTYT48YYUpp9OGbKKqKzO3UlKcVN44QMKv4X7yVD+k3HQtLKiMC2Z+r6vzrBd2S6E+A/QhrjOmxYoqQ3FI0CpOnQwDOOwtFtGvvlj/ZsHFbzdz+xIqaAelQlp+xFubC+4840m011mYDWj3dv0oIEN6YH96/jSehrjnL+/9Yz/yMz71paSs+yPgH1pwav9vu5VnBaRwAcgkCNiAiOz7C7FRvwyztbMmIQtgdoTQp8w8ktYlmRiagROi7Lby1GBTbnyNlfT84qZNJFUZTLKQKBgQDpEM51wUqLLeaXk6//gr2DFVSVh4hhrdPXm4Au+jyyffp2nwAzPBZUtktOM5/hRdnNOfx+wlHfleMFZykVTDAFvRiiWmUs7h/sfHYk0PTKhnoSIw9Mzclfn4adqEX6l7HIIPG+zJlp0+eB8nkmwj1qa62ftvMLub+yPnPWD8r/GwKBgQDTDxECqjsmbsXce6ey8iOn0UTqPQBXUAEtEYJv2ZOzwj3IALeiqV2PCvvdFDYgHit8T2B6mNMY8AEvpDQ0qNf1hiCrM5M+6lYxGGOmWPxzn7bj4C2C2vMoGyskO7ne8AXOVMYJ3SUFg0r0aOQ7rkRt4xG11yBJkof1nzcfp23KVwKBgDGib6WqTXrIgrRDMpciu8Nf1oyluYi74UKojirzBdwpch6zC/LdWBAgZnc4DVOHcbQAJmLEdXU9UYTEDH7Jo+yE8esZfzSLXecaNnruuUMsUnDsYITFyp3/tkZ7ILQWfDkXswQkRIPCKiqFfgGgGj5AwlAiQS59F3MZU8gBwwSDAoGBALarqZtW3s8KvPFxjNmSPU34D990YKExO3NYXj6UYAQLMBG0nTuJvtIZPZhA7/+oXRbAVM6HCt3gjAZB5nVVVWTJa+kBQIYJqAPiCg1lo0onh9F+q6U//4hMy3AWyW6s6zmDocvTvUEiO3OCfVcyI0PAbgmmYemLi2UJIlqhPKMNAoGAZNR/WtDjjxvcuc/B3YhzVQz5e6HQKQD70EmuTED8DrLOSdQTYUYpzqYqL2qgMlplhTHPIHTEWjOp1rEEYAK6HwQc8Zy0GWaQ2e7XoMUT97BFiu8qYiXVMULcgK9VD5t3yiRu/KoUZx8sigDmskOECjMTwLy2K1stQpBOdoFtlRU="
   alipay-public-key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkDdpnbXg9QH9N/KzEMfATJPapoSFi8VJRCrHM/biDSAKQ1ryAkD0rJ2H1j0N3qwyn8jkEagIFGvxAvaVLswooSA21ilo/7fwTNA5/mgEpotlOE1BDKGhDbnCYQy2vAuO6qchU0uO1d91LftoAznNjENjyIb5f45rHf4V9kFCzlkw6BstQpe4uh8vFIPZ8T8eifaN875e0VxYs/0HTn7Uo3e/jFXHvjt3GaXCUoUJaZPwUIn39Cybv/umk4kwrbWL0GjTneaXFtGtFQa1wXffXJo9XWRFwoDmQu0ifaULStYISA5wOz/UNXguwuzHsIV+ClZ7Iivpi/LUtha6BwHQWwIDAQAB"
   gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
 
-  notify-url: http://q2c8a8d6.natappfree.cc/taobao/alipay/notify
+  notify-url: http://uc6a3ed2.natappfree.cc/taobao/alipay/notify
   return-url: http://localhost:8080/taobao/pay-result.html
 
 

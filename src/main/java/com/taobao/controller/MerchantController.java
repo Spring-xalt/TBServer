@@ -48,8 +48,8 @@ public class MerchantController {
 
     @GetMapping("/my-products")
     public R<Map<String, Object>> myProducts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size,
             HttpSession session) {
 
         Integer merchantId = (Integer) session.getAttribute("merchantId");
@@ -110,7 +110,7 @@ public class MerchantController {
 
     //商户个人中心用于修改个人信息(商家个人修改信息只能修改店铺名，故选择url传参最方便)
     @PutMapping("/updateInfo")
-    public R<String> updateInfo(@RequestParam String merchantName, HttpSession session) {
+    public R<String> updateInfo(@RequestParam("merchantName") String merchantName, HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
 
         if (merchantId == null) {
@@ -127,7 +127,7 @@ public class MerchantController {
 
 
     @GetMapping("/my-products/search")
-    public R<List<Product>> searchMyProducts(@RequestParam String keyword, HttpSession session) {
+    public R<List<Product>> searchMyProducts(@RequestParam("keyword") String keyword, HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
         if (merchantId == null) {
             return R.error(401, "请先登录");

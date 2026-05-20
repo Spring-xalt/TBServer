@@ -27,8 +27,8 @@ public class ProductController {
 
     @GetMapping("/all")
     public R<Map<String, Object>> getAllProducts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
         IPage<Product> result = productService.getProductsByPage(page, size);
         Map<String, Object> data = new HashMap<>();
         data.put("products", result.getRecords());
@@ -81,7 +81,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public R<List<Product>> searchProducts(@RequestParam String keyword) {
+    public R<List<Product>> searchProducts(@RequestParam("keyword") String keyword) {
         List<Product> products = productService.searchProducts(keyword);
         return R.success("搜索到" + products.size() + "件商品", products);
     }
