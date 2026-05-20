@@ -38,10 +38,8 @@ public class AlipayServiceImpl implements AlipayService {
     //二维码qr也传入amount
     @Override
     public R<String> createPayQrCode(int consumerId, BigDecimal amount, String subject) {
-        //  生成唯一订单号(recharge_ + 时间_ + 消费者id) 方便后续直接利用第二个_split解析(T113)
-        String outTradeNo = "RECHARGE_" + System.currentTimeMillis() + "_" + consumerId;;
+        String outTradeNo = "RECHARGE_" + System.currentTimeMillis() + "_" + consumerId;
 
-        // 创建沙箱版支付宝客户端(根据yml配置)
         AlipayClient alipayClient = new DefaultAlipayClient(
                 alipayConfig.getGatewayUrl(),
                 alipayConfig.getAppId(),
@@ -51,12 +49,9 @@ public class AlipayServiceImpl implements AlipayService {
                 "RSA2"
         );
 
-        //预创建接口
         AlipayTradePrecreateRequest request = new AlipayTradePrecreateRequest();
-        //提前设置通知返回地址
         request.setNotifyUrl(alipayConfig.getNotifyUrl());
 
-        //注入依赖的订单号，订单额，充值主体，超时时间
         request.setBizContent("{" +
                 "\"out_trade_no\":\"" + outTradeNo + "\"," +
                 "\"total_amount\":\"" + amount.toString() + "\"," +
@@ -65,11 +60,8 @@ public class AlipayServiceImpl implements AlipayService {
                 "}");
 
         try {
-            //执行请求
             AlipayTradePrecreateResponse response = alipayClient.execute(request);
             if (response.isSuccess()) {
-                // 收到请求并返回给前端一个 二维码链接
-
                 return R.success(outTradeNo + "," + response.getQrCode());
             } else {
                 return R.error("生成支付二维码失败: " + response.getMsg());

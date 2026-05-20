@@ -98,10 +98,7 @@ public class ProductController {
         if (image.isEmpty()) {
             return R.error("商品图片不能为空");
         }
-        if (image.getSize() > 2 * 1024 * 1024) {
-            return R.error("图片大小不能超过2MB");
-        }
-        try {
+try {
             String imagePath = ((ProductServiceImpl) productService).saveImage(image.getBytes(), image.getOriginalFilename());
             product.setImage(imagePath);
         } catch (IOException e) {
@@ -182,10 +179,7 @@ public class ProductController {
         if (image.isEmpty()) {
             return R.error("商品图片不能为空");
         }
-        if (image.getSize() > 2 * 1024 * 1024) {
-            return R.error("图片大小不能超过2MB");
-        }
-        try {
+try {
             String imagePath = ((ProductServiceImpl) productService).saveImage(image.getBytes(), image.getOriginalFilename());
             product.setImage(imagePath);
         } catch (IOException e) {
