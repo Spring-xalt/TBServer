@@ -180,7 +180,8 @@
         const card = document.createElement('div');
         card.className = 'bg-white rounded-lg shadow-sm overflow-hidden';
         card.innerHTML = `
-            <img src="https://picsum.photos/seed/${p.id}/300/200" class="w-full h-40 object-cover">
+            <img src="/taobao/product/${p.id}/image" class="w-full h-40 object-cover"
+                 onerror="this.src='https://picsum.photos/seed/${p.id}/300/200'">
             <div class="p-4">
                 <h3 class="font-medium text-dark truncate">${p.product_name}</h3>
                 <p class="text-primary font-bold mt-1">¥${p.price.toFixed(2)}</p>

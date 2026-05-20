@@ -26,6 +26,7 @@ public class LoginFilter implements Filter {
         if (path.startsWith("/taobao/auth/") ||
                 path.equals("/taobao/product/all") ||
                 path.equals("/taobao/product/search") ||
+                path.matches("/taobao/product/\\d+/image") ||
                 path.equals("/taobao/alipay/notify") ||
                 path.matches(".*\\.(html|css|js|jpg|png|ico|woff|ttf)$")) {
             chain.doFilter(request, response);

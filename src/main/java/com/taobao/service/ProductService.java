@@ -36,4 +36,6 @@ public interface ProductService {
 
     IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size);
 
+    String getProductImage(Integer id);
+
 }

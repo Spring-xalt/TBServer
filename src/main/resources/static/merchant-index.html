@@ -136,6 +136,11 @@
           <label class="block text-sm text-dark mb-1">描述</label>
           <textarea id="editDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
         </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">商品图片 <span class="text-light text-xs">(可选，不选则保留原图)</span></label>
+          <input type="file" id="editImage" accept="image/*" class="w-full border border-border rounded px-3 py-2">
+          <img id="editImagePreview" class="mt-2 hidden w-full h-40 object-cover rounded">
+        </div>
         <div class="flex justify-end space-x-2 pt-4">
           <button onclick="closeEditModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
           <button onclick="saveEdit()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">保存</button>
@@ -169,6 +174,11 @@
           <label class="block text-sm text-dark mb-1">描述</label>
           <textarea id="addDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
         </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">商品图片 <span class="text-red-500">*</span></label>
+          <input type="file" id="addImage" accept="image/*" class="w-full border border-border rounded px-3 py-2">
+          <img id="addImagePreview" class="mt-2 hidden w-full h-40 object-cover rounded">
+        </div>
         <div class="flex justify-end space-x-2 pt-4">
           <button onclick="closeAddModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
           <button onclick="submitAdd()" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">确认上架</button>
@@ -193,7 +203,27 @@
   axios.defaults.baseURL = window.location.origin + '/taobao';
 
 
-  document.addEventListener('DOMContentLoaded', () => loadProducts());
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProducts();
+    document.getElementById('addImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const preview = document.getElementById('addImagePreview');
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) { preview.src = ev.target.result; preview.classList.remove('hidden'); };
+        reader.readAsDataURL(file);
+      } else { preview.classList.add('hidden'); }
+    });
+    document.getElementById('editImage').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const preview = document.getElementById('editImagePreview');
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) { preview.src = ev.target.result; preview.classList.remove('hidden'); };
+        reader.readAsDataURL(file);
+      } else { preview.classList.add('hidden'); }
+    });
+  });
 
 
   function loadProducts(page = 1) {
@@ -288,7 +318,8 @@
     const card = document.createElement('div');
     card.className = 'bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1';
     card.innerHTML = `
-    <img src="https://picsum.photos/seed/${product.id}/300/200" class="w-full h-40 object-cover">
+    <img src="/taobao/product/${product.id}/image" class="w-full h-40 object-cover"
+         onerror="this.src='https://picsum.photos/seed/${product.id}/300/200'">
     <div class="p-4">
         <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
         <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
@@ -325,6 +356,8 @@
     document.getElementById('editPrice').value = price;
     document.getElementById('editStock').value = stock;
     document.getElementById('editDescription').value = description;
+    document.getElementById('editImage').value = '';
+    document.getElementById('editImagePreview').classList.add('hidden');
     document.getElementById('editModal').classList.remove('hidden');
   }
 
@@ -336,25 +369,41 @@
   // 保存编辑
   function saveEdit() {
     const productId = document.getElementById('editProductId').value;
-    const product = {
-      id: parseInt(productId),
-      product_name: document.getElementById('editProductName').value.trim(),
-      price: parseFloat(document.getElementById('editPrice').value),
-      stock: parseInt(document.getElementById('editStock').value),
-      description: document.getElementById('editDescription').value.trim()
-    };
+    const productName = document.getElementById('editProductName').value.trim();
+    const price = parseFloat(document.getElementById('editPrice').value);
+    const stock = parseInt(document.getElementById('editStock').value);
+    const description = document.getElementById('editDescription').value.trim();
+    const imageFile = document.getElementById('editImage').files[0];
 
-    if (!product.product_name || isNaN(product.price) || isNaN(product.stock)) {
+    if (!productName || isNaN(price) || isNaN(stock)) {
       alert('请完整填写商品信息');
       return;
     }
 
-    axios.put('/product/update', product)
+    const formData = new FormData();
+    formData.append('product', new Blob([JSON.stringify({
+      id: parseInt(productId),
+      product_name: productName,
+      price: price,
+      stock: stock,
+      description: description
+    })], {type: 'application/json'}));
+    if (imageFile) {
+      if (imageFile.size > 2 * 1024 * 1024) {
+        alert('图片大小不能超过2MB');
+        return;
+      }
+      formData.append('image', imageFile);
+    }
+
+    axios.put('/product/update', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
             .then(resp => {
               if (resp.data.code === 200) {
                 alert('更新成功');
                 closeEditModal();
-                loadProducts(); // 重新加载列表
+                loadProducts();
               } else {
                 alert(resp.data.msg || '更新失败');
               }
@@ -389,6 +438,8 @@
     document.getElementById('addPrice').value = '';
     document.getElementById('addStock').value = '';
     document.getElementById('addDescription').value = '';
+    document.getElementById('addImage').value = '';
+    document.getElementById('addImagePreview').classList.add('hidden');
     document.getElementById('addModal').classList.remove('hidden');
   }
 
@@ -399,19 +450,37 @@
 
   // 提交新增
   function submitAdd() {
-    const product = {
-      product_name: document.getElementById('addProductName').value.trim(),
-      price: parseFloat(document.getElementById('addPrice').value),
-      stock: parseInt(document.getElementById('addStock').value),
-      description: document.getElementById('addDescription').value.trim()
-    };
+    const productName = document.getElementById('addProductName').value.trim();
+    const price = parseFloat(document.getElementById('addPrice').value);
+    const stock = parseInt(document.getElementById('addStock').value);
+    const description = document.getElementById('addDescription').value.trim();
+    const imageFile = document.getElementById('addImage').files[0];
 
-    if (!product.product_name || isNaN(product.price) || isNaN(product.stock)) {
+    if (!productName || isNaN(price) || isNaN(stock)) {
       alert('请完整填写商品信息');
       return;
     }
+    if (!imageFile) {
+      alert('请选择商品图片');
+      return;
+    }
+    if (imageFile.size > 2 * 1024 * 1024) {
+      alert('图片大小不能超过2MB');
+      return;
+    }
 
-    axios.post('/product/add', product)
+    const formData = new FormData();
+    formData.append('product', new Blob([JSON.stringify({
+      product_name: productName,
+      price: price,
+      stock: stock,
+      description: description
+    })], {type: 'application/json'}));
+    formData.append('image', imageFile);
+
+    axios.post('/product/add', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
             .then(resp => {
               if (resp.data.code === 200) {
                 alert(resp.data.msg || '上架成功');

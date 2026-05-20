@@ -22,4 +22,7 @@ public interface ProductMapper extends BaseMapper<Product> {
     @Select("SELECT COUNT(*) FROM product WHERE merchant_id = #{merchantId}")
     long selectCountByMerchantId(@Param("merchantId") int merchantId);
 
+    @Select("SELECT image FROM product WHERE id = #{id}")
+    String selectImageById(@Param("id") Integer id);
+
 }

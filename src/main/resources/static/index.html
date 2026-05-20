@@ -444,8 +444,9 @@
 
     card.innerHTML = `
                 <div class="relative">
-                    <img src="https://picsum.photos/seed/${product.id}/300/200" alt="${product.product_name}"
-                         class="w-full h-48 object-cover">
+                    <img src="/taobao/product/${product.id}/image" alt="${product.product_name}"
+                         class="w-full h-48 object-cover"
+                         onerror="this.src='https://picsum.photos/seed/${product.id}/300/200'">
                     ${product.stock <= 0 ? `
                         <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                             <span class="text-white font-bold text-lg">已售罄</span>

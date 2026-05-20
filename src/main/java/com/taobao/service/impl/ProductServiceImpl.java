@@ -7,26 +7,30 @@ import com.taobao.entity.Product;
 import com.taobao.mapper.ProductMapper;
 import com.taobao.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-
-/*
- @auther:Jimi
- @description: 产品表
- */
+import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductMapper productMapper;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    private static final String PRODUCT_IMAGE_SUB = "products";
 
     @Override
     public boolean addProduct(Product product) {
         return productMapper.insert(product) > 0;
     }
-
 
     @Override
     public boolean deleteProduct(Integer id) {
@@ -38,7 +42,6 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.selectById(id);
     }
 
-
     @Override
     public List<Product> getAllProducts() {
         return productMapper.selectList(null);
@@ -46,11 +49,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public IPage<Product> getProductsByPage(int page, int size) {
-        //计算偏移
         int offset = (page - 1) * size;
         List<Product> records = productMapper.selectByPage(offset, size);
         long total = productMapper.selectCount(null);
-        //偏移后将所有记录写入构造的Page对象
         Page<Product> result = new Page<>(page, size, total);
         result.setRecords(records);
         return result;
@@ -58,9 +59,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getProductsByMerchantId(Integer merchantId) {
-        //条件查询构造器
         QueryWrapper<Product> wrapper = new QueryWrapper<>();
-        //如果数据库表merchant_id字段和传入的一致
         wrapper.eq("merchant_id", merchantId);
         return productMapper.selectList(wrapper);
     }
@@ -68,30 +67,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> searchProducts(String msg) {
         System.out.println("进入 searchProducts, keyword=" + msg);
-
-        //search核心是利用sql条件构造器利用通配符实现的 like通配符绑定name和descrription
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda()
                 .like(Product::getProduct_name, msg)
                 .or()
                 .like(Product::getDescription, msg);
-
         return productMapper.selectList(queryWrapper);
     }
 
-    //某个商户的搜索功能(商户id+关键词)
     @Override
     public List<Product> searchByMerchant(int merchantId, String keyword) {
         QueryWrapper<Product> wrapper = new QueryWrapper<>();
-        //本商户 同时匹配商品名和描述
         wrapper.eq("merchant_id", merchantId)
                 .and(w -> w.like("product_name", keyword)
                         .or()
                         .like("description", keyword));
         return productMapper.selectList(wrapper);
-
     }
-
 
     @Override
     public boolean updateProductByMerchant(Product product, Integer merchantId) {
@@ -99,20 +91,18 @@ public class ProductServiceImpl implements ProductService {
         if (existing == null) {
             return false;
         }
-        // 必须是自家的商品(虽然前端展示的是自己家的 双重校验保证一下)
         if (!existing.getMerchant_id().equals(merchantId)) {
             return false;
         }
-        // 只覆盖允许修改的字段
         existing.setProduct_name(product.getProduct_name());
         existing.setPrice(product.getPrice());
         existing.setStock(product.getStock());
         existing.setDescription(product.getDescription());
+        if (product.getImage() != null) {
+            existing.setImage(product.getImage());
+        }
         return productMapper.updateById(existing) > 0;
     }
-
-
-
 
     @Override
     public boolean updateProductByAdmin(Product product) {
@@ -120,18 +110,18 @@ public class ProductServiceImpl implements ProductService {
         if (existing == null) {
             return false;
         }
-        // 管理员可以修改所有字段（不校验 merchant）
         existing.setProduct_name(product.getProduct_name());
         existing.setPrice(product.getPrice());
         existing.setStock(product.getStock());
         existing.setDescription(product.getDescription());
+        if (product.getImage() != null) {
+            existing.setImage(product.getImage());
+        }
         return productMapper.updateById(existing) > 0;
     }
 
-
     @Override
     public boolean deleteProductByMerchant(Integer productId, Integer merchantId) {
-        //拿到商品
         Product existing = productMapper.selectById(productId);
         if (existing == null || !existing.getMerchant_id().equals(merchantId)) {
             return false;
@@ -139,12 +129,8 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.deleteById(productId) > 0;
     }
 
-
     @Override
     public IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size) {
-        /*因为那个sql是从第几条开始取，取几条，因此每size个数据都必须减去偏移后计算
-            比如page=2，size=8 就是从第八条开始 取八条数据 9-16(sql的limit)
-         */
         int offset = (page - 1) * size;
         List<Product> records = productMapper.selectByMerchantIdAndPage(merchantId, offset, size);
         long total = productMapper.selectCountByMerchantId(merchantId);
@@ -153,6 +139,36 @@ public class ProductServiceImpl implements ProductService {
         return result;
     }
 
+    @Override
+    public String getProductImage(Integer id) {
+        return productMapper.selectImageById(id);
+    }
 
+    public String saveImage(byte[] bytes, String originalFilename) throws IOException {
+        Path dir = Paths.get(uploadDir, PRODUCT_IMAGE_SUB);
+        Files.createDirectories(dir);
+        String ext = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String filename = UUID.randomUUID() + ext;
+        Path filePath = dir.resolve(filename);
+        Files.write(filePath, bytes);
+        return PRODUCT_IMAGE_SUB + "/" + filename;
+    }
 
+    public void deleteImageFile(String relativePath) {
+        if (relativePath == null || relativePath.isEmpty()) return;
+        try {
+            Path filePath = Paths.get(uploadDir, relativePath);
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            System.err.println("删除旧图片失败: " + relativePath);
+        }
+    }
+
+    public byte[] getImageFile(String relativePath) throws IOException {
+        Path filePath = Paths.get(uploadDir, relativePath);
+        return Files.readAllBytes(filePath);
+    }
 }

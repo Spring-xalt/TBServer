@@ -29,6 +29,8 @@ public class Product {
 
     private String description;
 
+    private String image;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
     @TableField(fill = FieldFill.INSERT_UPDATE)
