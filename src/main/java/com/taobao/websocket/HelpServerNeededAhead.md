@@ -3,7 +3,7 @@
    确保 MySQL 服务正在运行。如果没启，可以用命令行或服务面板开启。
 
 2. Spring Boot 项目
-   在 IDEA 中启动你的 MysqlConnectedApplication（端口 8080）。
+   在 IDEA 中启动你的 TBServerApplication（端口 8080）。
 
 3. NATApp 内网穿透（支付宝回调必须）
    打开命令行，进入 D:\computer 目录，执行：
