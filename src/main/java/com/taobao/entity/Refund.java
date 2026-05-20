@@ -22,11 +22,11 @@ public class Refund {
     private Integer consumer_id;
     private Integer merchant_id;
     private Integer product_id;
-    // 退款退货(1)还是仅退款(0)
+    // 退货退款(1)还是换货(2)
     private Integer type;
     // 退款原因
     private String reason;
-    //状态(0待审核，1已同意，2已拒绝，3已完成)
+    //状态(1待审核，2已同意，3已拒绝)
     private Integer status;
     private LocalDateTime create_time;
     private LocalDateTime update_time;
