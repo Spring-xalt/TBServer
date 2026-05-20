@@ -137,6 +137,7 @@ public class MerchantServiceImpl implements MerchantService {
 
 
         merchant.setMerchant_name(registerDto.getUsername());
+        merchant.setStatus(0);
 
         merchantMapper.insert(merchant);
         return R.success("注册成功!");
@@ -157,6 +158,11 @@ public class MerchantServiceImpl implements MerchantService {
             return R.error("密码错误，请重试!");
         }
 
+
+        if (merchant.getStatus() != null && merchant.getStatus() == 1) {
+            //遭到管理员禁用
+            return R.error("该账号已被禁用，请联系管理员");
+        }
 
         // 保存商户状态给session
         session.setAttribute("merchantId", merchant.getId());

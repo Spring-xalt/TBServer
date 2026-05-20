@@ -38,4 +38,5 @@ public class Merchant {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime update_time;
 
-}
+    // 账号状态(0=正常, 1=禁用)
+    private Integer status;}

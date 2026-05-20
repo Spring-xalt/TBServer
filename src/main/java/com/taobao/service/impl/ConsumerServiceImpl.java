@@ -111,6 +111,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         c.setConsumer_name(registerDto.getUsername());
         c.setPassword(DigestUtils.md5DigestAsHex(registerDto.getPassword().getBytes()));
         c.setUsername(registerDto.getUsername());
+        c.setStatus(0);
 
 
         consumerMapper.insert(c);
@@ -130,6 +131,11 @@ public class ConsumerServiceImpl implements ConsumerService {
         String md5Input = DigestUtils.md5DigestAsHex(loginDto.getPassword().getBytes());
         if(!consumer.getPassword().equals(md5Input)){
             return R.error("密码错误，请重试!");
+        }
+
+        if (consumer.getStatus() != null && consumer.getStatus() == 1) {
+            //遭到管理员禁用
+            return R.error("该账号已被禁用，请联系管理员");
         }
 
         // 登录之后的关键，将消费者id写入session，后续需要靠这个校验查数据

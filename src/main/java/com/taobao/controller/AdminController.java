@@ -76,4 +76,29 @@ public class AdminController {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return R.success(total);
     }
+
+    @PutMapping("/consumer/{id}/toggle")
+    public R<String> toggleConsumer(@PathVariable Integer id) {
+        Consumer consumer = consumerMapper.selectById(id);
+        if (consumer == null) {
+            return R.error("消费者不存在");
+        }
+        // 0 ↔ 1 切换
+        consumer.setStatus(consumer.getStatus() == null || consumer.getStatus() == 0 ? 1 : 0);
+        consumer.setUpdate_time(null);
+        consumerMapper.updateById(consumer);
+        return R.success(consumer.getStatus() == 1 ? "已禁用" : "已解禁");
+    }
+
+    @PutMapping("/merchant/{id}/toggle")
+    public R<String> toggleMerchant(@PathVariable Integer id) {
+        Merchant merchant = merchantMapper.selectById(id);
+        if (merchant == null) {
+            return R.error("商户不存在");
+        }
+        merchant.setStatus(merchant.getStatus() == null || merchant.getStatus() == 0 ? 1 : 0);
+        merchant.setUpdate_time(null);
+        merchantMapper.updateById(merchant);
+        return R.success(merchant.getStatus() == 1 ? "已禁用" : "已解禁");
+    }
 }
