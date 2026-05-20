@@ -86,8 +86,8 @@ public class ChatController {
 
     // 查两个id的聊天记录
     @GetMapping("/conversation")
-    public R<List<ChatMessage>> conversation(@RequestParam int userId1,
-                                             @RequestParam int userId2,
+    public R<List<ChatMessage>> conversation(@RequestParam("userId1") int userId1,
+                                             @RequestParam("userId2") int userId2,
                                              HttpSession session) {
         // 两个ID中至少有一个是自己
         Integer consumerId = (Integer) session.getAttribute("consumerId");
@@ -106,7 +106,7 @@ public class ChatController {
 
 
     @GetMapping("/consumerNewChat")
-    public R<ChatContactDto> consumerNewChat(@RequestParam int targetId, HttpSession session) {
+    public R<ChatContactDto> consumerNewChat(@RequestParam("targetId") int targetId, HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
             return R.error(401, "请先登录消费者账号");

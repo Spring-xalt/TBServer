@@ -66,7 +66,7 @@ public class RefundController {
 
     // 查询某个订单的退换货申请状态（返回完整 Refund 对象，供消费者或商户使用）
     @GetMapping("/status")
-    public R<Refund> status(@RequestParam int orderId) {
+    public R<Refund> status(@RequestParam("orderId") int orderId) {
         Refund refund = refundService.getByOrderId(orderId);
         // 未申请时 refund 为 null，直接返回
         return R.success(refund);
@@ -77,7 +77,7 @@ public class RefundController {
     // 查询商户的售后订单(商家端售后管理)
     @GetMapping("/merchant/list")
     public R<List<RefundListVO>> merchantList(
-            @RequestParam(required = false) Integer status,
+            @RequestParam(name = "status", required = false) Integer status,
             HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
         if (merchantId == null) {
@@ -89,8 +89,8 @@ public class RefundController {
     // 商户处理售后订单
     @PutMapping("/audit")
     public R<String> audit(
-            @RequestParam int refundId,
-            @RequestParam String action,
+            @RequestParam("refundId") int refundId,
+            @RequestParam("action") String action,
             HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
         if (merchantId == null) {

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
  *@version:1.0
  *@description:
  */
+
 // 用于支持在线更改购物车的临时购物车对象，若提交了，就把对象复制给cart持久化到数据库中
 @Data
 public class CartItem {

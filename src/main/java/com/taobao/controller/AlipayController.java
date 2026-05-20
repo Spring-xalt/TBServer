@@ -54,7 +54,7 @@ public class AlipayController {
 
 
     @GetMapping("/status")
-    public R<String> checkPayStatus(@RequestParam String outTradeNo) {
+    public R<String> checkPayStatus(@RequestParam("outTradeNo") String outTradeNo) {
         try {
             // 创建支付宝客户端
             AlipayClient alipayClient = new DefaultAlipayClient(
