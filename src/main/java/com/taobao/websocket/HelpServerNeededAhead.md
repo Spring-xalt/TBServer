@@ -10,7 +10,7 @@
     D:
     cd computer
     .\natapp.exe -authtoken=8c8cec195b2882b1
-    http://pa26a287.natappfree.cc -> http://127.0.0.1:8080
+    http://uc6a3ed2.natappfree.cc -> http://127.0.0.1:8080
     注意：NATApp 必须一直保持运行，不能关窗口。
 
 演示时需要的账号信息(内网支付这些)：

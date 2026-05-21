@@ -85,7 +85,7 @@
 
 <!-- 主内容区：消费者/商户注册切换 -->
 <main class="container mx-auto px-4 py-8 md:py-12">
-  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+  <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
     <!-- 注册类型切换选项卡 -->
     <div class="border-b border-border">
       <div class="flex">
@@ -96,6 +96,12 @@
           商户注册
         </button>
       </div>
+    </div>
+
+    <!-- 表单标题 -->
+    <div class="text-center pt-6 pb-2">
+      <i class="fa fa-user-plus text-primary text-3xl mb-2 block"></i>
+      <h2 class="text-xl font-bold text-dark">创建新账号</h2>
     </div>
 
     <!-- 消息提示 -->
@@ -120,7 +126,8 @@
                                 <i class="fa fa-user"></i>
                             </span>
             <input type="text" id="consumerUsername"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 12px;"
                    placeholder="请设置登录账号" required>
           </div>
           <p id="usernameError" class="text-red-500 text-xs mt-1 hidden"></p>
@@ -135,7 +142,8 @@
                                 <i class="fa fa-lock"></i>
                             </span>
             <input type="password" id="consumerPassword"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 40px;"
                    placeholder="请设置密码（6-20位）" required>
             <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
               <i class="fa fa-eye"></i>
@@ -153,7 +161,8 @@
                                 <i class="fa fa-lock"></i>
                             </span>
             <input type="password" id="consumerConfirmPassword"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 40px;"
                    placeholder="请再次输入密码" required>
             <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
               <i class="fa fa-eye"></i>
@@ -169,12 +178,6 @@
           </button>
         </div>
 
-        <div class="text-center text-light text-sm mt-4">
-          点击"注册账号"，即表示您同意我们的
-          <a href="#" class="text-primary hover:underline">服务条款</a>
-          和
-          <a href="#" class="text-primary hover:underline">隐私政策</a>
-        </div>
       </form>
     </div>
 
@@ -190,7 +193,8 @@
                                 <i class="fa fa-user"></i>
                             </span>
             <input type="text" id="merchantUsername"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 12px;"
                    placeholder="请设置登录账号" required>
           </div>
           <p id="merchantUsernameError" class="text-red-500 text-xs mt-1 hidden"></p>
@@ -205,7 +209,8 @@
                                 <i class="fa fa-lock"></i>
                             </span>
             <input type="password" id="merchantPassword"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 40px;"
                    placeholder="请设置密码（6-20位）" required>
             <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
               <i class="fa fa-eye"></i>
@@ -223,7 +228,8 @@
                                 <i class="fa fa-lock"></i>
                             </span>
             <input type="password" id="merchantConfirmPassword"
-                   class="w-full pl-10 pr-3 py-2 border border-border rounded-md form-input-focus"
+                   class="w-full py-2 border border-border rounded-md form-input-focus"
+                   style="padding-left: 40px; padding-right: 40px;"
                    placeholder="请再次输入密码" required>
             <button type="button" class="togglePassword absolute inset-y-0 right-0 flex items-center pr-3 text-light hover:text-primary">
               <i class="fa fa-eye"></i>
@@ -239,12 +245,6 @@
           </button>
         </div>
 
-        <div class="text-center text-light text-sm mt-4">
-          点击"注册商户"，即表示您同意我们的
-          <a href="#" class="text-primary hover:underline">商户服务条款</a>
-          和
-          <a href="#" class="text-primary hover:underline">隐私政策</a>
-        </div>
       </form>
     </div>
   </div>
