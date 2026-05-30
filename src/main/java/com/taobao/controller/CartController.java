@@ -121,7 +121,7 @@ public class CartController {
 
     //session层面的删除
     @DeleteMapping("/delete/{index}")
-    public R<String> delete(@PathVariable int index, HttpSession session) {
+    public R<String> delete(@PathVariable("index") int index, HttpSession session) {
         Integer consumerId = getConsumerId(session);
         if (consumerId == null) {
             return R.error(401, "请先登录");

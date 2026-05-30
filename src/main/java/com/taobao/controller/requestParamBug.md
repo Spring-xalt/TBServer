@@ -29,6 +29,7 @@ Spring MVC 如何绑定参数
     // 修复前
     @RequestParam(defaultValue = "1") int page
     // 修复后
+
     @RequestParam(name = "page", defaultValue = "1") int page
    本项目实际修复清单：
     MerchantController  — page, size, merchantName, keyword

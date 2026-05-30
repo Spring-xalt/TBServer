@@ -78,7 +78,7 @@ public class AdminController {
     }
 
     @PutMapping("/consumer/{id}/toggle")
-    public R<String> toggleConsumer(@PathVariable Integer id) {
+    public R<String> toggleConsumer(@PathVariable("id") Integer id) {
         Consumer consumer = consumerMapper.selectById(id);
         if (consumer == null) {
             return R.error("消费者不存在");
@@ -91,7 +91,7 @@ public class AdminController {
     }
 
     @PutMapping("/merchant/{id}/toggle")
-    public R<String> toggleMerchant(@PathVariable Integer id) {
+    public R<String> toggleMerchant(@PathVariable("id") Integer id) {
         Merchant merchant = merchantMapper.selectById(id);
         if (merchant == null) {
             return R.error("商户不存在");

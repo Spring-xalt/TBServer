@@ -32,7 +32,7 @@ public class OrdersController {
     }
 
     @GetMapping("/{id}")
-    public R<Orders> getOrderById(@PathVariable Integer id) {
+    public R<Orders> getOrderById(@PathVariable("id") Integer id) {
         Orders order = ordersService.getOrderById(id);
         if (order == null) {
             return R.error(404, "未找到ID为" + id + "的订单");
@@ -42,14 +42,14 @@ public class OrdersController {
 
 
     @GetMapping("/consumer/{consumer_id}")
-    public List<Orders> getOrdersByConsumer(@PathVariable Integer consumer_id) {
+    public List<Orders> getOrdersByConsumer(@PathVariable("consumer_id") Integer consumer_id) {
         return ordersService.getOrdersByConsumerId(consumer_id);
     }
 
 
 
     @GetMapping("/merchant/{merchant_id}")
-    public List<Orders> getOrdersByMerchant(@PathVariable Integer merchant_id) {
+    public List<Orders> getOrdersByMerchant(@PathVariable("merchant_id") Integer merchant_id) {
         return ordersService.getOrdersByMerchantId(merchant_id);
     }
 
@@ -72,7 +72,7 @@ public class OrdersController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public R<String> deleteOrder(@PathVariable Integer id) {
+    public R<String> deleteOrder(@PathVariable("id") Integer id) {
         Orders order = ordersService.getOrderById(id);
         if (order == null) {
             return R.error(404, "未找到ID为" + id + "的订单，删除失败");
@@ -147,7 +147,7 @@ public class OrdersController {
 
     // 待修改
     @PutMapping("/{orderId}/confirm")
-    public R<String> confirmReciveOrder(@PathVariable Integer orderId) {
+    public R<String> confirmReciveOrder(@PathVariable("orderId") Integer orderId) {
 
         return ordersService.confirm(orderId);
     }

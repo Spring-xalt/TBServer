@@ -37,7 +37,7 @@ public class MerchantController {
 
     //从 URL 路径中获取参数 restful风格
     @GetMapping("/{id}")
-    public R<Merchant> getMerchantById(@PathVariable Integer id) {
+    public R<Merchant> getMerchantById(@PathVariable("id") Integer id) {
         Merchant merchant = merchantService.getMerchantById(id);
         if (merchant == null) {
             return R.error("404, 未找到ID为" + id + "的商户");
@@ -144,7 +144,7 @@ public class MerchantController {
 
     // 删除商户(其对应的产品也应当下架)
     @DeleteMapping("/delete/{id}")
-    public R<String> deleteMerchant(@PathVariable Integer id) {
+    public R<String> deleteMerchant(@PathVariable("id") Integer id) {
         Merchant merchant = merchantService.getMerchantById(id);
         if (merchant == null) {
             return R.error(404, "删除失败：未找到该商户");

@@ -39,7 +39,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public R<Product> getProductById(@PathVariable Integer id) {
+    public R<Product> getProductById(@PathVariable("id") Integer id) {
         Product product = productService.getProductById(id);
         if (product == null) {
             return R.error(404, "未找到ID为" + id + "的商品");
@@ -49,7 +49,7 @@ public class ProductController {
 
 
     @GetMapping("/{id}/image")
-    public ResponseEntity<byte[]> getProductImage(@PathVariable Integer id) {
+    public ResponseEntity<byte[]> getProductImage(@PathVariable("id") Integer id) {
         String imagePath = productService.getProductImage(id);
         if (imagePath == null || imagePath.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "图片不存在");
@@ -194,7 +194,7 @@ try {
     }
 
     @DeleteMapping("/adminDelete/{id}")
-    public R<String> deleteProductForAdmin(@PathVariable Integer id, HttpSession session) {
+    public R<String> deleteProductForAdmin(@PathVariable("id") Integer id, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return R.error(403, "无管理员权限");
         }
@@ -212,7 +212,7 @@ try {
     }
 
     @DeleteMapping("/delete/{id}")
-    public R<String> deleteProduct(@PathVariable Integer id, HttpSession session) {
+    public R<String> deleteProduct(@PathVariable("id") Integer id, HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
         if (merchantId == null) {
             return R.error(401, "请先登录商家账号");
@@ -227,7 +227,7 @@ try {
     }
 
     @GetMapping("/{merchantId}/products")
-    public R<List<Product>> getProductsByMerchantId(@PathVariable Integer merchantId) {
+    public R<List<Product>> getProductsByMerchantId(@PathVariable("merchantId") Integer merchantId) {
         List<Product> products = productService.getProductsByMerchantId(merchantId);
         return R.success("共查询到该商户的" + products.size() + "件商品", products);
     }

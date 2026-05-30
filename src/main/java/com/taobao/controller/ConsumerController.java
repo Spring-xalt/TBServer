@@ -35,7 +35,7 @@ public class ConsumerController {
     }
 
     @GetMapping("/{id}")
-    public R<Consumer> getConsumerById(@PathVariable int id) {
+    public R<Consumer> getConsumerById(@PathVariable("id") int id) {
         Consumer consumer = consumerService.getConsumerById(id);
         if (consumer == null) {
             return R.error(404, "未找到ID为" + id + "的消费者");
@@ -55,7 +55,7 @@ public class ConsumerController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public R<String> deleteCustomer(@PathVariable Integer id) {
+    public R<String> deleteCustomer(@PathVariable("id") Integer id) {
         Consumer consumer = consumerService.getConsumerById(id);
         if (consumer == null) {
             return R.error(404, "删除失败：未找到ID为" + id + "的消费者");
