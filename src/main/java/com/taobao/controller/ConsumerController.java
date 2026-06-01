@@ -26,6 +26,7 @@ public class ConsumerController {
         return R.success("共查询到" + consumers.size() + "位消费者", consumers);
     }
 
+
     @PostMapping("/add")
     public R<String> addConsumer(@RequestBody  Consumer consumer) {
         if (consumerService.addConsumer(consumer)) {
