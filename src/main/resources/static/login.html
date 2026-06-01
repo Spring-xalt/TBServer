@@ -292,11 +292,11 @@
           window.location.href = targetUrl;
 
       } else {
-        showErrorMessage(response.data.message || '登录失败，请重试');
+        showErrorMessage(response.data.msg || '登录失败，请重试');
       }
     } catch (error) {
       console.error(`${role}登录失败:`, error);
-      const errorMsg = error.response?.data?.message || '用户名或密码错误';
+      const errorMsg = error.response?.data?.msg || '用户名或密码错误';
       showErrorMessage(`登录失败: ${errorMsg}`);
     }
 
