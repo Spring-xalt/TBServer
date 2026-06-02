@@ -29,7 +29,7 @@ public class ProductController {
     @GetMapping("/all")
     public R<Map<String, Object>> getAllProducts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "size", defaultValue = "6") int size,
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice) {

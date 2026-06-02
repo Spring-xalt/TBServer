@@ -49,7 +49,7 @@ public class MerchantController {
     @GetMapping("/my-products")
     public R<Map<String, Object>> myProducts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "size", defaultValue = "6") int size,
             HttpSession session) {
 
         Integer merchantId = (Integer) session.getAttribute("merchantId");
