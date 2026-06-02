@@ -124,9 +124,6 @@ try {
             return R.error(401, "请先登录商家账号");
         }
         if (image != null && !image.isEmpty()) {
-            if (image.getSize() > 2 * 1024 * 1024) {
-                return R.error("图片大小不能超过2MB");
-            }
             try {
                 String oldImage = productService.getProductImage(product.getId());
                 String newPath = ((ProductServiceImpl) productService).saveImage(image.getBytes(), image.getOriginalFilename());
@@ -152,9 +149,6 @@ try {
             return R.error("更新必须传入商品ID");
         }
         if (image != null && !image.isEmpty()) {
-            if (image.getSize() > 2 * 1024 * 1024) {
-                return R.error("图片大小不能超过2MB");
-            }
             try {
                 String oldImage = productService.getProductImage(product.getId());
                 String newPath = ((ProductServiceImpl) productService).saveImage(image.getBytes(), image.getOriginalFilename());

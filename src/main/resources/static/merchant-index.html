@@ -389,10 +389,6 @@
       description: description
     })], {type: 'application/json'}));
     if (imageFile) {
-      if (imageFile.size > 2 * 1024 * 1024) {
-        alert('图片大小不能超过2MB');
-        return;
-      }
       formData.append('image', imageFile);
     }
 
@@ -464,11 +460,6 @@
       alert('请选择商品图片');
       return;
     }
-    if (imageFile.size > 2 * 1024 * 1024) {
-      alert('图片大小不能超过2MB');
-      return;
-    }
-
     const formData = new FormData();
     formData.append('product', new Blob([JSON.stringify({
       product_name: productName,

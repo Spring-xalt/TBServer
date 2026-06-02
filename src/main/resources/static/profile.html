@@ -221,6 +221,7 @@
         //关掉其他定时器
         if (pollingTimer) clearInterval(pollingTimer);
         pollingTimer = setInterval(() => {
+
             //每两秒发请求给status确认状态
             axios.get('/alipay/status', { params: { outTradeNo: currentPayOutTradeNo } })
                 .then(resp => {

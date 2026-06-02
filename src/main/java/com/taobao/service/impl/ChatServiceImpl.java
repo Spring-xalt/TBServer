@@ -61,6 +61,7 @@ public class ChatServiceImpl implements ChatService {
 
         //如果是发送方
         QueryWrapper<ChatMessage> wrapper1 = new QueryWrapper<>();
+
         wrapper1.eq("sender_id", consumerId).eq("sender_role", "consumer");
         List<ChatMessage> sentList = chatMessageMapper.selectList(wrapper1);
 
@@ -68,6 +69,7 @@ public class ChatServiceImpl implements ChatService {
             // 入set
             contactSet.add(msg.getReceiver_id());
         }
+
 
         QueryWrapper<ChatMessage> wrapper2 = new QueryWrapper<>();
         wrapper2.eq("receiver_id", consumerId).eq("receiver_role", "consumer");
