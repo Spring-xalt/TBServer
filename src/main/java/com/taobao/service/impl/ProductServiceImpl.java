@@ -137,7 +137,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public IPage<Product> getProductsByFilterAndPage(String type, BigDecimal minPrice,
-                                                      BigDecimal maxPrice, int page, int size) {
+                                                      BigDecimal maxPrice, String sort,
+                                                      int page, int size) {
         QueryWrapper<Product> wrapper = new QueryWrapper<>();
         if (type != null && !type.isEmpty()) {
             wrapper.eq("type", type);
@@ -148,9 +149,29 @@ public class ProductServiceImpl implements ProductService {
         if (maxPrice != null) {
             wrapper.le("price", maxPrice);
         }
-        wrapper.orderByDesc("create_time");
-        Page<Product> pageObj = new Page<>(page, size);
-        return productMapper.selectPage(pageObj, wrapper);
+        if ("price_asc".equals(sort)) {
+            wrapper.orderByAsc("price");
+        } else if ("price_desc".equals(sort)) {
+            wrapper.orderByDesc("price");
+        } else {
+            wrapper.orderByDesc("create_time");
+        }
+        // 先查全量拿总数
+        List<Product> all = productMapper.selectList(wrapper);
+        long total = all.size();
+        // 再手动截取当前页
+        int offset = (page - 1) * size;
+        int to = Math.min(offset + size, all.size());
+        List<Product> records;
+        if (offset < all.size()) {
+            records = all.subList(offset, to);
+        } else {
+            records = new java.util.ArrayList<>();
+        }
+
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
     }
 
     @Override

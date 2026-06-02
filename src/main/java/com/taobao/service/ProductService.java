@@ -37,8 +37,9 @@ public interface ProductService {
 
     IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size);
 
-    // 按分类和价格区间分页筛选
-    IPage<Product> getProductsByFilterAndPage(String type, BigDecimal minPrice, BigDecimal maxPrice, int page, int size);
+    // 按分类、价格区间、排序分页筛选
+    IPage<Product> getProductsByFilterAndPage(String type, BigDecimal minPrice, BigDecimal maxPrice,
+                                               String sort, int page, int size);
 
     String getProductImage(Integer id);
 

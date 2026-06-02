@@ -32,14 +32,16 @@ public class ProductController {
             @RequestParam(name = "size", defaultValue = "6") int size,
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice) {
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(name = "sort", required = false) String sort) {
 
         boolean hasFilter = (type != null && !type.isEmpty())
-                || minPrice != null || maxPrice != null;
+                || minPrice != null || maxPrice != null
+                || (sort != null && !sort.isEmpty() && !"default".equals(sort));
 
         IPage<Product> result;
         if (hasFilter) {
-            result = productService.getProductsByFilterAndPage(type, minPrice, maxPrice, page, size);
+            result = productService.getProductsByFilterAndPage(type, minPrice, maxPrice, sort, page, size);
         } else {
             result = productService.getProductsByPage(page, size);
         }

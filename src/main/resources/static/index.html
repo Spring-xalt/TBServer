@@ -57,6 +57,20 @@
       #searchInput:focus { background: #fff; border-color: #ff6a00; box-shadow: 0 0 0 3px rgba(255,106,0,0.08); }
       #accountDropdown, #merchantDropdown { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); animation: fadeIn 0.2s ease; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+      /* 轮播图 */
+      .banner-container { position: relative; overflow: hidden; border-radius: 12px; height: 280px; }
+      .banner-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; display: flex; align-items: center; padding: 0 60px; }
+      .banner-slide.active { opacity: 1; }
+      .banner-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
+      .banner-dot.active { background: #fff; width: 28px; border-radius: 5px; }
+      .filter-pill { display: inline-flex; align-items: center; padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; border: 1px solid #e8e8e8; background: #fff; color: #666; white-space: nowrap; }
+      .filter-pill:hover { border-color: #ff6a00; color: #ff6a00; }
+      .filter-pill.active { background: #ff6a00; color: #fff; border-color: #ff6a00; }
+      .sort-btn { padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s; background: #f5f5f5; color: #666; border: none; }
+      .sort-btn:hover, .sort-btn.active { background: #ff6a00; color: #fff; }
+      .breadcrumb-tag { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 20px; font-size: 12px; background: #fff0e6; color: #ff6a00; gap: 6px; }
+      .breadcrumb-tag .close { cursor: pointer; opacity: 0.6; font-size: 14px; }
+      .breadcrumb-tag .close:hover { opacity: 1; }
     }
   </style>
 </head>
@@ -178,54 +192,86 @@
     </div>
   </div>
 </header>
+
+<!-- 轮播图 -->
+<div class="container mx-auto px-4 mt-4">
+  <div class="banner-container" style="box-shadow: 0 4px 20px rgba(0,0,0,0.10);">
+    <div class="banner-slide active" style="background: linear-gradient(135deg, #ff6a00 0%, #ff8533 40%, #ffaa66 100%);">
+      <div class="text-white">
+        <p class="text-sm opacity-80 mb-2">NEW ARRIVALS</p>
+        <h2 class="text-3xl font-bold mb-2">新品上市</h2>
+        <p class="text-lg opacity-90">数码电子产品限时特惠，快来选购</p>
+      </div>
+    </div>
+    <div class="banner-slide" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);">
+      <div class="text-white">
+        <p class="text-sm opacity-80 mb-2">HOT SALE</p>
+        <h2 class="text-3xl font-bold mb-2">热销推荐</h2>
+        <p class="text-lg opacity-90">精选好物 品质保证 全场热卖中</p>
+      </div>
+    </div>
+    <div class="banner-slide" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+      <div class="text-white">
+        <p class="text-sm opacity-80 mb-2">SPECIAL OFFER</p>
+        <h2 class="text-3xl font-bold mb-2">特价促销</h2>
+        <p class="text-lg opacity-90">食品饮料满减优惠，不容错过</p>
+      </div>
+    </div>
+    <!-- 轮播指示器 -->
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+      <span class="banner-dot active" data-index="0"></span>
+      <span class="banner-dot" data-index="1"></span>
+      <span class="banner-dot" data-index="2"></span>
+    </div>
+  </div>
+</div>
+
 <!-- 主内容区 -->
 <main class="container mx-auto px-4 py-8">
   <!-- 页面标题 -->
-  <div class="mb-8">
+  <div class="mb-6">
     <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark">商品列表</h1>
-    <p class="text-light mt-2">浏览我们的精选商品</p>
+    <p class="text-light mt-1">浏览我们的精选商品</p>
   </div>
 
-  <div class="flex flex-col lg:flex-row gap-6">
-    <!-- 侧边栏 -->
-    <aside class="w-full lg:w-56 flex-shrink-0">
-      <!-- 分类 -->
-      <div class="bg-white rounded-lg p-4 mb-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-        <h3 class="font-semibold text-dark mb-3 text-sm flex items-center">
-          <i class="fa fa-th-list mr-2 text-primary"></i>商品分类
-        </h3>
-        <ul id="categoryList" class="space-y-1">
-        </ul>
-      </div>
-      <!-- 价格区间 -->
-      <div class="bg-white rounded-lg p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-        <h3 class="font-semibold text-dark mb-3 text-sm flex items-center">
-          <i class="fa fa-cny mr-2 text-primary"></i>价格区间
-        </h3>
-        <ul id="priceRangeList" class="space-y-1">
-        </ul>
-      </div>
-    </aside>
-
-    <!-- 右侧商品区 -->
-    <div class="flex-1 min-w-0">
-      <!-- 产品列表 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="productList">
-      </div>
-      <div id="pagination"></div>
-
-      <!-- 加载提示 -->
-      <div id="loadingIndicator" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        <p class="ml-4 text-light">加载商品中...</p>
-      </div>
-
-      <!-- 无商品提示（默认隐藏） -->
-      <div id="noProducts" class="hidden text-center py-12">
-        <i class="fa fa-shopping-basket text-4xl text-gray-300 mb-4"></i>
-        <p class="text-light">暂无商品可供展示</p>
-      </div>
+  <!-- 筛选栏 -->
+  <div class="bg-white rounded-lg p-4 mb-4" style="box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+    <!-- 分类行 -->
+    <div class="flex items-center flex-wrap gap-2 mb-3">
+      <span class="text-sm text-light mr-2"><i class="fa fa-th-list mr-1"></i>分类:</span>
+      <div id="categoryPills" class="flex flex-wrap gap-2"></div>
     </div>
+    <!-- 价格行 -->
+    <div class="flex items-center flex-wrap gap-2 mb-3">
+      <span class="text-sm text-light mr-2"><i class="fa fa-cny mr-1"></i>价格:</span>
+      <div id="pricePills" class="flex flex-wrap gap-2"></div>
+    </div>
+    <!-- 排序行 -->
+    <div class="flex items-center flex-wrap gap-2 pt-3 border-t border-gray-100">
+      <span class="text-sm text-light mr-2">排序:</span>
+      <button class="sort-btn active" data-sort="default" onclick="selectSort('default')">默认 <i class="fa fa-clock-o ml-1"></i></button>
+      <button class="sort-btn" data-sort="price_asc" onclick="selectSort('price_asc')">价格从低到高 <i class="fa fa-arrow-up ml-1"></i></button>
+      <button class="sort-btn" data-sort="price_desc" onclick="selectSort('price_desc')">价格从高到低 <i class="fa fa-arrow-down ml-1"></i></button>
+      <!-- 面包屑 -->
+      <div id="breadcrumbs" class="flex flex-wrap gap-2 ml-auto"></div>
+    </div>
+  </div>
+
+  <!-- 产品列表 -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="productList">
+  </div>
+  <div id="pagination"></div>
+
+  <!-- 加载提示 -->
+  <div id="loadingIndicator" class="hidden flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    <p class="ml-4 text-light">加载商品中...</p>
+  </div>
+
+  <!-- 无商品提示（默认隐藏） -->
+  <div id="noProducts" class="hidden text-center py-12">
+    <i class="fa fa-shopping-basket text-4xl text-gray-300 mb-4"></i>
+    <p class="text-light">暂无商品可供展示</p>
   </div>
 </main>
 
@@ -256,6 +302,7 @@
   let currentType = '';
   let currentMinPrice = null;
   let currentMaxPrice = null;
+  let currentSort = 'default';
 
   const CATEGORIES = [
     { value: '', label: '全部分类' },
@@ -277,49 +324,32 @@
     { label: '500 以上', min: 500, max: null }
   ];
 
-  function renderCategoryList() {
-    const container = document.getElementById('categoryList');
+  function renderCategoryPills() {
+    const container = document.getElementById('categoryPills');
     let html = '';
     CATEGORIES.forEach(cat => {
       const isActive = currentType === cat.value;
-      html += `
-        <li>
-          <button onclick="selectCategory('${cat.value}')"
-                  class="w-full text-left px-3 py-2 rounded-md text-sm transition-colors
-                         ${isActive
-                           ? 'bg-orange-50 text-primary font-medium'
-                           : 'text-dark hover:bg-gray-100'}">
-            ${cat.label}
-          </button>
-        </li>`;
+      html += `<span class="filter-pill${isActive ? ' active' : ''}" onclick="selectCategory('${cat.value}')">${cat.label}</span>`;
     });
     container.innerHTML = html;
   }
 
-  function renderPriceRangeList() {
-    const container = document.getElementById('priceRangeList');
+  function renderPricePills() {
+    const container = document.getElementById('pricePills');
     let html = '';
     const activeIndex = PRICE_RANGES.findIndex(r =>
         r.min === currentMinPrice && r.max === currentMaxPrice);
     PRICE_RANGES.forEach((range, idx) => {
       const isActive = idx === activeIndex;
-      html += `
-        <li>
-          <button onclick="selectPriceRange(${idx})"
-                  class="w-full text-left px-3 py-2 rounded-md text-sm transition-colors
-                         ${isActive
-                           ? 'bg-orange-50 text-primary font-medium'
-                           : 'text-dark hover:bg-gray-100'}">
-            ${range.label}
-          </button>
-        </li>`;
+      html += `<span class="filter-pill${isActive ? ' active' : ''}" onclick="selectPriceRange(${idx})">${range.label}</span>`;
     });
     container.innerHTML = html;
   }
 
   function selectCategory(type) {
     currentType = type;
-    renderCategoryList();
+    renderCategoryPills();
+    renderBreadcrumbs();
     loadProducts(1);
   }
 
@@ -327,16 +357,98 @@
     const range = PRICE_RANGES[index];
     currentMinPrice = range.min;
     currentMaxPrice = range.max;
-    renderPriceRangeList();
+    renderPricePills();
+    renderBreadcrumbs();
+    loadProducts(1);
+  }
+
+  function selectSort(sort) {
+    currentSort = sort;
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === sort);
+    });
+    loadProducts(1);
+  }
+
+  function clearTypeFilter() {
+    currentType = '';
+    renderCategoryPills();
+    renderBreadcrumbs();
+    loadProducts(1);
+  }
+
+  function clearPriceFilter() {
+    currentMinPrice = null;
+    currentMaxPrice = null;
+    renderPricePills();
+    renderBreadcrumbs();
+    loadProducts(1);
+  }
+
+  function renderBreadcrumbs() {
+    const container = document.getElementById('breadcrumbs');
+    let tags = [];
+    if (currentType) {
+      const cat = CATEGORIES.find(c => c.value === currentType);
+      tags.push({ label: '分类: ' + (cat ? cat.label : currentType), clear: 'clearTypeFilter()' });
+    }
+    if (currentMinPrice !== null || currentMaxPrice !== null) {
+      const range = PRICE_RANGES.find(r => r.min === currentMinPrice && r.max === currentMaxPrice);
+      tags.push({ label: '价格: ' + (range ? range.label : ''), clear: 'clearPriceFilter()' });
+    }
+    let html = '';
+    tags.forEach(t => {
+      html += `<span class="breadcrumb-tag">${t.label}<i class="fa fa-close close" onclick="event.stopPropagation(); ${t.clear}"></i></span>`;
+    });
+    if (tags.length > 1) {
+      html += `<span class="text-sm text-light cursor-pointer hover:text-primary" onclick="clearAllFilters()">清除全部</span>`;
+    }
+    container.innerHTML = html;
+  }
+
+  function clearAllFilters() {
+    currentType = '';
+    currentMinPrice = null;
+    currentMaxPrice = null;
+    renderCategoryPills();
+    renderPricePills();
+    renderBreadcrumbs();
     loadProducts(1);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
-    renderCategoryList();
-    renderPriceRangeList();
+    renderCategoryPills();
+    renderPricePills();
+    renderBreadcrumbs();
     loadProducts();
+    initBanner();
   });
+
+  // 轮播图
+  function initBanner() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dot');
+    let current = 0;
+    let timer;
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function next() { goTo((current + 1) % slides.length); }
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => { goTo(parseInt(dot.dataset.index)); resetTimer(); });
+    });
+
+    function resetTimer() { clearInterval(timer); timer = setInterval(next, 4000); }
+    resetTimer();
+  }
 
   // 检查登录状态（依赖后端提供 /auth/status）
   function checkLoginStatus() {
@@ -410,6 +522,9 @@
     }
     if (currentMaxPrice !== null) {
       params.maxPrice = currentMaxPrice;
+    }
+    if (currentSort && currentSort !== 'default') {
+      params.sort = currentSort;
     }
     axios.get('/product/all', { params })
             .then(resp => {
@@ -514,6 +629,8 @@
     productListElement.innerHTML = '';
     noProductsElement.classList.add('hidden');
     loadingIndicator.classList.remove('hidden');
+    const paginationElement = document.getElementById('pagination');
+    if (paginationElement) paginationElement.innerHTML = '';
 
     axios.get('/product/search', { params: { keyword } })
             .then(resp => {
@@ -566,6 +683,7 @@
                 </div>
                 <div class="p-4">
                     <h3 class="font-medium text-dark line-clamp-1">${product.product_name}</h3>
+                    ${product.type ? `<span class="inline-block mt-1 px-2 py-0.5 bg-orange-50 text-primary text-xs rounded-full">${product.type}</span>` : ''}
                     <p class="text-primary font-bold mt-2">¥${price}</p>
                     <p class="text-light text-sm mt-1 line-clamp-2 h-10">${product.description || '暂无描述'}</p>
                     <div class="mt-4">
