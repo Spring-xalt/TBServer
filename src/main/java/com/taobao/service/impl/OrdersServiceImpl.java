@@ -43,7 +43,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> getAllOrders() {
-        return ordersMapper.selectList(null);
+        QueryWrapper<Orders> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return ordersMapper.selectList(wrapper);
     }
 
     @Override

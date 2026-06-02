@@ -137,6 +137,19 @@
           <textarea id="editDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
         </div>
         <div>
+          <label class="block text-sm text-dark mb-1">商品分类</label>
+          <select id="editType" class="w-full border border-border rounded px-3 py-2">
+            <option value="">请选择分类</option>
+            <option value="数码电子">数码电子</option>
+            <option value="服装鞋帽">服装鞋帽</option>
+            <option value="生活用品">生活用品</option>
+            <option value="学习办公">学习办公</option>
+            <option value="食品饮料">食品饮料</option>
+            <option value="美妆个护">美妆个护</option>
+            <option value="运动户外">运动户外</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm text-dark mb-1">商品图片 <span class="text-light text-xs">(可选，不选则保留原图)</span></label>
           <input type="file" id="editImage" accept="image/*" class="w-full border border-border rounded px-3 py-2">
           <img id="editImagePreview" class="mt-2 hidden w-full h-40 object-cover rounded">
@@ -173,6 +186,19 @@
         <div>
           <label class="block text-sm text-dark mb-1">描述</label>
           <textarea id="addDescription" rows="4" class="w-full border border-border rounded px-3 py-2"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm text-dark mb-1">商品分类</label>
+          <select id="addType" class="w-full border border-border rounded px-3 py-2">
+            <option value="">请选择分类</option>
+            <option value="数码电子">数码电子</option>
+            <option value="服装鞋帽">服装鞋帽</option>
+            <option value="生活用品">生活用品</option>
+            <option value="学习办公">学习办公</option>
+            <option value="食品饮料">食品饮料</option>
+            <option value="美妆个护">美妆个护</option>
+            <option value="运动户外">运动户外</option>
+          </select>
         </div>
         <div>
           <label class="block text-sm text-dark mb-1">商品图片 <span class="text-red-500">*</span></label>
@@ -322,13 +348,14 @@
          onerror="this.src='https://picsum.photos/seed/${product.id}/300/200'">
     <div class="p-4">
         <h3 class="font-medium text-dark truncate">${product.product_name}</h3>
+        ${product.type ? `<span class="inline-block mt-1 px-2 py-0.5 bg-orange-50 text-primary text-xs rounded">${product.type}</span>` : ''}
         <p class="text-primary font-bold mt-2">¥${product.price ? product.price.toFixed(2) : '0.00'}</p>
         <p class="text-light text-sm mt-1">库存：${product.stock}</p>
         <p class="text-light text-sm mt-1">${product.description ? product.description : '暂无描述'}</p>
 
 
         <div class="flex space-x-2 mt-2">
-        <button onclick="openEditModal(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, ${product.stock}, '${(product.description || '').replace(/'/g, "\\'")}')"
+        <button onclick="openEditModal(${product.id}, '${product.product_name.replace(/'/g, "\\'")}', ${product.price}, ${product.stock}, '${(product.description || '').replace(/'/g, "\\'")}', '${(product.type || '').replace(/'/g, "\\'")}')"
             class="px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
             编辑
         </button>
@@ -350,12 +377,13 @@
 
 
   // 打开编辑弹窗，预填当前值
-  function openEditModal(id, name, price, stock, description) {
+  function openEditModal(id, name, price, stock, description, type) {
     document.getElementById('editProductId').value = id;
     document.getElementById('editProductName').value = name;
     document.getElementById('editPrice').value = price;
     document.getElementById('editStock').value = stock;
     document.getElementById('editDescription').value = description;
+    document.getElementById('editType').value = type || '';
     document.getElementById('editImage').value = '';
     document.getElementById('editImagePreview').classList.add('hidden');
     document.getElementById('editModal').classList.remove('hidden');
@@ -380,13 +408,16 @@
       return;
     }
 
+    const type = document.getElementById('editType').value;
+
     const formData = new FormData();
     formData.append('product', new Blob([JSON.stringify({
       id: parseInt(productId),
       product_name: productName,
       price: price,
       stock: stock,
-      description: description
+      description: description,
+      type: type || null
     })], {type: 'application/json'}));
     if (imageFile) {
       formData.append('image', imageFile);
@@ -434,6 +465,7 @@
     document.getElementById('addPrice').value = '';
     document.getElementById('addStock').value = '';
     document.getElementById('addDescription').value = '';
+    document.getElementById('addType').value = '';
     document.getElementById('addImage').value = '';
     document.getElementById('addImagePreview').classList.add('hidden');
     document.getElementById('addModal').classList.remove('hidden');
@@ -460,12 +492,15 @@
       alert('请选择商品图片');
       return;
     }
+    const type = document.getElementById('addType').value;
+
     const formData = new FormData();
     formData.append('product', new Blob([JSON.stringify({
       product_name: productName,
       price: price,
       stock: stock,
-      description: description
+      description: description,
+      type: type || null
     })], {type: 'application/json'}));
     formData.append('image', imageFile);
 

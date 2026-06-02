@@ -50,18 +50,24 @@ public class AdminController {
 
     @GetMapping("/consumers")
     public R<List<Consumer>> consumers() {
-        return R.success(consumerMapper.selectList(null));
+        QueryWrapper<Consumer> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return R.success(consumerMapper.selectList(wrapper));
     }
 
 
     @GetMapping("/merchants")
     public R<List<Merchant>> merchants() {
-        return R.success(merchantMapper.selectList(null));
+        QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return R.success(merchantMapper.selectList(wrapper));
     }
 
     @GetMapping("/orders")
     public R<List<Orders>> orders() {
-        return R.success(ordersMapper.selectList(null));
+        QueryWrapper<Orders> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return R.success(ordersMapper.selectList(wrapper));
     }
 
     @GetMapping("/today-total")

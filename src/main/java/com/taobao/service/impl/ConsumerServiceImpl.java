@@ -42,7 +42,9 @@ public class ConsumerServiceImpl implements ConsumerService {
 
     @Override
     public List<Consumer> getAllConsumers() {
-        return consumerMapper.selectList(null);
+        QueryWrapper<Consumer> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return consumerMapper.selectList(wrapper);
     }
 
     @Transactional

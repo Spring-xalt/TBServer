@@ -40,10 +40,9 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     public List<Merchant> getAllMerchants() {
-        List<Merchant> list = merchantMapper.selectList(null);
-        list.forEach(System.out::println);
-
-        return merchantMapper.selectList(null);
+        QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
+        wrapper.orderByDesc("create_time");
+        return merchantMapper.selectList(wrapper);
     }
 
     @Override

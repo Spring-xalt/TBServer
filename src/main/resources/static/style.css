@@ -591,3 +591,20 @@ a[class*="border-blue-500"]:hover {
 .togglePassword:hover {
   color: var(--primary) !important;
 }
+
+/* ---------- 侧边栏分类 & 价格筛选 ---------- */
+#categoryList button,
+#priceRangeList button {
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+#categoryList button:hover:not([class*="bg-orange"]),
+#priceRangeList button:hover:not([class*="bg-orange"]) {
+  background: #f5f5f5;
+}
+#categoryList button[class*="bg-orange"],
+#priceRangeList button[class*="bg-orange"] {
+  background: #fff0e6 !important;
+  color: var(--primary) !important;
+  font-weight: 600;
+}

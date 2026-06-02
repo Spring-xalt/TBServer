@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.entity.Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductService {
@@ -35,6 +36,9 @@ public interface ProductService {
 
 
     IPage<Product> getProductsByMerchantIdAndPage(int merchantId, int page, int size);
+
+    // 按分类和价格区间分页筛选
+    IPage<Product> getProductsByFilterAndPage(String type, BigDecimal minPrice, BigDecimal maxPrice, int page, int size);
 
     String getProductImage(Integer id);
 

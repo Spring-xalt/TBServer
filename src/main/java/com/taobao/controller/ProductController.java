@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +29,21 @@ public class ProductController {
     @GetMapping("/all")
     public R<Map<String, Object>> getAllProducts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name = "size", defaultValue = "8") int size) {
-        IPage<Product> result = productService.getProductsByPage(page, size);
+            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "type", required = false) String type,
+            @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice) {
+
+        boolean hasFilter = (type != null && !type.isEmpty())
+                || minPrice != null || maxPrice != null;
+
+        IPage<Product> result;
+        if (hasFilter) {
+            result = productService.getProductsByFilterAndPage(type, minPrice, maxPrice, page, size);
+        } else {
+            result = productService.getProductsByPage(page, size);
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("products", result.getRecords());
         data.put("total", result.getTotal());

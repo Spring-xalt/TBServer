@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,6 +62,7 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getProductsByMerchantId(Integer merchantId) {
         QueryWrapper<Product> wrapper = new QueryWrapper<>();
         wrapper.eq("merchant_id", merchantId);
+        wrapper.orderByDesc("create_time");
         return productMapper.selectList(wrapper);
     }
 
@@ -72,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
                 .like(Product::getProduct_name, msg)
                 .or()
                 .like(Product::getDescription, msg);
+        queryWrapper.orderByDesc("create_time");
         return productMapper.selectList(queryWrapper);
     }
 
@@ -82,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
                 .and(w -> w.like("product_name", keyword)
                         .or()
                         .like("description", keyword));
+        wrapper.orderByDesc("create_time");
         return productMapper.selectList(wrapper);
     }
 
@@ -98,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
         existing.setPrice(product.getPrice());
         existing.setStock(product.getStock());
         existing.setDescription(product.getDescription());
+        existing.setType(product.getType());
         if (product.getImage() != null) {
             existing.setImage(product.getImage());
         }
@@ -114,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
         existing.setPrice(product.getPrice());
         existing.setStock(product.getStock());
         existing.setDescription(product.getDescription());
+        existing.setType(product.getType());
         if (product.getImage() != null) {
             existing.setImage(product.getImage());
         }
@@ -127,6 +133,24 @@ public class ProductServiceImpl implements ProductService {
             return false;
         }
         return productMapper.deleteById(productId) > 0;
+    }
+
+    @Override
+    public IPage<Product> getProductsByFilterAndPage(String type, BigDecimal minPrice,
+                                                      BigDecimal maxPrice, int page, int size) {
+        QueryWrapper<Product> wrapper = new QueryWrapper<>();
+        if (type != null && !type.isEmpty()) {
+            wrapper.eq("type", type);
+        }
+        if (minPrice != null) {
+            wrapper.ge("price", minPrice);
+        }
+        if (maxPrice != null) {
+            wrapper.le("price", maxPrice);
+        }
+        wrapper.orderByDesc("create_time");
+        Page<Product> pageObj = new Page<>(page, size);
+        return productMapper.selectPage(pageObj, wrapper);
     }
 
     @Override

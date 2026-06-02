@@ -26,6 +26,8 @@ public class Product {
     private BigDecimal price;
     //库存量
     private Integer stock;
+    // 商品分类
+    private String type;
 
     private String description;
 

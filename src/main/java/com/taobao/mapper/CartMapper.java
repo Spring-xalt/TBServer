@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CartMapper extends BaseMapper<Cart>{
     //  加载：查询某消费者在 cart 表中的所有记录（只查 cart 表，不关联其他表）
-    @Select("SELECT * FROM cart WHERE consumer_id = #{consumerId}")
+    @Select("SELECT * FROM cart WHERE consumer_id = #{consumerId} ORDER BY create_time DESC")
     List<Cart> selectByConsumerId(@Param("consumerId") int consumerId);
 
 

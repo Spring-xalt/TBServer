@@ -113,6 +113,7 @@ public class RefundServiceImpl implements RefundService {
         wrapper.eq("consumer_id", consumerId);
         wrapper.eq("status", 3);
         wrapper.gt("create_time", LocalDateTime.now().minusDays(30));
+        wrapper.orderByDesc("create_time");
         List<Orders> candidateOrders = ordersMapper.selectList(wrapper);
         // 利用 canApplyRefund 进行完整校验（未评价、未申请等）
         List<Orders> result = new ArrayList<>();

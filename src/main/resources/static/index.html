@@ -186,25 +186,46 @@
     <p class="text-light mt-2">浏览我们的精选商品</p>
   </div>
 
-  <!-- 产品列表 -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="productList">
-    <!-- 产品卡片将通过JavaScript动态生成 -->
-  </div>
-  <div id="pagination"></div>
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- 侧边栏 -->
+    <aside class="w-full lg:w-56 flex-shrink-0">
+      <!-- 分类 -->
+      <div class="bg-white rounded-lg p-4 mb-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <h3 class="font-semibold text-dark mb-3 text-sm flex items-center">
+          <i class="fa fa-th-list mr-2 text-primary"></i>商品分类
+        </h3>
+        <ul id="categoryList" class="space-y-1">
+        </ul>
+      </div>
+      <!-- 价格区间 -->
+      <div class="bg-white rounded-lg p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <h3 class="font-semibold text-dark mb-3 text-sm flex items-center">
+          <i class="fa fa-cny mr-2 text-primary"></i>价格区间
+        </h3>
+        <ul id="priceRangeList" class="space-y-1">
+        </ul>
+      </div>
+    </aside>
 
+    <!-- 右侧商品区 -->
+    <div class="flex-1 min-w-0">
+      <!-- 产品列表 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="productList">
+      </div>
+      <div id="pagination"></div>
 
-  <!-- 加载提示 -->
-  <div id="loadingIndicator" class="flex justify-center items-center py-12">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    <p class="ml-4 text-light">加载商品中...</p>
-  </div>
+      <!-- 加载提示 -->
+      <div id="loadingIndicator" class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <p class="ml-4 text-light">加载商品中...</p>
+      </div>
 
-
-
-  <!-- 无商品提示（默认隐藏） -->
-  <div id="noProducts" class="hidden text-center py-12">
-    <i class="fa fa-shopping-basket text-4xl text-gray-300 mb-4"></i>
-    <p class="text-light">暂无商品可供展示</p>
+      <!-- 无商品提示（默认隐藏） -->
+      <div id="noProducts" class="hidden text-center py-12">
+        <i class="fa fa-shopping-basket text-4xl text-gray-300 mb-4"></i>
+        <p class="text-light">暂无商品可供展示</p>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -231,9 +252,89 @@
   //让如果要修改单页商品数 此处pageSize和后端的dedfault都要修改
   let currentPage = 1;
   const pageSize = 8;
+  // 筛选状态
+  let currentType = '';
+  let currentMinPrice = null;
+  let currentMaxPrice = null;
+
+  const CATEGORIES = [
+    { value: '', label: '全部分类' },
+    { value: '数码电子', label: '数码电子' },
+    { value: '服装鞋帽', label: '服装鞋帽' },
+    { value: '生活用品', label: '生活用品' },
+    { value: '学习办公', label: '学习办公' },
+    { value: '食品饮料', label: '食品饮料' },
+    { value: '美妆个护', label: '美妆个护' },
+    { value: '运动户外', label: '运动户外' }
+  ];
+
+  const PRICE_RANGES = [
+    { label: '全部', min: null, max: null },
+    { label: '0 - 50', min: 0, max: 50 },
+    { label: '50 - 100', min: 50, max: 100 },
+    { label: '100 - 200', min: 100, max: 200 },
+    { label: '200 - 500', min: 200, max: 500 },
+    { label: '500 以上', min: 500, max: null }
+  ];
+
+  function renderCategoryList() {
+    const container = document.getElementById('categoryList');
+    let html = '';
+    CATEGORIES.forEach(cat => {
+      const isActive = currentType === cat.value;
+      html += `
+        <li>
+          <button onclick="selectCategory('${cat.value}')"
+                  class="w-full text-left px-3 py-2 rounded-md text-sm transition-colors
+                         ${isActive
+                           ? 'bg-orange-50 text-primary font-medium'
+                           : 'text-dark hover:bg-gray-100'}">
+            ${cat.label}
+          </button>
+        </li>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderPriceRangeList() {
+    const container = document.getElementById('priceRangeList');
+    let html = '';
+    const activeIndex = PRICE_RANGES.findIndex(r =>
+        r.min === currentMinPrice && r.max === currentMaxPrice);
+    PRICE_RANGES.forEach((range, idx) => {
+      const isActive = idx === activeIndex;
+      html += `
+        <li>
+          <button onclick="selectPriceRange(${idx})"
+                  class="w-full text-left px-3 py-2 rounded-md text-sm transition-colors
+                         ${isActive
+                           ? 'bg-orange-50 text-primary font-medium'
+                           : 'text-dark hover:bg-gray-100'}">
+            ${range.label}
+          </button>
+        </li>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function selectCategory(type) {
+    currentType = type;
+    renderCategoryList();
+    loadProducts(1);
+  }
+
+  function selectPriceRange(index) {
+    const range = PRICE_RANGES[index];
+    currentMinPrice = range.min;
+    currentMaxPrice = range.max;
+    renderPriceRangeList();
+    loadProducts(1);
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     checkLoginStatus();
+    renderCategoryList();
+    renderPriceRangeList();
     loadProducts();
   });
 
@@ -299,8 +400,18 @@
     loadingIndicator.classList.remove('hidden');
     if (paginationElement) paginationElement.innerHTML = '';
 
-    // 请求分页接口
-    axios.get('/product/all', { params: { page, size: pageSize } })
+    // 请求分页接口（带筛选参数）
+    const params = { page, size: pageSize };
+    if (currentType) {
+      params.type = currentType;
+    }
+    if (currentMinPrice !== null) {
+      params.minPrice = currentMinPrice;
+    }
+    if (currentMaxPrice !== null) {
+      params.maxPrice = currentMaxPrice;
+    }
+    axios.get('/product/all', { params })
             .then(resp => {
               loadingIndicator.classList.add('hidden');
               const body = resp.data;
