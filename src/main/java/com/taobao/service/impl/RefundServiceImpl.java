@@ -51,10 +51,9 @@ public class RefundServiceImpl implements RefundService {
         if (type != 1 && type != 2) {
             return R.error("申请类型无效（1=退货退款，2=换货）");
         }
-        // 3. 倒查商品信息
+        // 3. 通过订单中的 product_id 直接查商品信息
         Orders order = ordersMapper.selectById(orderId);
-        Product product = productMapper.selectOne(
-                new QueryWrapper<Product>().eq("product_name", order.getProduct_name()));
+        Product product = productMapper.selectById(order.getProduct_id());
         if (product == null) {
             return R.error("商品信息异常，无法申请");
         }

@@ -1,6 +1,5 @@
 package com.taobao.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
 import com.taobao.dto.ReviewVO;
 import com.taobao.entity.*;
@@ -64,12 +63,8 @@ public class ReviewServiceImpl implements ReviewService {
         if (score < 1 || score > 5) {
             return R.error("评分必须在1-5之间");
         }
-        /*
-         屎山代码雏形，orders表中忘记了product_id字段设计。导致这里很被动，更改成本又过大
-         */
-        // 根据商品名查商品表，获取 product_id 和 merchant_id
-        Product product = productMapper.selectOne(
-                new QueryWrapper<Product>().eq("product_name", order.getProduct_name()));
+        // 通过订单中的 product_id 直接查商品表
+        Product product = productMapper.selectById(order.getProduct_id());
         if (product == null) {
             return R.error("商品信息异常，无法评价");
         }

@@ -93,6 +93,7 @@ public class OrdersServiceImpl implements OrdersService {
             order.setConsumer_id(consumerId);
             order.setMerchant_id(item.getMerchantId());
             order.setProduct_name(item.getProductName());
+            order.setProduct_id(item.getProductId());
             order.setTotal_amount(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             // 先生成未支付订单
             order.setStatus(1);

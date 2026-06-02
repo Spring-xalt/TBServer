@@ -22,6 +22,8 @@ public class Orders {
     // 消费者ID（外键）
     private Integer consumer_id;
     private String product_name;
+    // 商品ID（外键）
+    private Integer product_id;
     private BigDecimal total_amount;
 
 
