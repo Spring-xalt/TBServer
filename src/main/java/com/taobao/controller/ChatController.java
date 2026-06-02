@@ -41,8 +41,6 @@ public class ChatController {
     private MerchantMapper merchantMapper;
 
 
-
-
     // 查联系人列表
     @GetMapping("/contacts")
     public R<List<ChatContactDto>> contacts(HttpSession session) {
