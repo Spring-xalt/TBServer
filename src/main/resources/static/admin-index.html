@@ -98,7 +98,12 @@
 
     <!-- 消费者概览 -->
     <div id="tab-consumers" class="tab-content hidden">
-        <h2 class="text-2xl font-bold text-dark mb-6">消费者概览</h2>
+        <h2 class="text-2xl font-bold text-dark mb-4">消费者概览</h2>
+
+        <!-- 筛选栏 -->
+        <div id="consumerFilters" class="flex gap-2 flex-wrap mb-4"></div>
+
+        <!-- 表格 -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -115,11 +120,18 @@
                 <tbody id="consumerTableBody"></tbody>
             </table>
         </div>
+
+        <!-- 分页 -->
+        <div id="consumerPagination" class="flex justify-center mt-6"></div>
     </div>
 
     <!-- 商户概览 -->
     <div id="tab-merchants" class="tab-content hidden">
-        <h2 class="text-2xl font-bold text-dark mb-6">商户概览</h2>
+        <h2 class="text-2xl font-bold text-dark mb-4">商户概览</h2>
+
+        <!-- 筛选栏 -->
+        <div id="merchantFilters" class="flex gap-2 flex-wrap mb-4"></div>
+
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -136,11 +148,18 @@
                 <tbody id="merchantTableBody"></tbody>
             </table>
         </div>
+
+        <!-- 分页 -->
+        <div id="merchantPagination" class="flex justify-center mt-6"></div>
     </div>
 
     <!-- 订单概览 -->
     <div id="tab-orders" class="tab-content hidden">
-        <h2 class="text-2xl font-bold text-dark mb-6">订单概览</h2>
+        <h2 class="text-2xl font-bold text-dark mb-4">订单概览</h2>
+
+        <!-- 筛选栏 -->
+        <div id="orderFilters" class="flex gap-2 flex-wrap mb-4"></div>
+
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -155,6 +174,9 @@
                 <tbody id="orderTableBody"></tbody>
             </table>
         </div>
+
+        <!-- 分页 -->
+        <div id="orderPagination" class="flex justify-center mt-6"></div>
     </div>
 
     <!-- 今日交易额 -->
@@ -187,9 +209,9 @@
         currentTab = tab;
         // 加载对应数据
         if (tab === 'products') { buildProductTypeFilters(); loadProducts(); }
-        else if (tab === 'consumers') loadConsumers();
-        else if (tab === 'merchants') loadMerchants();
-        else if (tab === 'orders') loadOrders();
+        else if (tab === 'consumers') { buildConsumerFilters(); loadConsumers(); }
+        else if (tab === 'merchants') { buildMerchantFilters(); loadMerchants(); }
+        else if (tab === 'orders') { buildOrderFilters(); loadOrders(); }
         else if (tab === 'today') loadTodayTotal();
     }
 
@@ -293,65 +315,219 @@
     }
 
     // ========== 消费者概览 ==========
-    function loadConsumers() {
-        axios.get('/admin/consumers')
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    const tbody = document.getElementById('consumerTableBody');
-                    tbody.innerHTML = resp.data.data.map(c => `
-                        <tr class="border-b border-border">
-                            <td class="px-6 py-4">${c.id}</td>
-                            <td class="px-6 py-4">${c.username}</td>
-                            <td class="px-6 py-4">${c.consumer_name}</td>
-                            <td class="px-6 py-4">¥${c.account_balance.toFixed(2)}</td>
-                            <td class="px-6 py-4">${formatTime(c.create_time)}</td>
-                            <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${c.status === 1 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${c.status === 1 ? '已禁用' : '正常'}</span></td>
-                            <td class="px-6 py-4"><button onclick="toggleConsumer(${c.id})" class="px-3 py-1 rounded text-xs font-medium ${c.status === 1 ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">${c.status === 1 ? '解禁' : '禁用'}</button></td>
-                        </tr>
-                    `).join('');
-                }
-            });
+    // ========== 消费者概览 ==========
+    let consumerPage = 1, consumerPages = 1, consumerSize = 5;
+    let currentConsumerFilter = '';  // '' | 'high' | 'low' | 'disabled'
+
+    function buildConsumerFilters() {
+        const filters = [
+            { v: '', label: '全部用户' },
+            { v: 'high', label: '大额用户' },
+            { v: 'low', label: '小额用户' },
+            { v: 'disabled', label: '已禁用用户' }
+        ];
+        document.getElementById('consumerFilters').innerHTML = filters.map(f => {
+            const active = currentConsumerFilter === f.v;
+            return `<span onclick="filterConsumers('${f.v}')" class="px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${active ? 'bg-primary text-white border-primary' : 'bg-white text-light border-gray-200 hover:border-primary hover:text-primary'}">${f.label}</span>`;
+        }).join('');
+    }
+
+    function filterConsumers(filter) {
+        currentConsumerFilter = filter;
+        consumerPage = 1;
+        buildConsumerFilters();
+        loadConsumers();
+    }
+
+    function loadConsumers(pg) {
+        if (pg) consumerPage = pg;
+        const tbody = document.getElementById('consumerTableBody');
+        const pagination = document.getElementById('consumerPagination');
+        tbody.innerHTML = '';
+        pagination.innerHTML = '';
+
+        const params = { page: consumerPage, size: consumerSize };
+        if (currentConsumerFilter === 'high') {
+            params.status = 0;
+            params.balanceMin = 500;
+        } else if (currentConsumerFilter === 'low') {
+            params.status = 0;
+            params.balanceMax = 499;
+        } else if (currentConsumerFilter === 'disabled') {
+            params.status = 1;
+        }
+
+        axios.get('/admin/consumers/paged', { params }).then(resp => {
+            if (resp.data.code === 200 && resp.data.data) {
+                const d = resp.data.data;
+                consumerPages = d.pages || 1;
+                tbody.innerHTML = (d.records || []).map(c => `
+                    <tr class="border-b border-border">
+                        <td class="px-6 py-4">${c.id}</td>
+                        <td class="px-6 py-4">${c.username}</td>
+                        <td class="px-6 py-4">${c.consumer_name || '-'}</td>
+                        <td class="px-6 py-4">¥${(c.account_balance || 0).toFixed(2)}</td>
+                        <td class="px-6 py-4">${formatTime(c.create_time)}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${c.status === 1 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${c.status === 1 ? '已禁用' : '正常'}</span></td>
+                        <td class="px-6 py-4"><button onclick="toggleConsumer(${c.id})" class="px-3 py-1 rounded text-xs font-medium ${c.status === 1 ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">${c.status === 1 ? '解禁' : '禁用'}</button></td>
+                    </tr>
+                `).join('');
+                renderConsumerPagination();
+            }
+        });
+    }
+
+    function renderConsumerPagination() {
+        const pagination = document.getElementById('consumerPagination');
+        if (consumerPages <= 1) { pagination.innerHTML = ''; return; }
+        pagination.innerHTML = `
+            <div class="flex items-center gap-2 text-sm">
+                <button onclick="loadConsumers(${consumerPage - 1})" ${consumerPage <= 1 ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${consumerPage <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">上一页</button>
+                <span class="text-light">第 ${consumerPage} / ${consumerPages} 页</span>
+                <button onclick="loadConsumers(${consumerPage + 1})" ${consumerPage >= consumerPages ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${consumerPage >= consumerPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">下一页</button>
+            </div>`;
     }
 
     // ========== 商户概览 ==========
-    function loadMerchants() {
-        axios.get('/admin/merchants')
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    const tbody = document.getElementById('merchantTableBody');
-                    tbody.innerHTML = resp.data.data.map(m => `
-                        <tr class="border-b border-border">
-                            <td class="px-6 py-4">${m.id}</td>
-                            <td class="px-6 py-4">${m.username}</td>
-                            <td class="px-6 py-4">${m.merchant_name}</td>
-                            <td class="px-6 py-4">¥${m.revenue.toFixed(2)}</td>
-                            <td class="px-6 py-4">${formatTime(m.create_time)}</td>
-                            <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${m.status === 1 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${m.status === 1 ? '已禁用' : '正常'}</span></td>
-                            <td class="px-6 py-4"><button onclick="toggleMerchant(${m.id})" class="px-3 py-1 rounded text-xs font-medium ${m.status === 1 ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">${m.status === 1 ? '解禁' : '禁用'}</button></td>
-                        </tr>
-                    `).join('');
-                }
-            });
+    let merchantPage = 1, merchantPages = 1, merchantSize = 5;
+    let currentMerchantFilter = '';  // '' | 'hot' | 'plain' | 'disabled'
+
+    function buildMerchantFilters() {
+        const filters = [
+            { v: '', label: '全部商户' },
+            { v: 'hot', label: '热销商户' },
+            { v: 'plain', label: '平销商户' },
+            { v: 'disabled', label: '已停用商户' }
+        ];
+        document.getElementById('merchantFilters').innerHTML = filters.map(f => {
+            const active = currentMerchantFilter === f.v;
+            return `<span onclick="filterMerchants('${f.v}')" class="px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${active ? 'bg-primary text-white border-primary' : 'bg-white text-light border-gray-200 hover:border-primary hover:text-primary'}">${f.label}</span>`;
+        }).join('');
+    }
+
+    function filterMerchants(filter) {
+        currentMerchantFilter = filter;
+        merchantPage = 1;
+        buildMerchantFilters();
+        loadMerchants();
+    }
+
+    function loadMerchants(pg) {
+        if (pg) merchantPage = pg;
+        const tbody = document.getElementById('merchantTableBody');
+        const pagination = document.getElementById('merchantPagination');
+        tbody.innerHTML = '';
+        pagination.innerHTML = '';
+
+        const params = { page: merchantPage, size: merchantSize };
+        if (currentMerchantFilter === 'hot') {
+            params.status = 0;
+            params.revenueMin = 5000;
+        } else if (currentMerchantFilter === 'plain') {
+            params.status = 0;
+            params.revenueMax = 4999;
+        } else if (currentMerchantFilter === 'disabled') {
+            params.status = 1;
+        }
+
+        axios.get('/admin/merchants/paged', { params }).then(resp => {
+            if (resp.data.code === 200 && resp.data.data) {
+                const d = resp.data.data;
+                merchantPages = d.pages || 1;
+                tbody.innerHTML = (d.records || []).map(m => `
+                    <tr class="border-b border-border">
+                        <td class="px-6 py-4">${m.id}</td>
+                        <td class="px-6 py-4">${m.username}</td>
+                        <td class="px-6 py-4">${m.merchant_name || m.username}</td>
+                        <td class="px-6 py-4">¥${(m.revenue || 0).toFixed(2)}</td>
+                        <td class="px-6 py-4">${formatTime(m.create_time)}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${m.status === 1 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${m.status === 1 ? '已禁用' : '正常'}</span></td>
+                        <td class="px-6 py-4"><button onclick="toggleMerchant(${m.id})" class="px-3 py-1 rounded text-xs font-medium ${m.status === 1 ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white">${m.status === 1 ? '解禁' : '禁用'}</button></td>
+                    </tr>
+                `).join('');
+                renderMerchantPagination();
+            }
+        });
+    }
+
+    function renderMerchantPagination() {
+        const pagination = document.getElementById('merchantPagination');
+        if (merchantPages <= 1) { pagination.innerHTML = ''; return; }
+        pagination.innerHTML = `
+            <div class="flex items-center gap-2 text-sm">
+                <button onclick="loadMerchants(${merchantPage - 1})" ${merchantPage <= 1 ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${merchantPage <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">上一页</button>
+                <span class="text-light">第 ${merchantPage} / ${merchantPages} 页</span>
+                <button onclick="loadMerchants(${merchantPage + 1})" ${merchantPage >= merchantPages ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${merchantPage >= merchantPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">下一页</button>
+            </div>`;
     }
 
     // ========== 订单概览 ==========
-    function loadOrders() {
-        axios.get('/admin/orders')
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    const tbody = document.getElementById('orderTableBody');
-                    const statusMap = {1:'未支付',2:'已支付',3:'已签收'};
-                    tbody.innerHTML = resp.data.data.map(o => `
-                        <tr class="border-b border-border">
-                            <td class="px-6 py-4">${o.id}</td>
-                            <td class="px-6 py-4">${o.product_name}</td>
-                            <td class="px-6 py-4">¥${o.total_amount.toFixed(2)}</td>
-                            <td class="px-6 py-4">${statusMap[o.status] || '未知'}</td>
-                            <td class="px-6 py-4">${formatTime(o.create_time)}</td>
-                        </tr>
-                    `).join('');
-                }
-            });
+    let orderPage = 1, orderPages = 1, orderSize = 10;
+    let currentOrderFilter = '';  // '' | 'large' | 'small'
+
+    function buildOrderFilters() {
+        const filters = [
+            { v: '', label: '全部订单' },
+            { v: 'large', label: '大额订单' },
+            { v: 'small', label: '小额订单' }
+        ];
+        document.getElementById('orderFilters').innerHTML = filters.map(f => {
+            const active = currentOrderFilter === f.v;
+            return `<span onclick="filterOrders('${f.v}')" class="px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${active ? 'bg-primary text-white border-primary' : 'bg-white text-light border-gray-200 hover:border-primary hover:text-primary'}">${f.label}</span>`;
+        }).join('');
+    }
+
+    function filterOrders(filter) {
+        currentOrderFilter = filter;
+        orderPage = 1;
+        buildOrderFilters();
+        loadOrders();
+    }
+
+    function loadOrders(pg) {
+        if (pg) orderPage = pg;
+        const tbody = document.getElementById('orderTableBody');
+        const pagination = document.getElementById('orderPagination');
+        tbody.innerHTML = '';
+        pagination.innerHTML = '';
+
+        const params = { page: orderPage, size: orderSize };
+        if (currentOrderFilter) params.amountRange = currentOrderFilter;
+
+        axios.get('/admin/orders/paged', { params }).then(resp => {
+            if (resp.data.code === 200 && resp.data.data) {
+                const d = resp.data.data;
+                const statusMap = {1:'未支付',2:'已支付',3:'已签收'};
+                orderPages = d.pages || 1;
+                tbody.innerHTML = (d.records || []).map(o => `
+                    <tr class="border-b border-border">
+                        <td class="px-6 py-4">${o.id}</td>
+                        <td class="px-6 py-4">${o.product_name}</td>
+                        <td class="px-6 py-4">¥${(o.total_amount || 0).toFixed(2)}</td>
+                        <td class="px-6 py-4">${statusMap[o.status] || '未知'}</td>
+                        <td class="px-6 py-4">${formatTime(o.create_time)}</td>
+                    </tr>
+                `).join('');
+                renderOrderPagination();
+            }
+        });
+    }
+
+    function renderOrderPagination() {
+        const pagination = document.getElementById('orderPagination');
+        if (orderPages <= 1) { pagination.innerHTML = ''; return; }
+        pagination.innerHTML = `
+            <div class="flex items-center gap-2 text-sm">
+                <button onclick="loadOrders(${orderPage - 1})" ${orderPage <= 1 ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${orderPage <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">上一页</button>
+                <span class="text-light">第 ${orderPage} / ${orderPages} 页</span>
+                <button onclick="loadOrders(${orderPage + 1})" ${orderPage >= orderPages ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${orderPage >= orderPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">下一页</button>
+            </div>`;
     }
 
     // ========== 今日交易额 ==========

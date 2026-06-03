@@ -71,10 +71,12 @@ public class AdminController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "8") int size,
             @RequestParam(required = false) BigDecimal balanceMin,
-            @RequestParam(required = false) BigDecimal balanceMax) {
+            @RequestParam(required = false) BigDecimal balanceMax,
+            @RequestParam(required = false) Integer status) {
         QueryWrapper<Consumer> w = new QueryWrapper<>();
         if (balanceMin != null) w.ge("account_balance", balanceMin);
         if (balanceMax != null) w.le("account_balance", balanceMax);
+        if (status != null) w.eq("status", status);
         w.orderByDesc("create_time");
         return R.success(PageResult.of(consumerMapper.selectList(w), page, size));
     }
@@ -82,9 +84,15 @@ public class AdminController {
     @GetMapping("/merchants/paged")
     public R<PageResult<Merchant>> merchantsPaged(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size) {
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) BigDecimal revenueMin,
+            @RequestParam(required = false) BigDecimal revenueMax,
+            @RequestParam(required = false) Integer status) {
         QueryWrapper<Merchant> w = new QueryWrapper<>();
-        w.orderByDesc("create_time");
+        if (revenueMin != null) w.ge("revenue", revenueMin);
+        if (revenueMax != null) w.le("revenue", revenueMax);
+        if (status != null) w.eq("status", status);
+        w.orderByDesc("revenue");
         return R.success(PageResult.of(merchantMapper.selectList(w), page, size));
     }
 
