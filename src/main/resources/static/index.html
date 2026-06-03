@@ -196,25 +196,25 @@
 <!-- 轮播图 -->
 <div class="container mx-auto px-4 mt-4">
   <div class="banner-container" style="box-shadow: 0 4px 20px rgba(0,0,0,0.10);">
-    <div class="banner-slide active" style="background: linear-gradient(135deg, #ff6a00 0%, #ff8533 40%, #ffaa66 100%);">
+    <div class="banner-slide active" style="background: linear-gradient(135deg, #ff6a00 0%, #ff8533 40%, #ffaa66 100%); cursor:pointer;" onclick="showBannerProducts('new-arrivals', '新品上市')">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">NEW ARRIVALS</p>
         <h2 class="text-3xl font-bold mb-2">新品上市</h2>
-        <p class="text-lg opacity-90">数码电子产品限时特惠，快来选购</p>
+        <p class="text-lg opacity-90">最近7天上架的新品，抢先体验</p>
       </div>
     </div>
-    <div class="banner-slide" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);">
+    <div class="banner-slide" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%); cursor:pointer;" onclick="showBannerProducts('hot-sales', '热销推荐')">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">HOT SALE</p>
         <h2 class="text-3xl font-bold mb-2">热销推荐</h2>
-        <p class="text-lg opacity-90">精选好物 品质保证 全场热卖中</p>
+        <p class="text-lg opacity-90">近30天销量排行，大家都在买</p>
       </div>
     </div>
-    <div class="banner-slide" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+    <div class="banner-slide" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); cursor:pointer;" onclick="showBannerProducts('special-offers', '特价促销')">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">SPECIAL OFFER</p>
         <h2 class="text-3xl font-bold mb-2">特价促销</h2>
-        <p class="text-lg opacity-90">食品饮料满减优惠，不容错过</p>
+        <p class="text-lg opacity-90">0-50元好物，超值不容错过</p>
       </div>
     </div>
     <!-- 轮播指示器 -->
@@ -229,9 +229,13 @@
 <!-- 主内容区 -->
 <main class="container mx-auto px-4 py-8">
   <!-- 页面标题 -->
-  <div class="mb-6">
-    <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark">商品列表</h1>
-    <p class="text-light mt-1">浏览我们的精选商品</p>
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 id="pageTitle" class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark">商品列表</h1>
+    </div>
+    <button id="backToAllBtn" onclick="resetBanner()" class="hidden px-4 py-2 border border-primary text-primary rounded-full text-sm hover:bg-orange-50 transition-colors">
+      <i class="fa fa-arrow-left mr-1"></i>返回全部商品
+    </button>
   </div>
 
   <!-- 筛选栏 -->
@@ -303,6 +307,7 @@
   let currentMinPrice = null;
   let currentMaxPrice = null;
   let currentSort = 'default';
+  let bannerMode = '';  // 'new-arrivals' | 'hot-sales' | 'special-offers' | ''
 
   const CATEGORIES = [
     { value: '', label: '全部分类' },
@@ -425,6 +430,84 @@
     initBanner();
   });
 
+  // ========== 首页精选：点击banner跳转 ==========
+  function showBannerProducts(mode, title) {
+    bannerMode = mode;
+    // 更新标题和按钮
+    document.getElementById('pageTitle').innerHTML = '<i class="fa fa-star mr-2" style="color:#ff6a00;"></i>' + title;
+    document.getElementById('backToAllBtn').classList.remove('hidden');
+    // 隐藏筛选栏
+    document.querySelector('.bg-white.rounded-lg.p-4.mb-4').style.display = 'none';
+    // 清空并加载
+    loadBannerProducts();
+  }
+
+  function resetBanner() {
+    bannerMode = '';
+    document.getElementById('pageTitle').textContent = '商品列表';
+    document.getElementById('backToAllBtn').classList.add('hidden');
+    document.querySelector('.bg-white.rounded-lg.p-4.mb-4').style.display = '';
+    // 重置筛选并重新加载全部
+    currentType = '';
+    currentMinPrice = null;
+    currentMaxPrice = null;
+    currentSort = 'default';
+    renderCategoryPills();
+    renderPricePills();
+    renderBreadcrumbs();
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === 'default');
+    });
+    loadProducts(1);
+  }
+
+  function loadBannerProducts() {
+    const productListElement = document.getElementById('productList');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const noProductsElement = document.getElementById('noProducts');
+    const paginationElement = document.getElementById('pagination');
+
+    productListElement.innerHTML = '';
+    noProductsElement.classList.add('hidden');
+    loadingIndicator.classList.remove('hidden');
+    if (paginationElement) paginationElement.innerHTML = '';
+
+    const endpoints = {
+      'new-arrivals': '/product/new-arrivals',
+      'hot-sales': '/product/hot-sales',
+      'special-offers': '/product/special-offers'
+    };
+    const url = endpoints[bannerMode];
+    if (!url) return;
+
+    axios.get(url, { params: { limit: 6 } })
+      .then(resp => {
+        loadingIndicator.classList.add('hidden');
+        const body = resp.data;
+        const products = body && body.data ? body.data : [];
+        if (products && products.length > 0) {
+          products.forEach(product => {
+            productListElement.appendChild(createProductCard(product));
+          });
+        } else {
+          noProductsElement.classList.remove('hidden');
+          noProductsElement.innerHTML = `
+            <i class="fa fa-inbox text-4xl text-gray-300 mb-4"></i>
+            <p class="text-light">暂无相关商品</p>
+          `;
+        }
+      })
+      .catch(err => {
+        console.error('加载精选商品失败:', err);
+        loadingIndicator.classList.add('hidden');
+        noProductsElement.classList.remove('hidden');
+        noProductsElement.innerHTML = `
+          <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
+          <p class="text-light">加载失败，请稍后重试</p>
+        `;
+      });
+  }
+
   // 轮播图
   function initBanner() {
     const slides = document.querySelectorAll('.banner-slide');
@@ -443,7 +526,7 @@
     function next() { goTo((current + 1) % slides.length); }
 
     dots.forEach(dot => {
-      dot.addEventListener('click', () => { goTo(parseInt(dot.dataset.index)); resetTimer(); });
+      dot.addEventListener('click', (e) => { e.stopPropagation(); goTo(parseInt(dot.dataset.index)); resetTimer(); });
     });
 
     function resetTimer() { clearInterval(timer); timer = setInterval(next, 4000); }

@@ -241,4 +241,28 @@ try {
         List<Product> products = productService.getProductsByMerchantId(merchantId);
         return R.success("共查询到该商户的" + products.size() + "件商品", products);
     }
+
+    // 首页精选：新品上市
+    @GetMapping("/new-arrivals")
+    public R<List<Product>> getNewArrivals(
+            @RequestParam(name = "limit", defaultValue = "6") int limit) {
+        List<Product> products = productService.getNewArrivals(limit);
+        return R.success("共查询到" + products.size() + "件新品", products);
+    }
+
+    // 首页精选：热销推荐
+    @GetMapping("/hot-sales")
+    public R<List<Product>> getHotSales(
+            @RequestParam(name = "limit", defaultValue = "6") int limit) {
+        List<Product> products = productService.getHotSales(limit);
+        return R.success("共查询到" + products.size() + "件热销商品", products);
+    }
+
+    // 首页精选：特价促销
+    @GetMapping("/special-offers")
+    public R<List<Product>> getSpecialOffers(
+            @RequestParam(name = "limit", defaultValue = "6") int limit) {
+        List<Product> products = productService.getSpecialOffers(limit);
+        return R.success("共查询到" + products.size() + "件特价商品", products);
+    }
 }

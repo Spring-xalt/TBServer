@@ -1,6 +1,8 @@
 package com.taobao.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
@@ -28,6 +30,8 @@ public class Refund {
     private String reason;
     //状态(1待审核，2已同意，3已拒绝)
     private Integer status;
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime create_time;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime update_time;
 }

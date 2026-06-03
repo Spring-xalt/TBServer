@@ -189,6 +189,21 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.selectImageById(id);
     }
 
+    @Override
+    public List<Product> getNewArrivals(int limit) {
+        return productMapper.selectNewArrivals(limit);
+    }
+
+    @Override
+    public List<Product> getHotSales(int limit) {
+        return productMapper.selectHotSales(limit);
+    }
+
+    @Override
+    public List<Product> getSpecialOffers(int limit) {
+        return productMapper.selectSpecialOffers(limit);
+    }
+
     public String saveImage(byte[] bytes, String originalFilename) throws IOException {
         Path dir = Paths.get(uploadDir, PRODUCT_IMAGE_SUB);
         Files.createDirectories(dir);

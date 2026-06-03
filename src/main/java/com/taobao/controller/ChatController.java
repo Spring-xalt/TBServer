@@ -14,8 +14,6 @@ import com.taobao.entity.Merchant;
 import com.taobao.mapper.ConsumerMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.service.ChatService;
-import com.taobao.service.ConsumerService;
-import com.taobao.service.MerchantService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

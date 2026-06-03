@@ -21,6 +21,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictUpdateFill(metaObject, "update_time", LocalDateTime.class, LocalDateTime.now());
+        // 使用 setFieldValByName 而非 strictUpdateFill，因为 strict 模式仅在字段为 null 时填充，
+        // 而从 DB 查出的实体 update_time 已有值，会导致旧时间被写回
+        this.setFieldValByName("update_time", LocalDateTime.now(), metaObject);
     }
 }

@@ -25,4 +25,25 @@ public interface ProductMapper extends BaseMapper<Product> {
     @Select("SELECT image FROM product WHERE id = #{id}")
     String selectImageById(@Param("id") Integer id);
 
+    // 新品上市：最近7天上架的商品
+    @Select("SELECT * FROM product WHERE create_time > DATE_SUB(NOW(), INTERVAL 7 DAY) ORDER BY create_time DESC LIMIT #{limit}")
+    List<Product> selectNewArrivals(@Param("limit") int limit);
+
+    // 特价促销：价格0-50的商品
+    @Select("SELECT * FROM product WHERE price >= 0 AND price <= 50 ORDER BY create_time DESC LIMIT #{limit}")
+    List<Product> selectSpecialOffers(@Param("limit") int limit);
+
+    // 热销推荐：近30天订单量最高的商品
+    @Select("SELECT p.* FROM product p " +
+            "INNER JOIN ( " +
+            "  SELECT product_id, COUNT(*) AS order_count " +
+            "  FROM orders " +
+            "  WHERE create_time > DATE_SUB(NOW(), INTERVAL 1 MONTH) " +
+            "  GROUP BY product_id " +
+            "  ORDER BY order_count DESC " +
+            "  LIMIT #{limit} " +
+            ") hot ON p.id = hot.product_id " +
+            "ORDER BY hot.order_count DESC")
+    List<Product> selectHotSales(@Param("limit") int limit);
+
 }

@@ -43,4 +43,13 @@ public interface ProductService {
 
     String getProductImage(Integer id);
 
+    // 首页精选：新品上市（最近7天）
+    List<Product> getNewArrivals(int limit);
+
+    // 首页精选：热销推荐（近30天销量排行）
+    List<Product> getHotSales(int limit);
+
+    // 首页精选：特价促销（0-50元）
+    List<Product> getSpecialOffers(int limit);
+
 }
