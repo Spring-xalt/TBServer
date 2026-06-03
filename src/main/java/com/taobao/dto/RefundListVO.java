@@ -20,6 +20,9 @@ public class RefundListVO {
     private Integer productId;
     // 商品名（关联 product 表）
     private String productName;
+    private String merchantName;
+    private BigDecimal unitPrice;
+    private Integer quantity;
     // 1=退货退款，2=换货
     private Integer type;
     private String reason;

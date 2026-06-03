@@ -1,6 +1,7 @@
 package com.taobao.controller;
 
 import com.taobao.common.R;
+import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundApplyDto;
 import com.taobao.dto.RefundListVO;
 import com.taobao.entity.Orders;
@@ -42,23 +43,22 @@ public class RefundController {
 
     // 展示可提交退换货申请的订单(消费者端)
     @GetMapping("/consumer/available-orders")
-    public R<List<Orders>> availableOrders(HttpSession session) {
+    public R<List<OrderVO>> availableOrders(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
-        List<Orders> list = refundService.getAvailableOrders(consumerId);
+        List<OrderVO> list = refundService.getAvailableOrders(consumerId);
         return R.success(list);
-
     }
-    // 展示消费者退换货申请
+    // 展示消费者退换货申请（含商品名、商户名、金额等详情）
     @GetMapping("/consumer/list")
-    public R<List<Refund>> consumerRefundList(HttpSession session) {
+    public R<List<RefundListVO>> consumerRefundList(HttpSession session) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
-        List<Refund> list = refundService.listByConsumerId(consumerId);
+        List<RefundListVO> list = refundService.listConsumerRefundsDetail(consumerId);
         return R.success(list);
     }
 

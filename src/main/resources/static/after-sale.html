@@ -21,155 +21,244 @@
       }
     }
   </script>
+  <style>
+    .refund-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .refund-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.10); }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 22px;
+      background: linear-gradient(135deg, #fafafa, #fff);
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px; color: #999;
+    }
+    .card-body {
+      padding: 20px 22px;
+      display: flex; gap: 16px; align-items: center;
+    }
+    .card-body .info { flex: 1; min-width: 0; }
+    .card-body .info h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .card-body .info .meta { font-size: 13px; color: #888; display: flex; gap: 16px; margin-top: 4px; }
+    .card-body .price { text-align: right; flex-shrink: 0; }
+    .card-body .price .amount { font-size: 20px; font-weight: 700; color: #ff5e62; }
+    .status-badge { padding: 5px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; }
+    .status-1 { background: #fff7e6; color: #fa8c16; }
+    .status-2 { background: #f0fff4; color: #52c41a; }
+    .status-3 { background: #fff1f0; color: #ff4d4f; }
+    .btn-sm { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-sm-primary { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; }
+    .btn-sm-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-sm-blue { background: #1890ff; color: #fff; }
+    .btn-sm-blue:hover { background: #1677cc; }
+    .filter-btn { padding: 10px 22px; border-radius: 22px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid #e8e8e8; transition: all 0.2s; background: #fff; color: #666; }
+    .filter-btn.active { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; }
+    .filter-btn:hover:not(.active) { border-color: #ff6a00; color: #ff6a00; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-orange-50/30 min-h-screen">
 
-<header class="bg-white border-b border-border">
+<header class="bg-white border-b border-border sticky top-0 z-40">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="/taobao/index.html" class="text-primary text-xl font-bold">
-      <i class="fa fa-shopping-bag mr-2"></i>返回首页
+    <a href="/taobao/index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+      <i class="fa fa-arrow-left"></i> 返回首页
     </a>
-    <h1 class="text-dark text-2xl font-bold">我的售后</h1>
+    <h1 class="text-dark text-xl font-bold">我的售后</h1>
     <div></div>
   </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-  <!-- 加载提示 -->
-  <div id="loading" class="text-center py-12">
+  <!-- Tab 切换 -->
+  <div class="flex gap-2 mb-6 max-w-2xl mx-auto">
+    <button class="filter-btn active" onclick="switchTab(0)" id="btnTab0">📋 可申请售后</button>
+    <button class="filter-btn" onclick="switchTab(1)" id="btnTab1">📜 申请记录</button>
+  </div>
+
+  <div id="loading" class="text-center py-16">
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
     <p class="text-light mt-4">加载中...</p>
   </div>
 
-  <!-- 可申请订单列表 -->
-  <div id="orderList" class="hidden space-y-4"></div>
+  <div id="tabOrders" class="hidden max-w-2xl mx-auto">
+    <div id="orderList" class="space-y-4"></div>
+  </div>
 
-  <!-- 申请记录 -->
-  <div id="historySection" class="hidden mt-8">
-    <h2 class="text-lg font-bold text-dark mb-4">我的申请记录</h2>
+  <div id="tabHistory" class="hidden max-w-2xl mx-auto">
     <div id="historyList" class="space-y-4"></div>
   </div>
 
-
-
-  <!-- 空状态 -->
-  <div id="emptyState" class="hidden text-center py-12">
-    <i class="fa fa-check-circle text-5xl text-gray-300 mb-4"></i>
+  <div id="emptyState" class="hidden text-center py-16">
+    <i class="fa fa-check-circle text-5xl text-gray-300 mb-4 block"></i>
     <p class="text-light text-lg">暂无需要售后的订单</p>
-    <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去购物</a>
+    <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去逛逛</a>
   </div>
 </main>
 
-<!-- 申请退换货弹窗 -->
+<!-- 申请弹窗 -->
 <div id="refundModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
-  <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
+  <div class="bg-white rounded-2xl p-8 w-[460px] relative shadow-2xl">
+    <button onclick="closeRefundModal()" class="absolute top-4 right-4 text-gray-400 hover:text-dark text-lg"><i class="fa fa-close"></i></button>
     <h2 class="text-xl font-bold text-dark mb-6">申请退换货</h2>
     <div class="space-y-4">
       <div>
-        <label class="block text-sm text-dark mb-1">商品名称</label>
-        <input type="text" id="refundProductName" class="w-full border border-border rounded px-3 py-2 bg-gray-100" disabled>
+        <label class="block text-sm font-semibold text-dark mb-1">商品名称</label>
+        <input type="text" id="refundProductName" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 bg-gray-50 text-gray-600" disabled>
       </div>
       <div>
-        <label class="block text-sm text-dark mb-1">申请类型</label>
-        <div class="flex space-x-4">
-          <label class="flex items-center space-x-2">
+        <label class="block text-sm font-semibold text-dark mb-1">申请类型</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="refundType" value="1" checked>
             <span>退货退款</span>
           </label>
-          <label class="flex items-center space-x-2">
+          <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" name="refundType" value="2">
             <span>换货</span>
           </label>
         </div>
       </div>
       <div>
-        <label class="block text-sm text-dark mb-1">申请原因</label>
-        <textarea id="refundReason" rows="4" class="w-full border border-border rounded px-3 py-2" placeholder="请输入申请原因..."></textarea>
+        <label class="block text-sm font-semibold text-dark mb-1">申请原因</label>
+        <textarea id="refundReason" rows="3" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-orange-400 outline-none transition-colors" placeholder="请描述退换货原因..."></textarea>
       </div>
-      <div class="flex justify-end space-x-2 pt-4">
-        <button onclick="closeRefundModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
-        <button onclick="submitRefund()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">提交申请</button>
+      <div class="flex justify-end gap-3 pt-4">
+        <button onclick="closeRefundModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50">取消</button>
+        <button onclick="submitRefund()" class="btn-sm btn-sm-primary">提交申请</button>
       </div>
     </div>
-    <button onclick="closeRefundModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
-      <i class="fa fa-close"></i>
-    </button>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
-
-
-
   axios.defaults.baseURL = window.location.origin + '/taobao';
-  let currentRefundOrderId = null;
+  var currentRefundOrderId = null;
+  var currentTab = 0;
+  var availableOrders = [];
+  var refundHistory = [];
 
   document.addEventListener('DOMContentLoaded', loadData);
 
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('btnTab' + tab).classList.add('active');
+    document.getElementById('tabOrders').classList.toggle('hidden', tab !== 0);
+    document.getElementById('tabHistory').classList.toggle('hidden', tab !== 1);
+  }
 
   function loadData() {
     document.getElementById('loading').classList.remove('hidden');
-    document.getElementById('orderList').classList.add('hidden');
     document.getElementById('emptyState').classList.add('hidden');
 
     Promise.all([
       axios.get('/refund/consumer/available-orders'),
       axios.get('/refund/consumer/list')
     ])
-            .then(([availableResp, historyResp]) => {
-              document.getElementById('loading').classList.add('hidden');
-              // 处理可申请订单
-              if (availableResp.data.code === 200 && availableResp.data.data && availableResp.data.data.length > 0) {
-                const orders = availableResp.data.data;
-                const listEl = document.getElementById('orderList');
-                listEl.innerHTML = '';
-                orders.forEach(order => {
-                  listEl.appendChild(createOrderCard(order));
-                });
-                listEl.classList.remove('hidden');
-              }
-              // 处理申请记录（新增加）
-              if (historyResp.data.code === 200 && historyResp.data.data && historyResp.data.data.length > 0) {
-                const historyList = historyResp.data.data;
-                const historyEl = document.getElementById('historyList');
-                historyEl.innerHTML = '';
-                historyList.forEach(refund => {
-                  historyEl.appendChild(createHistoryCard(refund));
-                });
-                document.getElementById('historySection').classList.remove('hidden');
-              } else {
-                document.getElementById('historySection').classList.add('hidden');
-              }
-              // 如果两个都为空，显示空状态
-              const availableEmpty = !(availableResp.data.code === 200 && availableResp.data.data && availableResp.data.data.length > 0);
-              const historyEmpty = !(historyResp.data.code === 200 && historyResp.data.data && historyResp.data.data.length > 0);
-              if (availableEmpty && historyEmpty) {
-                document.getElementById('emptyState').classList.remove('hidden');
-              }
-            })
-            .catch(err => {
-              document.getElementById('loading').classList.add('hidden');
-              document.getElementById('emptyState').classList.remove('hidden');
-            });
+    .then(function(arr) {
+      document.getElementById('loading').classList.add('hidden');
+      var availableResp = arr[0];
+      var historyResp = arr[1];
+
+      availableOrders = [];
+      if (availableResp.data.code === 200 && availableResp.data.data) {
+        availableOrders = availableResp.data.data;
+      }
+      refundHistory = [];
+      if (historyResp.data.code === 200 && historyResp.data.data) {
+        refundHistory = historyResp.data.data;
+      }
+
+      // 渲染两个 tab
+      var ol = document.getElementById('orderList');
+      ol.innerHTML = '';
+      if (availableOrders.length > 0) {
+        availableOrders.forEach(function(o) { ol.appendChild(createOrderCard(o)); });
+      } else {
+        ol.innerHTML = '<p class="text-center text-light py-8">暂无可以申请售后的订单</p>';
+      }
+
+      var hl = document.getElementById('historyList');
+      hl.innerHTML = '';
+      if (refundHistory.length > 0) {
+        refundHistory.forEach(function(r) { hl.appendChild(createHistoryCard(r)); });
+      } else {
+        hl.innerHTML = '<p class="text-center text-light py-8">暂无申请记录</p>';
+      }
+
+      // 默认显示 tab0，如果可申请为空则跳到 tab1
+      if (availableOrders.length === 0 && refundHistory.length > 0) {
+        switchTab(1);
+      } else {
+        switchTab(0);
+      }
+
+      if (availableOrders.length === 0 && refundHistory.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+      }
+    })
+    .catch(function() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('emptyState').classList.remove('hidden');
+    });
   }
 
-
   function createOrderCard(order) {
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded-lg shadow-sm p-4 flex justify-between items-center';
-    card.innerHTML = `
-            <div>
-                <h3 class="font-medium text-dark">${order.product_name}</h3>
-                <p class="text-light text-sm mt-1">商户：${order.merchant_name || '未知'}</p>
-                <p class="text-primary font-bold mt-1">¥${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}</p>
-                <p class="text-light text-xs mt-2">下单时间：${formatTime(order.create_time)}</p>
-            </div>
-            <button onclick="openRefundModal(${order.id}, '${order.product_name.replace(/'/g, "\\'")}')"
-                class="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors">
-                申请退换货
-            </button>
-        `;
+    var card = document.createElement('div');
+    card.className = 'refund-card';
+    card.innerHTML =
+      '<div class="card-body">' +
+        '<div class="info">' +
+          '<h3>' + order.product_name + '</h3>' +
+          '<div class="meta">' +
+            '<span><i class="fa fa-store"></i> ' + (order.merchant_name || '商家未知') + '</span>' +
+            '<span><i class="fa fa-clock-o"></i> ' + formatTime(order.create_time) + '</span>' +
+          '</div>' +
+          '<div class="meta" style="margin-top:6px;">' +
+            '<span>实付 <b style="color:#ff5e62;">¥' + (order.total_amount || 0).toFixed(2) + '</b></span>' +
+          '</div>' +
+        '</div>' +
+        '<button onclick="openRefundModal(' + order.id + ', \'' + order.product_name.replace(/'/g,"\\'") + '\')" class="btn-sm btn-sm-blue">申请退换货</button>' +
+      '</div>';
+    return card;
+  }
+
+  function createHistoryCard(r) {
+    var typeMap = { 1: '📦 退货退款', 2: '🔄 换货' };
+    var statusMap = { 1: { text: '⏳ 待审核', cls: 'status-1' }, 2: { text: '✅ 已同意', cls: 'status-2' }, 3: { text: '❌ 已拒绝', cls: 'status-3' } };
+    var st = statusMap[r.status] || { text: '未知', cls: 'status-1' };
+    var qty = r.quantity || 1;
+    var unit = r.unitPrice || r.orderAmount || 0;
+    var total = r.orderAmount || 0;
+
+    var card = document.createElement('div');
+    card.className = 'refund-card';
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<span>' + typeMap[r.type] + ' · 订单 #' + r.orderId + '</span>' +
+        '<span class="status-badge ' + st.cls + '">' + st.text + '</span>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div class="info">' +
+          '<h3>' + (r.productName || '商品未知') + '</h3>' +
+          '<div class="meta">' +
+            '<span><i class="fa fa-store"></i> ' + (r.merchantName || '商家未知') + '</span>' +
+            '<span><i class="fa fa-clock-o"></i> ' + formatTime(r.createTime) + '</span>' +
+          '</div>' +
+          '<div class="meta" style="margin-top:6px;">' +
+            (r.reason ? '<span><i class="fa fa-comment"></i> ' + r.reason + '</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="price">' +
+          '<div style="font-size:13px;color:#999;">¥' + unit.toFixed(2) + ' × ' + qty + '</div>' +
+          '<div class="amount">¥' + total.toFixed(2) + '</div>' +
+        '</div>' +
+      '</div>';
     return card;
   }
 
@@ -177,6 +266,7 @@
     currentRefundOrderId = orderId;
     document.getElementById('refundProductName').value = productName;
     document.getElementById('refundReason').value = '';
+    document.querySelector('input[name="refundType"][value="1"]').checked = true;
     document.getElementById('refundModal').classList.remove('hidden');
   }
 
@@ -186,62 +276,21 @@
   }
 
   function submitRefund() {
-    const type = parseInt(document.querySelector('input[name="refundType"]:checked').value);
-    const reason = document.getElementById('refundReason').value.trim();
-    if (!reason) {
-      alert('请填写申请原因');
-      return;
-    }
-
-    axios.post('/refund/apply', {
-      orderId: currentRefundOrderId,
-      type: type,
-      reason: reason
-    })
-            .then(resp => {
-              if (resp.data.code === 200) {
-                alert('退换货申请已提交');
-                closeRefundModal();
-                loadData(); // 刷新列表，该订单将消失
-              } else {
-                alert(resp.data.msg || '申请失败');
-              }
-            })
-            .catch(err => {
-              console.error('申请失败:', err);
-              alert('申请失败，请重试');
-            });
+    var type = parseInt(document.querySelector('input[name="refundType"]:checked').value);
+    var reason = document.getElementById('refundReason').value.trim();
+    if (!reason) { alert('请填写申请原因'); return; }
+    axios.post('/refund/apply', { orderId: currentRefundOrderId, type: type, reason: reason })
+      .then(function(resp) {
+        if (resp.data.code === 200) { alert('退换货申请已提交'); closeRefundModal(); loadData(); }
+        else alert(resp.data.msg || '申请失败');
+      })
+      .catch(function() { alert('申请失败，请重试'); });
   }
-
-  function createHistoryCard(refund) {
-    const statusMap = {
-      1: { text: '待审核', color: 'text-yellow-600 bg-yellow-50' },
-      2: { text: '已同意', color: 'text-green-600 bg-green-50' },
-      3: { text: '已拒绝', color: 'text-red-600 bg-red-50' }
-    };
-    const typeMap = { 1: '退货退款', 2: '换货' };
-    const st = statusMap[refund.status] || { text: '未知', color: 'text-gray-600 bg-gray-50' };
-
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded-lg shadow-sm p-4';
-    card.innerHTML = `
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-dark text-sm">${typeMap[refund.type] || '未知类型'}</p>
-                <p class="text-light text-xs mt-1">${refund.reason || ''}</p>
-                <p class="text-light text-xs mt-1">申请时间：${formatTime(refund.create_time)}</p>
-            </div>
-            <span class="inline-block px-2 py-1 rounded text-xs font-medium ${st.color}">${st.text}</span>
-        </div>
-    `;
-    return card;
-  }
-
 
   function formatTime(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    var d = new Date(dateStr);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
 </script>
 </body>

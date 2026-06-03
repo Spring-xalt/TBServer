@@ -2,6 +2,7 @@ package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
+import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundListVO;
 import com.taobao.entity.*;
 import com.taobao.mapper.*;
@@ -105,21 +106,49 @@ public class RefundServiceImpl implements RefundService {
         return refundMapper.selectByConsumerId(consumerId);
     }
 
+    @Override
+    public List<RefundListVO> listConsumerRefundsDetail(int consumerId) {
+        List<Refund> refunds = refundMapper.selectByConsumerId(consumerId);
+        List<RefundListVO> voList = new ArrayList<>();
+        for (Refund r : refunds) {
+            RefundListVO vo = new RefundListVO();
+            vo.setId(r.getId());
+            vo.setOrderId(r.getOrder_id());
+            vo.setConsumerId(r.getConsumer_id());
+            vo.setProductId(r.getProduct_id());
+            vo.setType(r.getType());
+            vo.setReason(r.getReason());
+            vo.setStatus(r.getStatus());
+            vo.setCreateTime(r.getCreate_time());
+
+            Product product = productMapper.selectById(r.getProduct_id());
+            if (product != null) vo.setProductName(product.getProduct_name());
+
+            Merchant merchant = merchantMapper.selectById(r.getMerchant_id());
+            if (merchant != null) vo.setMerchantName(merchant.getMerchant_name() != null ? merchant.getMerchant_name() : merchant.getUsername());
+
+            Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
+            if (consumer != null) vo.setConsumerName(consumer.getConsumer_name());
+
+            Orders order = ordersMapper.selectById(r.getOrder_id());
+            if (order != null) {
+                vo.setOrderAmount(order.getTotal_amount());
+                vo.setUnitPrice(order.getUnit_price());
+                vo.setQuantity(order.getQuantity());
+            }
+            voList.add(vo);
+        }
+        return voList;
+    }
 
     @Override
-    public List<Orders> getAvailableOrders(int consumerId) {
-        // 查询条件：已签收且下单30天内，且属于当前消费者
-        QueryWrapper<Orders> wrapper = new QueryWrapper<>();
-        wrapper.eq("consumer_id", consumerId);
-        wrapper.eq("status", 3);
-        wrapper.gt("create_time", LocalDateTime.now().minusDays(30));
-        wrapper.orderByDesc("create_time");
-        List<Orders> candidateOrders = ordersMapper.selectList(wrapper);
-        // 利用 canApplyRefund 进行完整校验（未评价、未申请等）
-        List<Orders> result = new ArrayList<>();
-        for (Orders order : candidateOrders) {
-            if (canApplyRefund(consumerId, order.getId()) == null) {
-                result.add(order);
+    public List<OrderVO> getAvailableOrders(int consumerId) {
+        List<OrderVO> candidates = ordersMapper.selectAvailableOrdersWithMerchant(consumerId);
+        // 用 canApplyRefund 过滤（未评价、未申请）
+        List<OrderVO> result = new ArrayList<>();
+        for (OrderVO o : candidates) {
+            if (canApplyRefund(consumerId, o.getId()) == null) {
+                result.add(o);
             }
         }
         return result;
@@ -165,9 +194,17 @@ public class RefundServiceImpl implements RefundService {
             Product product = productMapper.selectById(r.getProduct_id());
             vo.setProductName(product != null ? product.getProduct_name() : "未知");
 
-            // 填充订单金额
+            // 填充商户名
+            Merchant merchant = merchantMapper.selectById(r.getMerchant_id());
+            if (merchant != null) vo.setMerchantName(merchant.getMerchant_name() != null ? merchant.getMerchant_name() : merchant.getUsername());
+
+            // 填充订单金额、单价、数量
             Orders order = ordersMapper.selectById(r.getOrder_id());
-            vo.setOrderAmount(order != null ? order.getTotal_amount() : BigDecimal.ZERO);
+            if (order != null) {
+                vo.setOrderAmount(order.getTotal_amount());
+                vo.setUnitPrice(order.getUnit_price());
+                vo.setQuantity(order.getQuantity());
+            }
 
             voList.add(vo);
         }

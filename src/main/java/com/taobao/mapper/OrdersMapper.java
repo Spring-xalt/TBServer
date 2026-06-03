@@ -53,4 +53,12 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Select("SELECT COUNT(*) FROM orders WHERE consumer_id = #{consumerId}")
     long selectCountByConsumerId(@Param("consumerId") int consumerId);
 
+    // 可售后订单（已签收+30天内+含商户名）
+    @Select("SELECT o.*, m.merchant_name FROM orders o " +
+            "JOIN merchant m ON o.merchant_id = m.id " +
+            "WHERE o.consumer_id = #{consumerId} AND o.status = 3 " +
+            "AND o.create_time > DATE_SUB(NOW(), INTERVAL 30 DAY) " +
+            "ORDER BY o.create_time DESC")
+    List<OrderVO> selectAvailableOrdersWithMerchant(@Param("consumerId") int consumerId);
+
 }

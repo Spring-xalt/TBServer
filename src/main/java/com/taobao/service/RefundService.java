@@ -1,6 +1,7 @@
 package com.taobao.service;
 
 import com.taobao.common.R;
+import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundListVO;
 import com.taobao.entity.Orders;
 import com.taobao.entity.Refund;
@@ -19,13 +20,15 @@ public interface RefundService {
     String canApplyRefund(int consumerId, int orderId);
 
 
-    //用于展示售后页面可退换货的订单
-    List<Orders> getAvailableOrders(int consumerId);
+    //用于展示售后页面可退换货的订单（含商户名）
+    List<OrderVO> getAvailableOrders(int consumerId);
 
 
     //展示所有退换货订单
     List<Refund> listByConsumerId(int consumerId);
 
+    //消费者查自己的退换货详情（含商品名、商户名、金额等）
+    List<RefundListVO> listConsumerRefundsDetail(int consumerId);
 
     //商户查看自己店铺下的退换货申请
     List<RefundListVO> listMerchantRefunds(int merchantId, Integer status);

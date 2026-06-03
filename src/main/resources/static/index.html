@@ -387,7 +387,7 @@
 
 <!-- 商品评价弹窗 -->
 <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50" onclick="if(event.target===this)closeReviewModal()">
-  <div class="bg-white rounded-2xl w-[500px] max-h-[70vh] flex flex-col shadow-2xl" onclick="event.stopPropagation()">
+  <div class="bg-white rounded-2xl w-[560px] max-w-[92vw] max-h-[78vh] flex flex-col shadow-2xl" onclick="event.stopPropagation()">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
       <h2 id="reviewModalTitle" class="text-lg font-bold text-dark">商品评价</h2>
       <button onclick="closeReviewModal()" class="text-gray-400 hover:text-dark text-lg"><i class="fa fa-close"></i></button>
@@ -917,8 +917,8 @@
                             <i class="fa fa-comments mr-1"></i>联系卖家
                         </a>
                         <button onclick="showProductReviews(${product.id}, '${product.product_name.replace(/'/g,"\\'")}')"
-                                class="block mt-2 w-full text-center px-4 py-2 border border-orange-300 text-orange-500 rounded-md text-sm hover:bg-orange-50 transition-colors">
-                            <i class="fa fa-star mr-1"></i>查看评价
+                                class="block mt-2 w-full text-center px-4 py-2.5 bg-orange-500 text-white rounded-md text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm">
+                            <i class="fa fa-star mr-1"></i> 查看评价
                         </button>
 
                     </div>
