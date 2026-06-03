@@ -21,133 +21,256 @@
             }
         }
     </script>
+    <style>
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            padding: 28px;
+        }
+        .profile-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .profile-card h3 i { color: #ff6a00; }
+        .profile-input {
+            width: 100%;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
+            outline: none;
+        }
+        .profile-input:focus {
+            border-color: #ff6a00;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255,106,0,0.08);
+        }
+        .profile-input:disabled {
+            background: #f5f5f5;
+            color: #999;
+        }
+        .profile-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff5e62, #ff6a00);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 12px rgba(255,94,98,0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255,94,98,0.40);
+        }
+        .btn-outline {
+            background: #fff;
+            color: #ff5e62;
+            border: 2px solid #ffcdd2;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-outline:hover {
+            background: #fff5f0;
+            border-color: #ff6a00;
+        }
+        .balance-badge {
+            background: linear-gradient(135deg, #fff5f0, #ffe8d6);
+            border-radius: 14px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .quick-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: #fafafa;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .quick-link:hover {
+            background: #fff5f0;
+            color: #ff6a00;
+            transform: translateX(4px);
+        }
+        .quick-link i { color: #ff6a00; font-size: 20px; width: 24px; text-align: center; }
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff5e62, #ff6a00, #ff9966);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(255,94,98,0.30);
+        }
+    </style>
 </head>
 <body class="bg-orange-50/30 min-h-screen">
 
 <!-- 头部 -->
-<header class="bg-white border-b border-border">
+<header class="bg-white border-b border-border sticky top-0 z-40">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-
-        <a href="/taobao/index.html" class="text-primary text-xl font-bold">
-            <i class="fa fa-shopping-bag mr-2"></i>返回首页
+        <a href="/taobao/index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+            <i class="fa fa-arrow-left"></i> 返回首页
         </a>
-
-        <h1 class="text-dark text-2xl font-bold">个人中心</h1>
-
-
+        <h1 class="text-dark text-xl font-bold">个人中心</h1>
         <div></div>
     </div>
 </header>
 
-
-
-<!-- 主内容 -->
 <main class="container mx-auto px-4 py-8">
-    <div id="loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+    <!-- 加载中 -->
+    <div id="loading" class="text-center py-20">
+        <div class="animate-spin rounded-full h-14 w-14 border-t-2 border-b-2 border-primary mx-auto"></div>
         <p class="text-light mt-4">加载中...</p>
     </div>
 
-    <div id="content" class="hidden max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-orange-100 p-10">
-
-        <div class="space-y-6">
-            <div>
-                <label class="block text-sm text-dark mb-1">用户名</label>
-
-                <input type="text" id="username" class="w-full border border-orange-200 rounded-xl px-4 py-3 bg-orange-50/30 text-gray-600" disabled>
-
-            <div>
-                <label class="block text-sm text-dark mb-1">昵称</label>
-
-
-                <input type="text" id="nickname" class="w-full border border-orange-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-300 focus:outline-none transition-colors">
-
-            </div>
-
-
-
-            <div class="bg-orange-50/40 rounded-xl p-4 pl-5 border-l-4 border-orange-300">
-                <label class="block text-sm text-dark mb-2">账户余额</label>
-                <div class="flex space-x-3">
-                    <input type="text" id="balance"
-                           class="w-full border border-transparent rounded-xl px-4 py-3 bg-white/80 text-gray-700 font-medium"
-                           disabled>
-                    <button onclick="openRechargeModal()"
-                            class="px-5 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors whitespace-nowrap shadow-sm">
-                        <i class="fa fa-plus mr-1"></i>充值
-                    </button>
-                </div>
-            </div>
-
-
-
-            <!-- 充值弹窗 -->
-            <div id="rechargeModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
-                <div class="bg-white rounded-lg p-8 w-[540px] relative shadow-lg">
-                    <h2 class="text-xl font-bold text-dark mb-6">账户充值</h2>
-
-                    <!-- 输入金额 -->
-                    <div id="rechargeStep1" class="space-y-4">
-                        <div>
-                            <label class="block text-base text-dark mb-2">充值金额（元）</label>
-                            <input type="number" id="rechargeAmount" class="w-full border border-border rounded px-4 py-3 text-lg" min="0.01" step="0.01" placeholder="请输入金额">
-                        </div>
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button onclick="closeRechargeModal()" class="px-6 py-3 border border-border rounded-md text-base hover:bg-gray-100">取消</button>
-                            <button onclick="showQRCode()" class="px-6 py-3 bg-green-500 text-white rounded-md text-base hover:bg-green-600">确认支付</button>
-                        </div>
-                    </div>
-
-
-
-                    <!-- 扫码支付（新版：动态二维码） -->
-                    <div id="rechargeStep2" class="hidden space-y-4">
-                        <p class="text-base text-dark text-center">请使用沙箱支付宝扫一扫支付</p>
-                        <div id="qrcodeContainer" class="flex justify-center my-4"></div>
-                        <p class="text-sm text-light text-center">支付金额：<span id="payAmountDisplay"></span> 元</p>
-                        <p class="text-xs text-light text-center">支付成功后自动确认</p>
-                    </div>
-
-
-
-                    <button onclick="closeRechargeModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
-                        <i class="fa fa-close"></i>
-                    </button>
-                </div>
-            </div>
-
-
-
-            <div class="flex justify-end space-x-3 pt-6">
-
-                <a href="/taobao/index.html" class="px-5 py-2.5 border border-orange-200 rounded-xl text-gray-500 hover:bg-orange-50 transition-colors">取消</a>
-
-                <button onclick="saveProfile()" class="px-5 py-2.5 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors shadow-sm">保存修改</button>
-            </div>
-
-
-        </div>
+    <!-- 错误 -->
+    <div id="errorBox" class="hidden text-center py-20">
+        <i class="fa fa-exclamation-triangle text-5xl text-orange-300 mb-4 block"></i>
+        <p class="text-lg text-light mb-4">加载失败，请先登录</p>
+        <a href="/taobao/login.html" class="btn-primary inline-block no-underline">去登录</a>
     </div>
 
-    <div id="errorBox" class="hidden text-center py-12">
-        <i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>
-        <p class="text-light">加载失败，请先登录</p>
-        <a href="/taobao/login.html" class="text-primary hover:underline mt-2 inline-block">去登录</a>
+    <!-- 主内容 -->
+    <div id="content" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+
+            <!-- 左侧：头像 + 快捷入口 -->
+            <div class="lg:col-span-1 space-y-5">
+                <!-- 头像区 -->
+                <div class="profile-card text-center">
+                    <div class="avatar-circle mx-auto mb-4" id="avatarEmoji">👤</div>
+                    <h2 class="text-xl font-bold text-dark" id="displayName">—</h2>
+                    <p class="text-light text-sm mt-1" id="roleTag">消费者</p>
+                </div>
+
+                <!-- 快捷入口 -->
+                <div class="profile-card space-y-2">
+                    <h3><i class="fa fa-link"></i> 快捷入口</h3>
+                    <a href="/taobao/orders.html" class="quick-link">
+                        <i class="fa fa-list-alt"></i> 我的订单
+                    </a>
+                    <a href="/taobao/cart.html" class="quick-link">
+                        <i class="fa fa-shopping-cart"></i> 购物车
+                    </a>
+                    <a href="/taobao/my-reviews.html" class="quick-link">
+                        <i class="fa fa-star"></i> 我的评价
+                    </a>
+                    <a href="/taobao/after-sale.html" class="quick-link">
+                        <i class="fa fa-wrench"></i> 我的售后
+                    </a>
+                </div>
+            </div>
+
+            <!-- 右侧：详细信息 -->
+            <div class="lg:col-span-2 space-y-5">
+                <!-- 账户信息 -->
+                <div class="profile-card">
+                    <h3><i class="fa fa-user-circle"></i> 账户信息</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label class="profile-label">用户名</label>
+                            <input type="text" id="username" class="profile-input" disabled>
+                        </div>
+                        <div>
+                            <label class="profile-label">昵称</label>
+                            <input type="text" id="nickname" class="profile-input" placeholder="设置你的昵称">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 账户余额 -->
+                <div class="profile-card">
+                    <h3><i class="fa fa-cny"></i> 账户余额</h3>
+                    <div class="balance-badge">
+                        <div>
+                            <span class="text-sm text-light">可用余额</span>
+                            <div class="text-3xl font-bold text-dark mt-1" id="balanceDisplay">¥0.00</div>
+                        </div>
+                        <button onclick="openRechargeModal()" class="btn-primary">
+                            <i class="fa fa-plus mr-1"></i> 充值
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="flex justify-end gap-3">
+                    <a href="/taobao/index.html" class="btn-outline no-underline">取消</a>
+                    <button onclick="saveProfile()" class="btn-primary">保存修改</button>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
+<!-- 充值弹窗 -->
+<div id="rechargeModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+    <div class="bg-white rounded-2xl p-8 w-[460px] relative shadow-2xl">
+        <button onclick="closeRechargeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-dark text-lg">
+            <i class="fa fa-close"></i>
+        </button>
+        <h2 class="text-xl font-bold text-dark mb-6">账户充值</h2>
+
+        <div id="rechargeStep1" class="space-y-4">
+            <div>
+                <label class="profile-label">充值金额（元）</label>
+                <input type="number" id="rechargeAmount" class="profile-input text-lg" min="0.01" step="0.01" placeholder="请输入金额">
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeRechargeModal()" class="btn-outline">取消</button>
+                <button onclick="showQRCode()" class="btn-primary">确认支付</button>
+            </div>
+        </div>
+
+        <div id="rechargeStep2" class="hidden space-y-4 text-center">
+            <p class="text-dark font-medium">请使用沙箱支付宝扫一扫支付</p>
+            <div id="qrcodeContainer" class="flex justify-center my-4"></div>
+            <p class="text-light">支付金额：<span id="payAmountDisplay" class="font-bold text-dark"></span> 元</p>
+            <p class="text-xs text-light">支付成功后自动确认</p>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
-
-
 <script>
-
-
-
-
     axios.defaults.baseURL = window.location.origin + '/taobao';
-    let currentConsumerId = null;   // 保存当前消费者 id
+    let currentConsumerId = null;
+    let currentPayOutTradeNo = null;
+    let pollingTimer = null;
 
     document.addEventListener('DOMContentLoaded', loadProfile);
 
@@ -157,16 +280,20 @@
                 document.getElementById('loading').classList.add('hidden');
                 if (resp.data.code === 200) {
                     const data = resp.data.data;
-                    currentConsumerId = data.id;   // 保存 id
-                    document.getElementById('username').value = data.username;
-                    document.getElementById('nickname').value = data.consumer_name;
-                    document.getElementById('balance').value = data.account_balance;
+                    currentConsumerId = data.id;
+                    document.getElementById('username').value = data.username || '';
+                    document.getElementById('nickname').value = data.consumer_name || '';
+                    document.getElementById('balanceDisplay').textContent = '¥' + (data.account_balance || 0).toFixed(2);
+                    // 头像 + 名称
+                    const name = data.consumer_name || data.username || '用户';
+                    document.getElementById('displayName').textContent = name;
+                    document.getElementById('avatarEmoji').textContent = name.charAt(0).toUpperCase();
                     document.getElementById('content').classList.remove('hidden');
                 } else {
                     document.getElementById('errorBox').classList.remove('hidden');
                 }
             })
-            .catch(err => {
+            .catch(() => {
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('errorBox').classList.remove('hidden');
             });
@@ -174,17 +301,12 @@
 
     function saveProfile() {
         const nickname = document.getElementById('nickname').value.trim();
-        const balance = parseFloat(document.getElementById('balance').value);
-
-        if (!nickname) {
-            alert('昵称不能为空');
-            return;
-        }
+        if (!nickname) { alert('昵称不能为空'); return; }
 
         axios.put('/consumer/update', {
-            id: currentConsumerId,                  // 必传 id
+            id: currentConsumerId,
             consumer_name: nickname,
-            account_balance: balance
+            account_balance: parseFloat(document.getElementById('balanceDisplay').textContent.replace('¥',''))
         })
             .then(resp => {
                 if (resp.data.code === 200) {
@@ -194,10 +316,7 @@
                     alert(resp.data.msg || '更新失败');
                 }
             })
-            .catch(err => {
-                console.error('更新失败:', err);
-                alert('更新失败，请重试');
-            });
+            .catch(() => alert('更新失败，请重试'));
     }
 
     function openRechargeModal() {
@@ -206,7 +325,7 @@
         document.getElementById('rechargeStep1').classList.remove('hidden');
         document.getElementById('rechargeStep2').classList.add('hidden');
         document.getElementById('rechargeAmount').value = '';
-        document.getElementById('qrcodeContainer').innerHTML = '';  // 清理旧二维码
+        document.getElementById('qrcodeContainer').innerHTML = '';
         if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
         currentPayOutTradeNo = null;
     }
@@ -217,12 +336,35 @@
         document.getElementById('rechargeModal').classList.remove('flex');
     }
 
+    function showQRCode() {
+        const amount = parseFloat(document.getElementById('rechargeAmount').value);
+        if (!amount || amount <= 0) { alert('请输入有效的充值金额'); return; }
+
+        axios.post('/alipay/recharge', { amount: amount })
+            .then(resp => {
+                if (resp.data.code === 200) {
+                    const data = resp.data.data.split(',');
+                    if (data.length !== 2) { alert('返回支付信息异常'); return; }
+                    currentPayOutTradeNo = data[0];
+
+                    document.getElementById('rechargeStep1').classList.add('hidden');
+                    document.getElementById('rechargeStep2').classList.remove('hidden');
+                    document.getElementById('payAmountDisplay').innerText = amount;
+
+                    const container = document.getElementById('qrcodeContainer');
+                    container.innerHTML = '';
+                    new QRCode(container, { text: data[1], width: 200, height: 200 });
+                    startPolling();
+                } else {
+                    alert(resp.data.msg || '生成支付订单失败');
+                }
+            })
+            .catch(() => alert('系统繁忙，请稍后再试'));
+    }
+
     function startPolling() {
-        //关掉其他定时器
         if (pollingTimer) clearInterval(pollingTimer);
         pollingTimer = setInterval(() => {
-
-            //每两秒发请求给status确认状态
             axios.get('/alipay/status', { params: { outTradeNo: currentPayOutTradeNo } })
                 .then(resp => {
                     if (resp.data.code === 200 && resp.data.data === 'SUCCESS') {
@@ -230,74 +372,12 @@
                         pollingTimer = null;
                         alert('支付成功！');
                         closeRechargeModal();
-                        // 刷新余额
                         loadProfile();
                     }
                 })
-                .catch(err => {
-                    console.error('查询支付状态失败:', err);
-                });
-        }, 2000);//每两秒轮询一次
+                .catch(() => {});
+        }, 2000);
     }
-
-
-    let currentPayOutTradeNo = null;
-    let pollingTimer = null;
-
-    function showQRCode() {
-        const amount = parseFloat(document.getElementById('rechargeAmount').value);
-        if (!amount || amount <= 0) {
-            alert('请输入有效的充值金额');
-            return;
-        }
-
-        // 用户发起充值请求，调后端生成支付二维码(只传金额，订单由后端产生)
-        axios.post('/alipay/recharge', { amount: amount }, {
-            headers: { 'Content-Type': 'application/json' }
-        })
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    /*
-                    resp最初会返回"code": 200,"msg": "success",
-                       "data": "https://qr.alipay.com/bax02025yfug6xpwmvda00bd"
-                        后端会将这个变为 "订单号,data"
-                     */
-                    const data = resp.data.data.split(',');
-                    if (data.length !== 2) {
-                        alert('返回支付信息异常');
-                        return;
-                    }
-                    //存的订单号
-                    const outTradeNo = data[0];
-                    //存的二维码的地址
-                    const qrCodeUrl = data[1];
-                    currentPayOutTradeNo = outTradeNo;
-
-                    // 页面切换 ，显示金额，生成二维码...
-                    document.getElementById('rechargeStep1').classList.add('hidden');
-                    document.getElementById('rechargeStep2').classList.remove('hidden');
-                    document.getElementById('payAmountDisplay').innerText = amount;
-
-                    const container = document.getElementById('qrcodeContainer');
-                    container.innerHTML = '';
-                    new QRCode(container, { text: qrCodeUrl, width: 200, height: 200 });
-
-                    // 开始轮询支付状态,支付成功后自动关闭弹窗
-                    startPolling();
-
-
-                } else {
-                    alert(resp.data.msg || '生成支付订单失败');
-                }
-            })
-            .catch(err => {
-                console.error('充值请求失败:', err);
-                alert('系统繁忙，请稍后再试');
-            });
-    }
-
-
-
 </script>
 </body>
 </html>
