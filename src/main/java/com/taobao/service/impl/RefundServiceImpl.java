@@ -1,6 +1,8 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.taobao.common.R;
 import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundListVO;
@@ -107,8 +109,10 @@ public class RefundServiceImpl implements RefundService {
     }
 
     @Override
-    public List<RefundListVO> listConsumerRefundsDetail(int consumerId) {
-        List<Refund> refunds = refundMapper.selectByConsumerId(consumerId);
+    public IPage<RefundListVO> listConsumerRefundsDetail(int consumerId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<Refund> refunds = refundMapper.selectByConsumerIdPage(consumerId, offset, size);
+        long total = refundMapper.countByConsumerId(consumerId);
         List<RefundListVO> voList = new ArrayList<>();
         for (Refund r : refunds) {
             RefundListVO vo = new RefundListVO();
@@ -138,19 +142,24 @@ public class RefundServiceImpl implements RefundService {
             }
             voList.add(vo);
         }
-        return voList;
+        Page<RefundListVO> result = new Page<>(page, size, total);
+        result.setRecords(voList);
+        return result;
     }
 
     @Override
-    public List<OrderVO> getAvailableOrders(int consumerId) {
-        List<OrderVO> candidates = ordersMapper.selectAvailableOrdersWithMerchant(consumerId);
-        // 用 canApplyRefund 过滤（未评价、未申请）
-        List<OrderVO> result = new ArrayList<>();
+    public IPage<OrderVO> getAvailableOrders(int consumerId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<OrderVO> candidates = ordersMapper.selectAvailableOrdersWithMerchantPage(consumerId, offset, size);
+        long total = ordersMapper.countAvailableOrders(consumerId);
+        List<OrderVO> filtered = new ArrayList<>();
         for (OrderVO o : candidates) {
             if (canApplyRefund(consumerId, o.getId()) == null) {
-                result.add(o);
+                filtered.add(o);
             }
         }
+        Page<OrderVO> result = new Page<>(page, size, total);
+        result.setRecords(filtered);
         return result;
     }
 

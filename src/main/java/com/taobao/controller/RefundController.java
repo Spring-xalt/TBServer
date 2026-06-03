@@ -1,5 +1,6 @@
 package com.taobao.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundApplyDto;
@@ -11,7 +12,9 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  *@auther:Jimi
@@ -43,23 +46,35 @@ public class RefundController {
 
     // 展示可提交退换货申请的订单(消费者端)
     @GetMapping("/consumer/available-orders")
-    public R<List<OrderVO>> availableOrders(HttpSession session) {
+    public R<Map<String, Object>> availableOrders(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
-        if (consumerId == null) {
-            return R.error(401, "请先登录");
-        }
-        List<OrderVO> list = refundService.getAvailableOrders(consumerId);
-        return R.success(list);
+        if (consumerId == null) return R.error(401, "请先登录");
+        IPage<OrderVO> result = refundService.getAvailableOrders(consumerId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("orders", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
-    // 展示消费者退换货申请（含商品名、商户名、金额等详情）
+
     @GetMapping("/consumer/list")
-    public R<List<RefundListVO>> consumerRefundList(HttpSession session) {
+    public R<Map<String, Object>> consumerRefundList(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
-        if (consumerId == null) {
-            return R.error(401, "请先登录");
-        }
-        List<RefundListVO> list = refundService.listConsumerRefundsDetail(consumerId);
-        return R.success(list);
+        if (consumerId == null) return R.error(401, "请先登录");
+        IPage<RefundListVO> result = refundService.listConsumerRefundsDetail(consumerId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("refunds", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
 
 

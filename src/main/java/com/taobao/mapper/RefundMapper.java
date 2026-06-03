@@ -18,6 +18,12 @@ public interface RefundMapper extends BaseMapper<Refund> {
     @Select("SELECT * FROM refund WHERE consumer_id = #{consumerId} ORDER BY create_time DESC")
     List<Refund> selectByConsumerId(@Param("consumerId") int consumerId);
 
+    @Select("SELECT * FROM refund WHERE consumer_id = #{consumerId} ORDER BY create_time DESC LIMIT #{offset}, #{size}")
+    List<Refund> selectByConsumerIdPage(@Param("consumerId") int consumerId, @Param("offset") int offset, @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM refund WHERE consumer_id = #{consumerId}")
+    long countByConsumerId(@Param("consumerId") int consumerId);
+
 }
 
 

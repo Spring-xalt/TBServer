@@ -86,10 +86,12 @@
 
   <div id="tabOrders" class="hidden max-w-2xl mx-auto">
     <div id="orderList" class="space-y-4"></div>
+    <div id="paginationAvail"></div>
   </div>
 
   <div id="tabHistory" class="hidden max-w-2xl mx-auto">
     <div id="historyList" class="space-y-4"></div>
+    <div id="paginationHist"></div>
   </div>
 
   <div id="emptyState" class="hidden text-center py-16">
@@ -141,40 +143,25 @@
   var currentTab = 0;
   var availableOrders = [];
   var refundHistory = [];
+  var availPage = 1, availPages = 1;
+  var histPage = 1, histPages = 1;
+  var pageSize = 5;
 
-  document.addEventListener('DOMContentLoaded', loadData);
+  document.addEventListener('DOMContentLoaded', function() { loadData(1, 1); });
 
   function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('btnTab' + tab).classList.add('active');
-    document.getElementById('tabOrders').classList.toggle('hidden', tab !== 0);
-    document.getElementById('tabHistory').classList.toggle('hidden', tab !== 1);
+    renderCurrentTab();
   }
 
-  function loadData() {
-    document.getElementById('loading').classList.remove('hidden');
-    document.getElementById('emptyState').classList.add('hidden');
+  function renderCurrentTab() {
+    var tab = currentTab;
+    document.getElementById('tabOrders').classList.toggle('hidden', tab !== 0);
+    document.getElementById('tabHistory').classList.toggle('hidden', tab !== 1);
 
-    Promise.all([
-      axios.get('/refund/consumer/available-orders'),
-      axios.get('/refund/consumer/list')
-    ])
-    .then(function(arr) {
-      document.getElementById('loading').classList.add('hidden');
-      var availableResp = arr[0];
-      var historyResp = arr[1];
-
-      availableOrders = [];
-      if (availableResp.data.code === 200 && availableResp.data.data) {
-        availableOrders = availableResp.data.data;
-      }
-      refundHistory = [];
-      if (historyResp.data.code === 200 && historyResp.data.data) {
-        refundHistory = historyResp.data.data;
-      }
-
-      // 渲染两个 tab
+    if (tab === 0) {
       var ol = document.getElementById('orderList');
       ol.innerHTML = '';
       if (availableOrders.length > 0) {
@@ -182,7 +169,8 @@
       } else {
         ol.innerHTML = '<p class="text-center text-light py-8">暂无可以申请售后的订单</p>';
       }
-
+      renderPagination(availPage, availPages, 'avail');
+    } else {
       var hl = document.getElementById('historyList');
       hl.innerHTML = '';
       if (refundHistory.length > 0) {
@@ -190,17 +178,59 @@
       } else {
         hl.innerHTML = '<p class="text-center text-light py-8">暂无申请记录</p>';
       }
+      renderPagination(histPage, histPages, 'hist');
+    }
 
-      // 默认显示 tab0，如果可申请为空则跳到 tab1
-      if (availableOrders.length === 0 && refundHistory.length > 0) {
-        switchTab(1);
-      } else {
-        switchTab(0);
-      }
+    if (availableOrders.length === 0 && refundHistory.length === 0) {
+      document.getElementById('emptyState').classList.remove('hidden');
+    }
+  }
 
-      if (availableOrders.length === 0 && refundHistory.length === 0) {
-        document.getElementById('emptyState').classList.remove('hidden');
-      }
+  function renderPagination(page, pages, type) {
+    var id = type === 'avail' ? 'paginationAvail' : 'paginationHist';
+    var container = document.getElementById(id);
+    if (!container) return;
+    if (pages <= 1) { container.innerHTML = ''; return; }
+    var fn = type === 'avail' ? 'loadAvail' : 'loadHist';
+    container.innerHTML =
+      '<div class="flex items-center justify-center space-x-2 mt-6">' +
+        '<button onclick="' + fn + '(' + (page - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (page <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (page <= 1 ? 'disabled' : '') + '>上一页</button>' +
+        '<span class="text-sm text-light">第 ' + page + ' / ' + pages + ' 页</span>' +
+        '<button onclick="' + fn + '(' + (page + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (page >= pages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (page >= pages ? 'disabled' : '') + '>下一页</button>' +
+      '</div>';
+  }
+
+  function loadAvail(p) { loadData(p, histPage); }
+  function loadHist(p) { loadData(availPage, p); }
+
+  function loadData(availP, histP) {
+    availPage = availP || 1;
+    histPage = histP || 1;
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+
+    Promise.all([
+      axios.get('/refund/consumer/available-orders', { params: { page: availPage, size: pageSize } }),
+      axios.get('/refund/consumer/list', { params: { page: histPage, size: pageSize } })
+    ])
+    .then(function(arr) {
+      document.getElementById('loading').classList.add('hidden');
+      var availResp = arr[0];
+      var histResp = arr[1];
+
+      // 可申请
+      if (availResp.data.code === 200 && availResp.data.data) {
+        availableOrders = availResp.data.data.orders || [];
+        availPages = availResp.data.data.pages || 1;
+      } else { availableOrders = []; availPages = 1; }
+
+      // 申请记录
+      if (histResp.data.code === 200 && histResp.data.data) {
+        refundHistory = histResp.data.data.refunds || [];
+        histPages = histResp.data.data.pages || 1;
+      } else { refundHistory = []; histPages = 1; }
+
+      renderCurrentTab();
     })
     .catch(function() {
       document.getElementById('loading').classList.add('hidden');
