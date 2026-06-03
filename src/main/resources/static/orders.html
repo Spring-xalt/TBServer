@@ -21,350 +21,320 @@
       }
     }
   </script>
+  <style>
+    .order-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .order-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
+    .order-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 22px;
+      background: linear-gradient(135deg, #fafafa, #fff);
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px; color: #999;
+    }
+    .order-body {
+      display: flex; align-items: center;
+      padding: 20px 22px; gap: 18px;
+    }
+    .order-body .product-img {
+      width: 88px; height: 88px;
+      border-radius: 12px; background: #f5f5f5;
+      flex-shrink: 0; object-fit: cover;
+      border: 1px solid #f0f0f0;
+    }
+    .order-body .product-info { flex: 1; min-width: 0; }
+    .order-body .product-info h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .order-body .product-info .meta-row { display: flex; gap: 16px; font-size: 13px; color: #888; margin-top: 4px; }
+    .order-body .price-col { text-align: right; flex-shrink: 0; min-width: 110px; }
+    .order-body .price-col .price-total { font-size: 22px; font-weight: 700; color: #ff5e62; }
+    .order-body .price-col .price-total small { font-size: 13px; font-weight: 400; color: #999; display: block; }
+    .order-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 22px; border-top: 1px solid #f5f5f5;
+      background: #fafafa; font-size: 12px; color: #aaa;
+    }
+    .order-footer .actions { display: flex; gap: 8px; align-items: center; }
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; }
+    .status-1 { background: #fff7e6; color: #fa8c16; }
+    .status-2 { background: #e6f7ff; color: #1890ff; }
+    .status-3 { background: #f0fff4; color: #52c41a; }
+    .btn-sm { padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
+    .btn-sm-primary { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; }
+    .btn-sm-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-sm-success { background: #52c41a; color: #fff; }
+    .btn-sm-success:hover { background: #45a818; transform: translateY(-1px); }
+    .btn-sm-ghost { background: #fff; color: #999; border: 1px solid #e8e8e8; }
+    .filter-btn { padding: 10px 20px; border-radius: 22px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid #e8e8e8; transition: all 0.2s; background: #fff; color: #666; }
+    .filter-btn.active { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; }
+    .filter-btn:hover:not(.active) { border-color: #ff6a00; color: #ff6a00; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-orange-50/30 min-h-screen">
 
-<header class="bg-white border-b border-border">
+<header class="bg-white border-b border-border sticky top-0 z-40">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="/taobao/index.html" class="text-primary text-xl font-bold">
-      <i class="fa fa-shopping-bag mr-2"></i>返回首页
+    <a href="/taobao/index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+      <i class="fa fa-arrow-left"></i> 返回首页
     </a>
-    <h1 class="text-dark text-2xl font-bold">我的订单</h1>
+    <h1 class="text-dark text-xl font-bold">我的订单</h1>
     <div></div>
   </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-  <!-- 状态筛选标签 -->
-  <div class="flex space-x-2 mb-6">
-    <button onclick="filterOrders(0)" id="btnAll" class="px-4 py-2 rounded-md bg-primary text-white">全部</button>
-    <button onclick="filterOrders(1)" id="btnPending" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">未支付</button>
-    <button onclick="filterOrders(2)" id="btnPaid" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已支付</button>
-    <button onclick="filterOrders(3)" id="btnReceived" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已签收</button>
+  <div class="flex flex-wrap gap-2 mb-6" id="filterBar">
+    <button class="filter-btn active" onclick="filterOrders(0)" id="btnAll">📋 全部</button>
+    <button class="filter-btn" onclick="filterOrders(1)" id="btnPending">⏳ 未支付</button>
+    <button class="filter-btn" onclick="filterOrders(2)" id="btnPaid">✅ 已支付</button>
+    <button class="filter-btn" onclick="filterOrders(3)" id="btnReceived">📦 已签收</button>
+    <span class="ml-auto text-sm text-light self-center" id="orderCount"></span>
   </div>
 
-  <!-- 加载提示 -->
-  <div id="loading" class="text-center py-12 hidden">
+  <div id="loading" class="text-center py-16 hidden">
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
     <p class="text-light mt-4">加载中...</p>
   </div>
 
-  <!-- 订单列表容器 -->
-  <div id="orderList" class="space-y-4"></div>
+  <div id="orderList" class="space-y-4 max-w-3xl mx-auto"></div>
+  <div id="pagination" class="max-w-3xl mx-auto"></div>
 
-  <!-- 空状态 -->
-  <div id="emptyState" class="hidden text-center py-12">
-    <i class="fa fa-inbox text-5xl text-gray-300 mb-4"></i>
+  <div id="emptyState" class="hidden text-center py-16">
+    <i class="fa fa-inbox text-5xl text-gray-300 mb-4 block"></i>
     <p class="text-light text-lg">暂无相关订单</p>
-    <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去购物</a>
+    <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去逛逛</a>
   </div>
-
-  <!-- 评价弹窗 -->
-  <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
-    <div class="bg-white rounded-lg p-8 w-[480px] relative shadow-lg">
-      <h2 class="text-xl font-bold text-dark mb-6">评价商品</h2>
-      <div class="space-y-4">
-
-        <div>
-          <label class="block text-sm text-dark mb-1">商品名称</label>
-          <input type="text" id="reviewProductName" class="w-full border border-border rounded px-3 py-2 bg-gray-100" disabled>
-        </div>
-        <div>
-          <label class="block text-sm text-dark mb-1">评分</label>
-          <div class="flex space-x-1" id="starRating">
-            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="1"></i>
-            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="2"></i>
-            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="3"></i>
-            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="4"></i>
-            <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="5"></i>
-          </div>
-          <input type="hidden" id="reviewScore" value="0">
-        </div>
-        <div>
-          <label class="block text-sm text-dark mb-1">评价内容</label>
-          <textarea id="reviewContent" rows="4" class="w-full border border-border rounded px-3 py-2" placeholder="请输入您的评价..."></textarea>
-        </div>
-        <div class="flex justify-end space-x-2 pt-4">
-          <button onclick="closeReviewModal()" class="px-4 py-2 border border-border rounded hover:bg-gray-100">取消</button>
-          <button onclick="submitReview()" class="px-6 py-2 bg-primary text-white rounded hover:bg-orange-600">提交评价</button>
-        </div>
-      </div>
-      <button onclick="closeReviewModal()" class="absolute top-3 right-4 text-gray-500 hover:text-dark text-lg">
-        <i class="fa fa-close"></i>
-      </button>
-
-    </div>
-  </div>
-
-
 </main>
 
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50 flex">
+  <div class="bg-white rounded-2xl p-8 w-[460px] relative shadow-2xl">
+    <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-gray-400 hover:text-dark text-lg"><i class="fa fa-close"></i></button>
+    <h2 class="text-xl font-bold text-dark mb-6">评价商品</h2>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-dark mb-1">商品名称</label>
+        <input type="text" id="reviewProductName" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 bg-gray-50 text-gray-600" disabled>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-dark mb-1">评分</label>
+        <div class="flex space-x-1" id="starRating">
+          <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="1"></i>
+          <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="2"></i>
+          <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="3"></i>
+          <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="4"></i>
+          <i class="fa fa-star text-2xl text-gray-300 cursor-pointer" data-score="5"></i>
+        </div>
+        <input type="hidden" id="reviewScore" value="0">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-dark mb-1">评价内容</label>
+        <textarea id="reviewContent" rows="3" class="w-full border-2 border-gray-100 rounded-xl px-4 py-3 focus:border-orange-400 outline-none transition-colors" placeholder="说说你的使用感受..."></textarea>
+      </div>
+      <div class="flex justify-end gap-3 pt-4">
+        <button onclick="closeReviewModal()" class="btn-sm btn-sm-ghost">取消</button>
+        <button onclick="submitReview()" class="btn-sm btn-sm-primary">提交评价</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
-
-
 <script>
   axios.defaults.baseURL = window.location.origin + '/taobao';
   let allOrders = [];
-  let currentFilter = 0;  // 0全部,1待支付,2已支付,3已签收
+  let currentFilter = 0;
+  let currentPage = 1;
+  let totalPages = 1;
+  var pageSize = 5;
   let currentReviewOrderId = null;
   let reviewableOrderIds = [];
   let reviewedOrderIds = [];
 
+  document.addEventListener('DOMContentLoaded', () => { loadOrders(1); });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadOrders();
-  });
-
-
-    function loadOrders() {
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('orderList').innerHTML = '';
-      document.getElementById('emptyState').classList.add('hidden');
-
-      // axios并行请求：订单列表 + 可评价订单列表
-      Promise.all([
-        axios.get('/order/consumerSelf'),
-        axios.get('/review/reviewable'),
-        axios.get('/review/my')
-      ])
-              .then(([orderResp, reviewableResp, myReviewResp]) => {
-                document.getElementById('loading').classList.add('hidden');
-
-
-
-                if (orderResp.data.code === 200) {
-                  allOrders = orderResp.data.data || [];
-                }
-                else {
-                  allOrders = [];
-                }
-
-                if (reviewableResp.data.code === 200) {
-                  const reviewableOrders = reviewableResp.data.data || [];
-                  reviewableOrderIds = reviewableOrders.map(order => order.id);
-                }
-                else {
-                  reviewableOrderIds = [];
-                }
-
-                if (myReviewResp.data.code === 200) {
-                  const myReviews = myReviewResp.data.data || [];
-                  reviewedOrderIds = myReviews.map(r => r.order_id);
-                }
-                else {
-                  reviewedOrderIds = [];
-                }
-
-
-                applyFilter();
-              })
-              .catch(err => {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('emptyState').classList.remove('hidden');
-                document.getElementById('emptyState').innerHTML =
-                        '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
-                        '<p class="text-light">加载失败，请先登录</p>';
-              });
-    }
+  function loadOrders(page) {
+    currentPage = page;
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('orderList').innerHTML = '';
+    document.getElementById('emptyState').classList.add('hidden');
+    Promise.all([
+      axios.get('/order/consumerSelf', { params: { page: page, size: pageSize } }),
+      axios.get('/review/reviewable'),
+      axios.get('/review/my')
+    ])
+    .then(([orderResp, reviewableResp, myReviewResp]) => {
+      document.getElementById('loading').classList.add('hidden');
+      if (orderResp.data.code === 200) {
+        var payload = orderResp.data.data;
+        allOrders = payload.orders || [];
+        totalPages = payload.pages || 1;
+      } else allOrders = [];
+      if (reviewableResp.data.code === 200) reviewableOrderIds = (reviewableResp.data.data || []).map(function(o){return o.id;});
+      else reviewableOrderIds = [];
+      if (myReviewResp.data.code === 200) reviewedOrderIds = (myReviewResp.data.data || []).map(function(r){return r.order_id;});
+      else reviewedOrderIds = [];
+      applyFilter();
+    })
+    .catch(() => {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('emptyState').classList.remove('hidden');
+      document.getElementById('emptyState').innerHTML = '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4 block"></i><p class="text-light">加载失败，请先登录</p>';
+    });
+  }
 
   function filterOrders(status) {
-    // 更新按钮样式
-    ['btnAll','btnPending','btnPaid','btnReceived'].forEach(id => {
-      const btn = document.getElementById(id);
-      btn.className = btn.className.replace('bg-primary text-white', 'border border-border text-dark hover:bg-gray-100');
-    });
-    const activeBtn = document.getElementById(
-            status === 0 ? 'btnAll' : (status === 1 ? 'btnPending' : (status === 2 ? 'btnPaid' : 'btnReceived'))
-    );
-    activeBtn.className = activeBtn.className.replace('border border-border text-dark hover:bg-gray-100', 'bg-primary text-white');
-
     currentFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    var id = status === 0 ? 'btnAll' : status === 1 ? 'btnPending' : status === 2 ? 'btnPaid' : 'btnReceived';
+    document.getElementById(id).classList.add('active');
     applyFilter();
   }
 
   function applyFilter() {
-    const filtered = currentFilter === 0
-            ? allOrders
-            : allOrders.filter(o => o.status === currentFilter);
-
-    const listEl = document.getElementById('orderList');
-    const emptyEl = document.getElementById('emptyState');
-
-    if (filtered.length === 0) {
-      listEl.innerHTML = '';
-      emptyEl.classList.remove('hidden');
-      return;
-    }
-
+    var filtered = currentFilter === 0 ? allOrders : allOrders.filter(function(o) { return o.status === currentFilter; });
+    document.getElementById('orderCount').textContent = '共 ' + filtered.length + ' 单';
+    var listEl = document.getElementById('orderList');
+    var emptyEl = document.getElementById('emptyState');
+    if (filtered.length === 0) { listEl.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
     emptyEl.classList.add('hidden');
     listEl.innerHTML = '';
-    filtered.forEach(order => {
-      listEl.appendChild(createOrderCard(order));
-    });
+    filtered.forEach(function(order) { listEl.appendChild(createOrderCard(order)); });
+    renderPagination();
+  }
+
+  function renderPagination() {
+    var container = document.getElementById('pagination');
+    if (!container || totalPages <= 1) { container.innerHTML = ''; return; }
+    var html = '<div class="flex items-center justify-center space-x-2 mt-6">';
+    html += '<button onclick="loadOrders(' + (currentPage - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>上一页</button>';
+    html += '<span class="text-sm text-light">第 ' + currentPage + ' / ' + totalPages + ' 页</span>';
+    html += '<button onclick="loadOrders(' + (currentPage + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage >= totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>下一页</button>';
+    html += '</div>';
+    container.innerHTML = html;
   }
 
   function createOrderCard(order) {
-    const statusMap = {
-      1: { text: '未支付', color: 'text-yellow-600 bg-yellow-50' },
-      2: { text: '已支付', color: 'text-blue-600 bg-blue-50' },
-      3: { text: '已签收', color: 'text-green-600 bg-green-50' }
+    var statusMap = {
+      1: { text: '⏳ 未支付', cls: 'status-1' },
+      2: { text: '✅ 已支付', cls: 'status-2' },
+      3: { text: '📦 已签收', cls: 'status-3' }
     };
-    const st = statusMap[order.status] || { text: '未知', color: 'text-gray-600 bg-gray-50' };
+    var st = statusMap[order.status] || { text: '未知', cls: 'status-1' };
+    var qty = order.quantity || 1;
+    var unitPrice = order.unit_price || order.total_amount;
+    var total = order.total_amount || 0;
 
-    const card = document.createElement('div');
-    card.className = 'bg-white rounded-lg shadow-sm p-4';
+    var card = document.createElement('div');
+    card.className = 'order-card';
 
-    card.innerHTML = `
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <h3 class="font-medium text-dark">${order.product_name}</h3>
-                    <p class="text-light text-sm mt-1">
-                        <i class="fa fa-store mr-1"></i>${order.merchant_name}
-                    </p>
-                    <p class="text-primary font-bold mt-2">¥${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}</p>
-                    <div class="text-light text-xs mt-2 space-x-4">
-                        <span>创建：${formatTime(order.create_time)}</span>
-                        <span>更新：${formatTime(order.update_time)}</span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="inline-block px-2 py-1 rounded text-xs font-medium ${st.color}">${st.text}</span>
+    // 底部操作按钮
+    var footerActions = '';
+    if (order.status === 2) {
+      var elapsed = Date.now() - new Date(order.create_time).getTime();
+      if (elapsed > 60000) {
+        footerActions = '<span style="font-size:12px;color:#52c41a;">🚚 商家已发货</span>' +
+          '<button class="btn-sm btn-sm-success" onclick="confirmReceive(' + order.id + ')">确认签收</button>';
+      } else {
+        footerActions = '<span style="font-size:12px;color:#fa8c16;">⏳ 等待发货</span>';
+      }
+    } else if (order.status === 3) {
+      if (reviewedOrderIds.indexOf(order.id) >= 0) {
+        footerActions = '<span class="btn-sm btn-sm-ghost" style="cursor:default;">✅ 已评价</span>';
+      } else if (reviewableOrderIds.indexOf(order.id) >= 0) {
+        footerActions = '<button class="btn-sm btn-sm-primary" onclick="openReviewModal(' + order.id + ', \'' + order.product_name.replace(/'/g,"\\'") + '\')">✏️ 评价</button>';
+      }
+    }
 
-                    <!--  设计一个定时任务，签收后 60 s的订单 显示商家已经发货的文本  -->
-                    ${order.status === 2 ? `
-                            ${(() => {
-                            const now = new Date().getTime();
-                            const createTime = new Date(order.create_time).getTime();
-                            if ((now - createTime) > 60000) {
-                             return '<p class="text-green-600 text-sm mt-1">商家已发货，等待收货</p>';
-                            }
-                          return '';
-                    })()}
+    var footerTime = order.receive_time
+      ? '📦 签收 ' + formatTime(order.receive_time)
+      : '🕐 更新 ' + formatTime(order.update_time);
 
+    card.innerHTML =
+      '<div class="order-header">' +
+        '<span><i class="fa fa-file-text-o mr-1"></i>订单号 <b style="color:#555;">#' + order.id + '</b></span>' +
+        '<span class="status-badge ' + st.cls + '">' + st.text + '</span>' +
+      '</div>' +
+      '<div class="order-body">' +
+        '<img src="/taobao/product/' + order.product_id + '/image" class="product-img" onerror="this.src=\'https://picsum.photos/seed/' + order.product_id + '/150/150\'" alt="' + order.product_name + '">' +
+        '<div class="product-info">' +
+          '<h3>' + order.product_name + '</h3>' +
+          '<div class="meta-row">' +
+            '<span><i class="fa fa-store"></i> ' + (order.merchant_name || '商家') + '</span>' +
+            '<span><i class="fa fa-clock-o"></i> ' + formatTime(order.create_time) + '</span>' +
+          '</div>' +
+          '<div class="meta-row" style="margin-top:6px;font-size:12.5px;">' +
+            '<span>单价 <b style="color:#555;">¥' + unitPrice.toFixed(2) + '</b></span>' +
+            '<span>× <b style="color:#555;">' + qty + '</b></span>' +
+            '<span>实付 <b style="color:#ff5e62;font-size:14px;">¥' + total.toFixed(2) + '</b></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="order-footer">' +
+        '<span>' + footerTime + '</span>' +
+        '<div class="actions">' + footerActions + '</div>' +
+      '</div>';
 
-    <button onclick="confirmReceive(${order.id})"
-        class="block mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
-        确认签收
-    </button>
-` : ''}
-
-
-                    ${order.status === 3 ? (reviewedOrderIds.includes(order.id) ? `
-                        <span class="block mt-2 px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded">已评价</span>
-                            ` : (reviewableOrderIds.includes(order.id) ? `
-                        <button onclick="openReviewModal(${order.id}, '${order.product_name.replace(/'/g, "\\'")}')"
-                            class="block mt-2 px-3 py-1 bg-orange-500 text-white text-sm rounded hover:bg-orange-600">
-                            评价
-                        </button>
-                    ` : '')
-            ) : ''}
-
-
-                </div>
-            </div>
-        `;
     return card;
   }
 
   function confirmReceive(orderId) {
     if (!confirm('确认已收到商品吗？')) return;
-    axios.put(`/order/${orderId}/confirm`)
-            .then(resp => {
-              if (resp.data.code === 200) {
-                alert('签收成功');
-                loadOrders();
-              } else {
-                alert(resp.data.msg || '签收失败');
-              }
-            })
-            .catch(err => {
-              console.error('签收失败:', err);
-              alert('签收失败，请重试');
-            });
+    axios.put('/order/' + orderId + '/confirm')
+      .then(function(resp) {
+        if (resp.data.code === 200) { alert('签收成功'); loadOrders(currentPage); }
+        else alert(resp.data.msg || '签收失败');
+      })
+      .catch(function() { alert('签收失败，请重试'); });
   }
 
-
-  // 打开评价弹窗
   function openReviewModal(orderId, productName) {
     currentReviewOrderId = orderId;
     document.getElementById('reviewProductName').value = productName;
     document.getElementById('reviewScore').value = 0;
     document.getElementById('reviewContent').value = '';
-    // 重置星星
-    document.querySelectorAll('#starRating i').forEach(star => {
-      star.classList.remove('text-orange-400');
-      star.classList.add('text-gray-300');
-    });
+    document.querySelectorAll('#starRating i').forEach(function(s) { s.classList.remove('text-orange-400'); s.classList.add('text-gray-300'); });
     document.getElementById('reviewModal').classList.remove('hidden');
   }
 
-  // 关闭评价弹窗
   function closeReviewModal() {
     document.getElementById('reviewModal').classList.add('hidden');
     currentReviewOrderId = null;
   }
 
-  // 星星点击事件
   document.addEventListener('click', function(e) {
     if (e.target.closest('#starRating i')) {
-      const star = e.target.closest('i');
-      const score = parseInt(star.getAttribute('data-score'));
+      var star = e.target.closest('i');
+      var score = parseInt(star.getAttribute('data-score'));
       document.getElementById('reviewScore').value = score;
-      const stars = document.querySelectorAll('#starRating i');
-      stars.forEach((s, index) => {
-        if (index < score) {
-          s.classList.remove('text-gray-300');
-          s.classList.add('text-orange-400');
-        } else {
-          s.classList.remove('text-orange-400');
-          s.classList.add('text-gray-300');
-        }
+      document.querySelectorAll('#starRating i').forEach(function(s, i) {
+        s.classList.toggle('text-orange-400', i < score);
+        s.classList.toggle('text-gray-300', i >= score);
       });
     }
   });
 
-  // 提交评价
   function submitReview() {
-    const score = parseInt(document.getElementById('reviewScore').value);
-    const content = document.getElementById('reviewContent').value.trim();
-
-    if (score === 0) {
-      alert('请选择评分');
-      return;
-    }
-    if (!content) {
-      alert('请输入评价内容');
-      return;
-    }
-
-    axios.post('/review/submit', {
-      orderId: currentReviewOrderId,
-      score: score,
-      content: content
-    })
-            .then(resp => {
-              if (resp.data.code === 200) {
-                alert('评价成功！');
-                closeReviewModal();
-                loadOrders();
-              } else {
-                alert(resp.data.msg || '评价失败');
-              }
-            })
-            .catch(err => {
-              console.error('评价失败:', err);
-              alert('评价失败，请重试');
-            });
+    var score = parseInt(document.getElementById('reviewScore').value);
+    var content = document.getElementById('reviewContent').value.trim();
+    if (score === 0) { alert('请选择评分'); return; }
+    if (!content) { alert('请输入评价内容'); return; }
+    axios.post('/review/submit', { orderId: currentReviewOrderId, score: score, content: content })
+      .then(function(resp) {
+        if (resp.data.code === 200) { alert('评价成功！'); closeReviewModal(); loadOrders(currentPage); }
+        else alert(resp.data.msg || '评价失败');
+      })
+      .catch(function() { alert('评价失败，请重试'); });
   }
 
   function formatTime(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    var d = new Date(dateStr);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
-
-
-
 </script>
 </body>
 </html>

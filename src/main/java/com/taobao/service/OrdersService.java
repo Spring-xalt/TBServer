@@ -1,5 +1,6 @@
 package com.taobao.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
@@ -22,6 +23,9 @@ public interface OrdersService {
 
     //展示所有订单
     List<OrderVO> listMyOrders(int consumerId);
+
+    //分页展示我的订单
+    IPage<OrderVO> listMyOrdersPage(int consumerId, int page, int size);
 
    // prepare to delete
     R<String> confirm(Integer id);

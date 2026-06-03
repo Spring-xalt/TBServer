@@ -24,6 +24,10 @@ public class Orders {
     private String product_name;
     // 商品ID（外键）
     private Integer product_id;
+    // 购买数量
+    private Integer quantity;
+    // 下单时的单价（锁定，后续商品改价不影响历史订单）
+    private BigDecimal unit_price;
     private BigDecimal total_amount;
 
 

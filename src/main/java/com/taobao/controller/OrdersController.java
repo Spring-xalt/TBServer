@@ -1,5 +1,6 @@
 package com.taobao.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,13 +86,21 @@ public class OrdersController {
     }
 
     @GetMapping("/consumerSelf")
-    public R<List<OrderVO>> consumerOrders(HttpSession session) {
+    public R<Map<String, Object>> consumerOrders(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
         if (consumerId == null) {
             return R.error(401, "请先登录");
         }
-        List<OrderVO> list = ordersService.listMyOrders(consumerId);
-        return R.success(list);
+        IPage<OrderVO> result = ordersService.listMyOrdersPage(consumerId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("orders", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
 
 

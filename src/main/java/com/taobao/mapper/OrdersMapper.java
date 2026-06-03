@@ -40,4 +40,17 @@ public interface OrdersMapper extends BaseMapper<Orders> {
             "AND create_time > DATE_SUB(NOW(), INTERVAL 3 MONTH)")
     List<Orders> selectReceivedRecentByConsumerId(@Param("consumerId") int consumerId);
 
+    // 分页：消费者订单（含商户名）
+    @Select("SELECT o.*, m.merchant_name FROM orders o " +
+            "JOIN merchant m ON o.merchant_id = m.id " +
+            "WHERE o.consumer_id = #{consumerId} " +
+            "ORDER BY o.create_time DESC " +
+            "LIMIT #{offset}, #{size}")
+    List<OrderVO> selectOrdersWithMerchantPage(@Param("consumerId") int consumerId,
+                                                @Param("offset") int offset,
+                                                @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM orders WHERE consumer_id = #{consumerId}")
+    long selectCountByConsumerId(@Param("consumerId") int consumerId);
+
 }

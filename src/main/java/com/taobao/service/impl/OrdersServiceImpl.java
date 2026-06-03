@@ -1,6 +1,8 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
@@ -84,6 +86,16 @@ public class OrdersServiceImpl implements OrdersService {
         return ordersMapper.selectOrdersWithMerchant(consumerId);
     }
 
+    @Override
+    public IPage<OrderVO> listMyOrdersPage(int consumerId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<OrderVO> records = ordersMapper.selectOrdersWithMerchantPage(consumerId, offset, size);
+        long total = ordersMapper.selectCountByConsumerId(consumerId);
+        Page<OrderVO> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
+    }
+
 
     @Override
     @Transactional
@@ -96,6 +108,8 @@ public class OrdersServiceImpl implements OrdersService {
             order.setMerchant_id(item.getMerchantId());
             order.setProduct_name(item.getProductName());
             order.setProduct_id(item.getProductId());
+            order.setQuantity(item.getQuantity());
+            order.setUnit_price(item.getPrice());  // 锁定下单时价格
             order.setTotal_amount(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
             // 先生成未支付订单
             order.setStatus(1);

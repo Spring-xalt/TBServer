@@ -18,6 +18,8 @@ public class OrderVO {
     private Integer consumer_id;
     private String product_name;
     private Integer product_id;
+    private Integer quantity;
+    private BigDecimal unit_price;
     private String consumer_name;
     private BigDecimal total_amount;
 
