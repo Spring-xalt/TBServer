@@ -2,109 +2,133 @@ package com.taobao.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.taobao.common.R;
-import com.taobao.dto.AdminLoginDto;
-import com.taobao.entity.Admin;
-import com.taobao.entity.Consumer;
-import com.taobao.entity.Merchant;
-import com.taobao.entity.Orders;
-import com.taobao.mapper.ConsumerMapper;
-import com.taobao.mapper.MerchantMapper;
-import com.taobao.mapper.OrdersMapper;
-import com.taobao.mapper.ProductMapper;
+import com.taobao.dto.AdminStats;
+import com.taobao.dto.PageResult;
+import com.taobao.entity.*;
+import com.taobao.mapper.*;
 import com.taobao.service.AdminService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-/*
- *@auther:Jimi
- *@version:1.0
- *@description:
- */
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+    @Autowired private AdminService adminService;
+    @Autowired private ConsumerMapper consumerMapper;
+    @Autowired private MerchantMapper merchantMapper;
+    @Autowired private ProductMapper productMapper;
+    @Autowired private OrdersMapper ordersMapper;
 
-    @Autowired
-    private ConsumerMapper consumerMapper;
-
-    @Autowired
-    private MerchantMapper merchantMapper;
-
-    @Autowired
-    private ProductMapper productMapper;
-
-    @Autowired
-    private OrdersMapper ordersMapper;
-
-
-
-
+    // ======== 老接口（admin-index.html 用，全量返回） ========
     @GetMapping("/consumers")
     public R<List<Consumer>> consumers() {
-        QueryWrapper<Consumer> wrapper = new QueryWrapper<>();
-        wrapper.orderByDesc("create_time");
-        return R.success(consumerMapper.selectList(wrapper));
+        return R.success(consumerMapper.selectList(new QueryWrapper<Consumer>().orderByDesc("create_time")));
     }
-
 
     @GetMapping("/merchants")
     public R<List<Merchant>> merchants() {
-        QueryWrapper<Merchant> wrapper = new QueryWrapper<>();
-        wrapper.orderByDesc("create_time");
-        return R.success(merchantMapper.selectList(wrapper));
+        return R.success(merchantMapper.selectList(new QueryWrapper<Merchant>().orderByDesc("create_time")));
     }
 
     @GetMapping("/orders")
     public R<List<Orders>> orders() {
-        QueryWrapper<Orders> wrapper = new QueryWrapper<>();
-        wrapper.orderByDesc("create_time");
-        return R.success(ordersMapper.selectList(wrapper));
+        return R.success(ordersMapper.selectList(new QueryWrapper<Orders>().orderByDesc("create_time")));
     }
 
     @GetMapping("/today-total")
     public R<BigDecimal> todayTotal() {
-        // 查今天签收的订单总金额
-        QueryWrapper<Orders> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 3);
-        wrapper.apply("DATE(create_time) = CURDATE()");
-        List<Orders> list = ordersMapper.selectList(wrapper);
-        BigDecimal total = list.stream()
-                .map(Orders::getTotal_amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        QueryWrapper<Orders> w = new QueryWrapper<>();
+        w.eq("status", 3);
+        w.apply("DATE(create_time) = CURDATE()");
+        BigDecimal total = ordersMapper.selectList(w).stream()
+                .map(Orders::getTotal_amount).reduce(BigDecimal.ZERO, BigDecimal::add);
         return R.success(total);
+    }
+
+    // ======== 新分页接口（admin-dashboard.html 用） ========
+    @GetMapping("/products/paged")
+    public R<PageResult<Product>> productsPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String type) {
+        QueryWrapper<Product> w = new QueryWrapper<>();
+        if (type != null && !type.isEmpty()) w.eq("type", type);
+        w.orderByDesc("create_time");
+        return R.success(PageResult.of(productMapper.selectList(w), page, size));
+    }
+
+    @GetMapping("/consumers/paged")
+    public R<PageResult<Consumer>> consumersPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) BigDecimal balanceMin,
+            @RequestParam(required = false) BigDecimal balanceMax) {
+        QueryWrapper<Consumer> w = new QueryWrapper<>();
+        if (balanceMin != null) w.ge("account_balance", balanceMin);
+        if (balanceMax != null) w.le("account_balance", balanceMax);
+        w.orderByDesc("create_time");
+        return R.success(PageResult.of(consumerMapper.selectList(w), page, size));
+    }
+
+    @GetMapping("/merchants/paged")
+    public R<PageResult<Merchant>> merchantsPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size) {
+        QueryWrapper<Merchant> w = new QueryWrapper<>();
+        w.orderByDesc("create_time");
+        return R.success(PageResult.of(merchantMapper.selectList(w), page, size));
+    }
+
+    @GetMapping("/orders/paged")
+    public R<PageResult<Orders>> ordersPaged(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String amountRange) {
+        QueryWrapper<Orders> w = new QueryWrapper<>();
+        if ("small".equals(amountRange)) w.le("total_amount", new BigDecimal("100"));
+        else if ("large".equals(amountRange)) w.ge("total_amount", new BigDecimal("500"));
+        else if ("mid".equals(amountRange)) w.between("total_amount", new BigDecimal("100"), new BigDecimal("500"));
+        w.orderByDesc("create_time");
+        return R.success(PageResult.of(ordersMapper.selectList(w), page, size));
+    }
+
+    @GetMapping("/stats")
+    public R<AdminStats> stats() {
+        AdminStats s = new AdminStats();
+        s.setConsumerCount(consumerMapper.selectCount(null));
+        s.setMerchantCount(merchantMapper.selectCount(null));
+        s.setProductCount(productMapper.selectCount(null));
+        s.setOrderCount(ordersMapper.selectCount(null));
+        QueryWrapper<Orders> w = new QueryWrapper<>();
+        w.eq("status", 3);
+        w.apply("DATE(create_time) = CURDATE()");
+        BigDecimal today = ordersMapper.selectList(w).stream()
+                .map(Orders::getTotal_amount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        s.setTodayTotal(today);
+        return R.success(s);
     }
 
     @PutMapping("/consumer/{id}/toggle")
     public R<String> toggleConsumer(@PathVariable("id") Integer id) {
-        Consumer consumer = consumerMapper.selectById(id);
-        if (consumer == null) {
-            return R.error("消费者不存在");
-        }
-        // 0 ↔ 1 切换
-        consumer.setStatus(consumer.getStatus() == null || consumer.getStatus() == 0 ? 1 : 0);
-        consumer.setUpdate_time(null);
-        consumerMapper.updateById(consumer);
-        return R.success(consumer.getStatus() == 1 ? "已禁用" : "已解禁");
+        Consumer c = consumerMapper.selectById(id);
+        if (c == null) return R.error("消费者不存在");
+        c.setStatus(c.getStatus() == null || c.getStatus() == 0 ? 1 : 0);
+        c.setUpdate_time(null);
+        consumerMapper.updateById(c);
+        return R.success(c.getStatus() == 1 ? "已禁用" : "已解禁");
     }
 
     @PutMapping("/merchant/{id}/toggle")
     public R<String> toggleMerchant(@PathVariable("id") Integer id) {
-        Merchant merchant = merchantMapper.selectById(id);
-        if (merchant == null) {
-            return R.error("商户不存在");
-        }
-        merchant.setStatus(merchant.getStatus() == null || merchant.getStatus() == 0 ? 1 : 0);
-        merchant.setUpdate_time(null);
-        merchantMapper.updateById(merchant);
-        return R.success(merchant.getStatus() == 1 ? "已禁用" : "已解禁");
+        Merchant m = merchantMapper.selectById(id);
+        if (m == null) return R.error("商户不存在");
+        m.setStatus(m.getStatus() == null || m.getStatus() == 0 ? 1 : 0);
+        m.setUpdate_time(null);
+        merchantMapper.updateById(m);
+        return R.success(m.getStatus() == 1 ? "已禁用" : "已解禁");
     }
 }
