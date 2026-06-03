@@ -214,25 +214,13 @@ public class OrdersServiceImpl implements OrdersService {
 
 
     @Override
-    public List<OrderVO> listMerchantOrders(int merchantId) {
-        List<Orders> orders = ordersMapper.selectOrdersByMerchantId(merchantId);
-        List<OrderVO> voList = new ArrayList<>();
-
-        for (Orders o : orders) {
-            OrderVO vo = new OrderVO();
-            BeanUtils.copyProperties(o, vo);
-
-            // 填充消费者昵称
-            Consumer consumer = consumerMapper.selectById(o.getConsumer_id());
-            vo.setConsumer_name(consumer != null ? consumer.getConsumer_name() : "未知");
-
-
-            Merchant merchant = merchantMapper.selectById(o.getMerchant_id());
-            vo.setMerchant_name(merchant != null ? merchant.getMerchant_name() : "未知");
-
-            voList.add(vo);
-        }
-        return voList;
+    public IPage<OrderVO> listMerchantOrders(int merchantId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<OrderVO> records = ordersMapper.selectByMerchantIdPage(merchantId, offset, size);
+        long total = ordersMapper.countByMerchantId(merchantId);
+        Page<OrderVO> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
     }
 
 

@@ -52,6 +52,7 @@
     <p class="text-light mt-4">加载中...</p>
   </div>
   <div id="orderList" class="space-y-4 max-w-3xl mx-auto"></div>
+  <div id="pagination" class="max-w-3xl mx-auto"></div>
   <div id="emptyState" class="hidden text-center py-16">
     <i class="fa fa-inbox text-5xl text-gray-300 mb-4 block"></i>
     <p class="text-light text-lg">暂无相关订单</p>
@@ -63,18 +64,22 @@
   axios.defaults.baseURL = window.location.origin + '/taobao';
   var allOrders = [];
   var currentFilter = 0;
+  var currentPage = 1, totalPages = 1, pageSize = 5;
 
-  document.addEventListener('DOMContentLoaded', function() { loadOrders(); });
+  document.addEventListener('DOMContentLoaded', function() { loadOrders(1); });
 
-  function loadOrders() {
+  function loadOrders(page) {
+    currentPage = page || 1;
     document.getElementById('loading').classList.remove('hidden');
     document.getElementById('orderList').innerHTML = '';
+    document.getElementById('pagination').innerHTML = '';
     document.getElementById('emptyState').classList.add('hidden');
-    axios.get('/order/merchant/list')
+    axios.get('/order/merchant/list', { params: { page: currentPage, size: pageSize } })
       .then(function(resp) {
         document.getElementById('loading').classList.add('hidden');
-        if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-          allOrders = resp.data.data;
+        if (resp.data.code === 200 && resp.data.data) {
+          allOrders = resp.data.data.orders || [];
+          totalPages = resp.data.data.pages || 1;
           applyFilter();
         } else {
           document.getElementById('emptyState').classList.remove('hidden');
@@ -102,6 +107,18 @@
     document.getElementById('emptyState').classList.add('hidden');
     listEl.innerHTML = '';
     filtered.forEach(function(o) { listEl.appendChild(createOrderCard(o)); });
+    renderPagination();
+  }
+
+  function renderPagination() {
+    var c = document.getElementById('pagination');
+    if (totalPages <= 1) { c.innerHTML = ''; return; }
+    c.innerHTML =
+      '<div class="flex items-center justify-center space-x-2 mt-6">' +
+        '<button onclick="loadOrders(' + (currentPage - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>上一页</button>' +
+        '<span class="text-sm text-light">第 ' + currentPage + ' / ' + totalPages + ' 页</span>' +
+        '<button onclick="loadOrders(' + (currentPage + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage >= totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>下一页</button>' +
+      '</div>';
   }
 
   function createOrderCard(order) {

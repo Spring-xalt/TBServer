@@ -34,6 +34,7 @@
     <p class="text-light mt-4">加载中...</p>
   </div>
   <div id="reviewsList" class="hidden space-y-4 max-w-2xl mx-auto"></div>
+  <div id="pagination" class="max-w-2xl mx-auto"></div>
   <div id="emptyState" class="hidden text-center py-16">
     <i class="fa fa-star-o text-5xl text-gray-300 mb-4 block"></i>
     <p class="text-light text-lg">暂无评价</p>
@@ -43,17 +44,23 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
   axios.defaults.baseURL = window.location.origin + '/taobao';
-  document.addEventListener('DOMContentLoaded', loadReviews);
+  var reviewPage = 1, reviewPages = 1, pageSize = 5;
+  document.addEventListener('DOMContentLoaded', function() { loadReviews(1); });
 
-  function loadReviews() {
+  function loadReviews(page) {
+    reviewPage = page || 1;
     document.getElementById('loading').classList.remove('hidden');
-    axios.get('/review/merchant/list')
+    document.getElementById('pagination').innerHTML = '';
+    axios.get('/review/merchant/list', { params: { page: reviewPage, size: pageSize } })
       .then(function(resp) {
         document.getElementById('loading').classList.add('hidden');
-        if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+        var payload = resp.data.data;
+        var reviews = (payload && payload.reviews) ? payload.reviews : [];
+        reviewPages = (payload && payload.pages) ? payload.pages : 1;
+        if (reviews.length > 0) {
           var listEl = document.getElementById('reviewsList');
           listEl.innerHTML = '';
-          resp.data.data.forEach(function(r) {
+          reviews.forEach(function(r) {
             var stars = '';
             for (var i = 1; i <= 5; i++) stars += '<i class="fa fa-star ' + (i <= r.score ? 'on' : 'off') + '"></i>';
             var card = document.createElement('div');
@@ -73,6 +80,7 @@
             listEl.appendChild(card);
           });
           listEl.classList.remove('hidden');
+          renderPagination();
         } else {
           document.getElementById('emptyState').classList.remove('hidden');
         }
@@ -81,6 +89,17 @@
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('emptyState').classList.remove('hidden');
       });
+  }
+
+  function renderPagination() {
+    var c = document.getElementById('pagination');
+    if (reviewPages <= 1) { c.innerHTML = ''; return; }
+    c.innerHTML =
+      '<div class="flex items-center justify-center space-x-2 mt-6">' +
+        '<button onclick="loadReviews(' + (reviewPage - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (reviewPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (reviewPage <= 1 ? 'disabled' : '') + '>上一页</button>' +
+        '<span class="text-sm text-light">第 ' + reviewPage + ' / ' + reviewPages + ' 页</span>' +
+        '<button onclick="loadReviews(' + (reviewPage + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (reviewPage >= reviewPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (reviewPage >= reviewPages ? 'disabled' : '') + '>下一页</button>' +
+      '</div>';
   }
 
   function formatTime(d) {

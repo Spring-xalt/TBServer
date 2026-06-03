@@ -24,8 +24,8 @@ public interface ReviewService {
 
 
 
-    //根据商户id拿所有细节评价
-    List<ReviewVO> getMerchantReviewsDetail(int merchantId);
+    //根据商户id拿所有细节评价（分页）
+    IPage<ReviewVO> getMerchantReviewsDetail(int merchantId, int page, int size);
 
     //根据商品id拿评价详情
     List<ReviewVO> getProductReviews(int productId);

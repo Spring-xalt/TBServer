@@ -172,19 +172,18 @@ public class RefundServiceImpl implements RefundService {
 
 
     @Override
-    public List<RefundListVO> listMerchantRefunds(int merchantId, Integer status) {
+    public IPage<RefundListVO> listMerchantRefunds(int merchantId, Integer status, int page, int size) {
         QueryWrapper<Refund> wrapper = new QueryWrapper<>();
-
-        //查看自己的售后订单(分状态的)
         wrapper.eq("merchant_id", merchantId);
-        if (status != null) {
-            wrapper.eq("status", status);
-        }
+        if (status != null) wrapper.eq("status", status);
         wrapper.orderByDesc("create_time");
-        List<Refund> refunds = refundMapper.selectList(wrapper);
+
+        Page<Refund> pageObj = new Page<>(page, size);
+        Page<Refund> refundPage = refundMapper.selectPage(pageObj, wrapper);
+        long total = refundPage.getTotal();
 
         List<RefundListVO> voList = new ArrayList<>();
-        for (Refund r : refunds) {
+        for (Refund r : refundPage.getRecords()) {
             RefundListVO vo = new RefundListVO();
             vo.setId(r.getId());
             vo.setOrderId(r.getOrder_id());
@@ -195,29 +194,26 @@ public class RefundServiceImpl implements RefundService {
             vo.setStatus(r.getStatus());
             vo.setCreateTime(r.getCreate_time());
 
-            // 填充消费者昵称
             Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
             vo.setConsumerName(consumer != null ? consumer.getConsumer_name() : "未知");
 
-            // 填充商品名
             Product product = productMapper.selectById(r.getProduct_id());
             vo.setProductName(product != null ? product.getProduct_name() : "未知");
 
-            // 填充商户名
             Merchant merchant = merchantMapper.selectById(r.getMerchant_id());
             if (merchant != null) vo.setMerchantName(merchant.getMerchant_name() != null ? merchant.getMerchant_name() : merchant.getUsername());
 
-            // 填充订单金额、单价、数量
             Orders order = ordersMapper.selectById(r.getOrder_id());
             if (order != null) {
                 vo.setOrderAmount(order.getTotal_amount());
                 vo.setUnitPrice(order.getUnit_price());
                 vo.setQuantity(order.getQuantity());
             }
-
             voList.add(vo);
         }
-        return voList;
+        Page<RefundListVO> result = new Page<>(page, size, total);
+        result.setRecords(voList);
+        return result;
     }
 
     @Override

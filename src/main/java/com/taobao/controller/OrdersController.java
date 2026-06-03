@@ -142,14 +142,19 @@ public class OrdersController {
 
     // 某商家的订单list
     @GetMapping("/merchant/list")
-    public R<List<OrderVO>> merchantOrders(HttpSession session) {
+    public R<Map<String, Object>> merchantOrders(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
-        if (merchantId == null) {
-            return R.error(401, "请先登录商家账号");
-        }
-        List<OrderVO> list = ordersService.listMerchantOrders(merchantId);
-        return R.success(list);
-
+        if (merchantId == null) return R.error(401, "请先登录商家账号");
+        IPage<OrderVO> result = ordersService.listMerchantOrders(merchantId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("orders", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
 
 

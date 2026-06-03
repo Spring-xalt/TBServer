@@ -36,8 +36,8 @@ public interface OrdersService {
     R<String> payOrders(int consumerId, List<Orders> orders, String password);
 
 
-    // 商户找自己的评价
-    List<OrderVO> listMerchantOrders(int merchantId);
+    // 商户找自己的订单（分页）
+    IPage<OrderVO> listMerchantOrders(int merchantId, int page, int size);
 
 
 }

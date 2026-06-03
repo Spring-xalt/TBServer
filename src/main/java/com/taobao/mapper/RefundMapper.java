@@ -27,6 +27,9 @@ public interface RefundMapper extends BaseMapper<Refund> {
     @Select("SELECT COUNT(*) FROM refund WHERE merchant_id = #{merchantId} AND status = 1")
     long countPendingByMerchantId(@Param("merchantId") int merchantId);
 
+    @Select("SELECT COUNT(*) FROM refund WHERE merchant_id = #{merchantId}")
+    long countByMerchantId(@Param("merchantId") int merchantId);
+
 }
 
 

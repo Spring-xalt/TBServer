@@ -55,6 +55,7 @@
     <p class="text-light mt-4">加载中...</p>
   </div>
   <div id="refundList" class="space-y-4 max-w-3xl mx-auto"></div>
+  <div id="pagination" class="max-w-3xl mx-auto"></div>
   <div id="emptyState" class="hidden text-center py-16">
     <i class="fa fa-check-circle text-5xl text-gray-300 mb-4 block"></i>
     <p class="text-light text-lg">暂无售后申请</p>
@@ -64,23 +65,35 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
   axios.defaults.baseURL = window.location.origin + '/taobao';
-  document.addEventListener('DOMContentLoaded', function() { loadRefunds(); });
+  var currentStatus = null, currentPage = 1, totalPages = 1, pageSize = 5;
+  document.addEventListener('DOMContentLoaded', function() { loadRefunds(null, 1); });
 
-  function loadRefunds(status) {
+  function loadRefunds(status, page) {
+    currentStatus = status;
+    currentPage = page || 1;
     document.getElementById('loading').classList.remove('hidden');
     document.getElementById('refundList').innerHTML = '';
+    document.getElementById('pagination').innerHTML = '';
     document.getElementById('emptyState').classList.add('hidden');
-    var params = status != null ? { status: status } : {};
+    var params = { page: currentPage, size: pageSize };
+    if (status != null) params.status = status;
     axios.get('/refund/merchant/list', { params: params })
       .then(function(resp) {
         document.getElementById('loading').classList.add('hidden');
-        if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-          resp.data.data.forEach(function(r) {
-            document.getElementById('refundList').appendChild(createRefundCard(r));
-          });
+        if (resp.data.code === 200 && resp.data.data) {
+          var refunds = resp.data.data.refunds || [];
+          totalPages = resp.data.data.pages || 1;
+          if (refunds.length > 0) {
+            refunds.forEach(function(r) {
+              document.getElementById('refundList').appendChild(createRefundCard(r));
+            });
+          } else {
+            document.getElementById('emptyState').classList.remove('hidden');
+          }
         } else {
           document.getElementById('emptyState').classList.remove('hidden');
         }
+        renderPagination();
       })
       .catch(function() {
         document.getElementById('loading').classList.add('hidden');
@@ -132,7 +145,7 @@
     if (!confirm('确定' + text + '该申请吗？')) return;
     axios.put('/refund/audit', null, { params: { refundId: refundId, action: action } })
       .then(function(resp) {
-        if (resp.data.code === 200) { alert(resp.data.msg || '操作成功'); loadRefunds(null); }
+        if (resp.data.code === 200) { alert(resp.data.msg || '操作成功'); loadRefunds(currentStatus, currentPage); }
         else alert(resp.data.msg || '操作失败');
       })
       .catch(function() { alert('操作失败，请重试'); });
@@ -142,7 +155,18 @@
     document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
     var id = status === null ? 'btnAll' : status === 1 ? 'btnPending' : status === 2 ? 'btnAgreed' : 'btnRejected';
     document.getElementById(id).classList.add('active');
-    loadRefunds(status);
+    loadRefunds(status, 1);
+  }
+
+  function renderPagination() {
+    var c = document.getElementById('pagination');
+    if (totalPages <= 1) { c.innerHTML = ''; return; }
+    c.innerHTML =
+      '<div class="flex items-center justify-center space-x-2 mt-6">' +
+        '<button onclick="loadRefunds(' + (currentStatus === null ? 'null' : currentStatus) + ', ' + (currentPage - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage <= 1 ? 'disabled' : '') + '>上一页</button>' +
+        '<span class="text-sm text-light">第 ' + currentPage + ' / ' + totalPages + ' 页</span>' +
+        '<button onclick="loadRefunds(' + (currentStatus === null ? 'null' : currentStatus) + ', ' + (currentPage + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (currentPage >= totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (currentPage >= totalPages ? 'disabled' : '') + '>下一页</button>' +
+      '</div>';
   }
 
   function formatTime(d) {

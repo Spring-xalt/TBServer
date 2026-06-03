@@ -91,15 +91,20 @@ public class RefundController {
 
     // 查询商户的售后订单(商家端售后管理)
     @GetMapping("/merchant/list")
-    public R<List<RefundListVO>> merchantList(
+    public R<Map<String, Object>> merchantList(
             @RequestParam(name = "status", required = false) Integer status,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size,
             HttpSession session) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
-        if (merchantId == null) {
-            return R.error(401, "请先登录商家账号");
-        }
-        List<RefundListVO> list = refundService.listMerchantRefunds(merchantId, status);
-        return R.success(list);
+        if (merchantId == null) return R.error(401, "请先登录商家账号");
+        IPage<RefundListVO> result = refundService.listMerchantRefunds(merchantId, status, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("refunds", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
     // 商户处理售后订单
     @PutMapping("/audit")

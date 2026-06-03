@@ -87,13 +87,19 @@ public class ReviewController {
 
     // 商家端 查看某商户的评价
     @GetMapping("/merchant/list")
-    public R<List<ReviewVO>> merchantReviews(HttpSession session) {
+    public R<Map<String, Object>> merchantReviews(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer merchantId = (Integer) session.getAttribute("merchantId");
-        if (merchantId == null) {
-            return R.error(401, "请先登录商家账号");
-        }
-        List<ReviewVO> list = reviewService.getMerchantReviewsDetail(merchantId);
-        return R.success(list);
+        if (merchantId == null) return R.error(401, "请先登录商家账号");
+        IPage<ReviewVO> result = reviewService.getMerchantReviewsDetail(merchantId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("reviews", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
 
     // 按商品ID查看评价（公开，无需登录）

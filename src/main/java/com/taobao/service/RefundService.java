@@ -30,8 +30,8 @@ public interface RefundService {
     //消费者查自己的退换货详情（含商品名、商户名、金额等，分页）
     IPage<RefundListVO> listConsumerRefundsDetail(int consumerId, int page, int size);
 
-    //商户查看自己店铺下的退换货申请
-    List<RefundListVO> listMerchantRefunds(int merchantId, Integer status);
+    //商户查看自己店铺下的退换货申请（分页）
+    IPage<RefundListVO> listMerchantRefunds(int merchantId, Integer status, int page, int size);
 
     //商家处理退换货申请
     R<String> auditRefund(int merchantId, int refundId, String action);

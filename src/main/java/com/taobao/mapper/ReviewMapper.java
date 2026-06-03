@@ -35,6 +35,12 @@ public interface ReviewMapper extends BaseMapper<Review> {
     @Select("SELECT * FROM review WHERE merchant_id = #{merchantId} ORDER BY create_time DESC")
     List<Review> selectByMerchantId(@Param("merchantId") int merchantId);
 
+    @Select("SELECT * FROM review WHERE merchant_id = #{merchantId} ORDER BY create_time DESC LIMIT #{offset}, #{size}")
+    List<Review> selectByMerchantIdPage(@Param("merchantId") int merchantId, @Param("offset") int offset, @Param("size") int size);
+
+    @Select("SELECT COUNT(*) FROM review WHERE merchant_id = #{merchantId}")
+    long countByMerchantId(@Param("merchantId") int merchantId);
+
     // 查询已评价订单
     @Select("SELECT order_id FROM review WHERE consumer_id = #{consumerId}")
     List<Integer> selectReviewedOrderIds(@Param("consumerId") int consumerId);
