@@ -151,5 +151,21 @@ public class ReviewServiceImpl implements ReviewService {
         return voList;
     }
 
+    @Override
+    public List<ReviewVO> getProductReviews(int productId) {
+        List<Review> reviews = reviewMapper.selectByProductId(productId);
+        List<ReviewVO> voList = new ArrayList<>();
+        for (Review r : reviews) {
+            ReviewVO vo = new ReviewVO();
+            BeanUtils.copyProperties(r, vo);
+            Product product = productMapper.selectById(r.getProduct_id());
+            if (product != null) vo.setProductName(product.getProduct_name());
+            Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
+            if (consumer != null) vo.setConsumerName(consumer.getConsumer_name());
+            voList.add(vo);
+        }
+        return voList;
+    }
+
 
 }

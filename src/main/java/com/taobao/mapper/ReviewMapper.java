@@ -39,6 +39,8 @@ public interface ReviewMapper extends BaseMapper<Review> {
     @Select("SELECT order_id FROM review WHERE consumer_id = #{consumerId}")
     List<Integer> selectReviewedOrderIds(@Param("consumerId") int consumerId);
 
-
+    // 按商品ID查评价
+    @Select("SELECT * FROM review WHERE product_id = #{productId} ORDER BY create_time DESC")
+    List<Review> selectByProductId(@Param("productId") int productId);
 
 }

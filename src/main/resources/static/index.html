@@ -385,6 +385,17 @@
   </div>
 </div>
 
+<!-- 商品评价弹窗 -->
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-50" onclick="if(event.target===this)closeReviewModal()">
+  <div class="bg-white rounded-2xl w-[500px] max-h-[70vh] flex flex-col shadow-2xl" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+      <h2 id="reviewModalTitle" class="text-lg font-bold text-dark">商品评价</h2>
+      <button onclick="closeReviewModal()" class="text-gray-400 hover:text-dark text-lg"><i class="fa fa-close"></i></button>
+    </div>
+    <div id="reviewModalBody" class="px-6 py-4 overflow-y-auto flex-1"></div>
+  </div>
+</div>
+
 <!-- 引入AXIOS -->
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
@@ -905,7 +916,10 @@
                            class="block mt-2 text-center px-4 py-2 border border-blue-500 text-blue-500 rounded-md text-sm hover:bg-blue-50 transition-colors">
                             <i class="fa fa-comments mr-1"></i>联系卖家
                         </a>
-
+                        <button onclick="showProductReviews(${product.id}, '${product.product_name.replace(/'/g,"\\'")}')"
+                                class="block mt-2 w-full text-center px-4 py-2 border border-orange-300 text-orange-500 rounded-md text-sm hover:bg-orange-50 transition-colors">
+                            <i class="fa fa-star mr-1"></i>查看评价
+                        </button>
 
                     </div>
                 </div>
@@ -1126,6 +1140,54 @@
       sendAiMessage();
     }
   });
+
+  // ========== 查看商品评价弹窗 ==========
+  function showProductReviews(productId, productName) {
+    var modal = document.getElementById('reviewModal');
+    document.getElementById('reviewModalTitle').textContent = '「' + productName + '」的评价';
+    document.getElementById('reviewModalBody').innerHTML = '<p class="text-center text-light py-8"><i class="fa fa-spinner fa-spin mr-2"></i>加载中...</p>';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    axios.get('/review/product/' + productId)
+      .then(function(resp) {
+        var reviews = (resp.data && resp.data.data) ? resp.data.data : [];
+        var body = document.getElementById('reviewModalBody');
+        if (reviews.length === 0) {
+          body.innerHTML = '<div class="text-center py-8"><i class="fa fa-star-o text-3xl text-gray-300 mb-2 block"></i><p class="text-light text-sm">暂无评价</p></div>';
+          return;
+        }
+        var html = '<div class="space-y-3">';
+        reviews.forEach(function(r) {
+          var stars = '';
+          for (var i = 1; i <= 5; i++) stars += '<i class="fa fa-star ' + (i <= r.score ? 'text-orange-400' : 'text-gray-300') + '" style="font-size:13px;"></i>';
+          html += '<div style="background:#fafafa;border-radius:12px;padding:14px 16px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+              '<span style="font-size:13px;font-weight:600;color:#555;">' + (r.consumerName || '匿名用户') + '</span>' +
+              '<span>' + stars + '</span>' +
+            '</div>' +
+            '<p style="font-size:13px;color:#666;line-height:1.6;">' + r.content + '</p>' +
+            '<p style="font-size:11px;color:#bbb;margin-top:4px;">' + formatReviewTime(r.create_time) + '</p>' +
+          '</div>';
+        });
+        html += '</div>';
+        body.innerHTML = html;
+      })
+      .catch(function() {
+        document.getElementById('reviewModalBody').innerHTML = '<p class="text-center text-light py-8">加载失败</p>';
+      });
+  }
+
+  function closeReviewModal() {
+    document.getElementById('reviewModal').classList.add('hidden');
+    document.getElementById('reviewModal').classList.remove('flex');
+  }
+
+  function formatReviewTime(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
 
 </script>
 </body>

@@ -21,73 +21,82 @@
             }
         }
     </script>
+    <style>
+        .review-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            padding: 22px 24px;
+            transition: all 0.2s;
+        }
+        .review-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.10); }
+        .star-wrap { display: inline-flex; gap: 2px; }
+        .star-wrap i { font-size: 18px; }
+        .star-wrap i.on { color: #ff6a00; }
+        .star-wrap i.off { color: #e0e0e0; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-orange-50/30 min-h-screen">
 
-<header class="bg-white border-b border-border">
+<header class="bg-white border-b border-border sticky top-0 z-40">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/taobao/index.html" class="text-primary text-xl font-bold">
-            <i class="fa fa-shopping-bag mr-2"></i>返回首页
+        <a href="/taobao/index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+            <i class="fa fa-arrow-left"></i> 返回首页
         </a>
-        <h1 class="text-dark text-2xl font-bold">我的评价</h1>
+        <h1 class="text-dark text-xl font-bold">我的评价</h1>
         <div></div>
     </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <!-- 加载提示 -->
-    <div id="loading" class="text-center py-12">
+    <div id="loading" class="text-center py-16">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
         <p class="text-light mt-4">加载中...</p>
     </div>
 
-    <!-- 评价列表 -->
     <div id="reviewsList" class="hidden space-y-4 max-w-2xl mx-auto"></div>
 
-    <!-- 空状态 -->
-    <div id="emptyState" class="hidden text-center py-12">
-        <i class="fa fa-star-o text-5xl text-gray-300 mb-4"></i>
+    <div id="emptyState" class="hidden text-center py-16">
+        <i class="fa fa-star-o text-5xl text-gray-300 mb-4 block"></i>
         <p class="text-light text-lg">暂无评价</p>
-        <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去购物</a>
+        <a href="/taobao/index.html" class="text-primary hover:underline mt-2 inline-block">去逛逛</a>
     </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
     axios.defaults.baseURL = window.location.origin + '/taobao';
-
     document.addEventListener('DOMContentLoaded', loadReviews);
 
     function loadReviews() {
         axios.get('/review/myDetail')
-            .then(resp => {
+            .then(function(resp) {
                 document.getElementById('loading').classList.add('hidden');
                 if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-                    const reviews = resp.data.data;
-                    const listEl = document.getElementById('reviewsList');
+                    var reviews = resp.data.data;
+                    var listEl = document.getElementById('reviewsList');
                     listEl.innerHTML = '';
-
-                    reviews.forEach(review => {
-                        // 生成5颗星，前 review.score 颗高亮
-                        const starsHtml = Array.from({ length: 5 }, (_, i) =>
-                            `<i class="fa fa-star ${i < review.score ? 'text-orange-400' : 'text-gray-300'}"></i>`
-                        ).join('');
-
-                        const card = document.createElement('div');
-                        card.className = 'bg-white rounded-lg shadow-sm p-6';
-                        card.innerHTML = `
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-medium text-dark text-lg">${review.productName || '商品名称未知'}</h3>
-                                    <p class="text-light text-sm mt-1">
-                                        <i class="fa fa-store mr-1"></i>${review.merchantName || '商户未知'}
-                                    </p>
-                                </div>
-                                <div class="flex space-x-1">${starsHtml}</div>
-                            </div>
-                            <p class="text-dark mt-4 text-sm">${review.content}</p>
-                            <p class="text-light text-xs mt-2">${formatTime(review.create_time)}</p>
-                        `;
+                    reviews.forEach(function(review) {
+                        var score = review.score || 0;
+                        var starsHtml = '';
+                        for (var i = 1; i <= 5; i++) {
+                            starsHtml += '<i class="fa fa-star ' + (i <= score ? 'on' : 'off') + '"></i>';
+                        }
+                        var card = document.createElement('div');
+                        card.className = 'review-card';
+                        card.innerHTML =
+                            '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+                                '<div>' +
+                                    '<h3 style="font-size:16px;font-weight:600;color:#1a1a1a;">' + (review.productName || '商品名称未知') + '</h3>' +
+                                    '<p style="font-size:13px;color:#888;margin-top:4px;">' +
+                                        '<i class="fa fa-store"></i> ' + (review.merchantName || '商户未知') +
+                                        ' &nbsp;·&nbsp; ' + formatTime(review.create_time) +
+                                    '</p>' +
+                                '</div>' +
+                                '<div class="star-wrap">' + starsHtml + '</div>' +
+                            '</div>' +
+                            '<p style="font-size:14px;color:#555;margin-top:12px;line-height:1.7;">' + review.content + '</p>' +
+                            (review.consumerName ? '<p style="font-size:12px;color:#bbb;margin-top:6px;">— ' + review.consumerName + '</p>' : '');
                         listEl.appendChild(card);
                     });
                     document.getElementById('reviewsList').classList.remove('hidden');
@@ -95,19 +104,18 @@
                     document.getElementById('emptyState').classList.remove('hidden');
                 }
             })
-            .catch(err => {
+            .catch(function() {
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('emptyState').classList.remove('hidden');
                 document.getElementById('emptyState').innerHTML =
-                    '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
-                    '<p class="text-light">加载失败，请先登录</p>';
+                    '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4 block"></i><p class="text-light">加载失败，请先登录</p>';
             });
     }
 
     function formatTime(dateStr) {
         if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        var d = new Date(dateStr);
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
 </script>
 </body>

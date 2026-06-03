@@ -87,6 +87,11 @@ public class ReviewController {
         return R.success(list);
     }
 
-
+    // 按商品ID查看评价（公开，无需登录）
+    @GetMapping("/product/{productId}")
+    public R<List<ReviewVO>> productReviews(@PathVariable("productId") int productId) {
+        List<ReviewVO> list = reviewService.getProductReviews(productId);
+        return R.success(list);
+    }
 
 }
