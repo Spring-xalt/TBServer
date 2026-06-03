@@ -190,18 +190,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getNewArrivals(int limit) {
-        return productMapper.selectNewArrivals(limit);
+    public IPage<Product> getNewArrivals(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Product> records = productMapper.selectNewArrivals(offset, size);
+        long total = productMapper.selectNewArrivalsCount();
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
     }
 
     @Override
-    public List<Product> getHotSales(int limit) {
-        return productMapper.selectHotSales(limit);
+    public IPage<Product> getHotSales(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Product> records = productMapper.selectHotSales(offset, size);
+        long total = productMapper.selectHotSalesCount();
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
     }
 
     @Override
-    public List<Product> getSpecialOffers(int limit) {
-        return productMapper.selectSpecialOffers(limit);
+    public IPage<Product> getSpecialOffers(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Product> records = productMapper.selectSpecialOffers(offset, size);
+        long total = productMapper.selectSpecialOffersCount();
+        Page<Product> result = new Page<>(page, size, total);
+        result.setRecords(records);
+        return result;
     }
 
     public String saveImage(byte[] bytes, String originalFilename) throws IOException {

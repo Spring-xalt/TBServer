@@ -244,25 +244,43 @@ try {
 
     // 首页精选：新品上市
     @GetMapping("/new-arrivals")
-    public R<List<Product>> getNewArrivals(
-            @RequestParam(name = "limit", defaultValue = "6") int limit) {
-        List<Product> products = productService.getNewArrivals(limit);
-        return R.success("共查询到" + products.size() + "件新品", products);
+    public R<Map<String, Object>> getNewArrivals(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "6") int size) {
+        IPage<Product> result = productService.getNewArrivals(page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("products", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success("共查询到" + result.getTotal() + "件新品", data);
     }
 
     // 首页精选：热销推荐
     @GetMapping("/hot-sales")
-    public R<List<Product>> getHotSales(
-            @RequestParam(name = "limit", defaultValue = "6") int limit) {
-        List<Product> products = productService.getHotSales(limit);
-        return R.success("共查询到" + products.size() + "件热销商品", products);
+    public R<Map<String, Object>> getHotSales(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "6") int size) {
+        IPage<Product> result = productService.getHotSales(page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("products", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success("共查询到" + result.getTotal() + "件热销商品", data);
     }
 
     // 首页精选：特价促销
     @GetMapping("/special-offers")
-    public R<List<Product>> getSpecialOffers(
-            @RequestParam(name = "limit", defaultValue = "6") int limit) {
-        List<Product> products = productService.getSpecialOffers(limit);
-        return R.success("共查询到" + products.size() + "件特价商品", products);
+    public R<Map<String, Object>> getSpecialOffers(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "6") int size) {
+        IPage<Product> result = productService.getSpecialOffers(page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("products", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success("共查询到" + result.getTotal() + "件特价商品", data);
     }
 }
