@@ -6,165 +6,142 @@
     <title>订单管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#ff6a00',
-                        secondary: '#f5f5f5',
-                        dark: '#1a1a1a',
-                        light: '#888888',
-                        border: '#e8e8e8'
-                    }
-                }
-            }
-        }
-    </script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#ff6a00',secondary:'#f5f5f5',dark:'#1a1a1a',light:'#888888',border:'#e8e8e8'}}}}</script>
+    <style>
+        .order-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden; transition: all 0.2s; }
+        .order-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.10); }
+        .order-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; background: #fafafa; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #999; }
+        .order-body { display: flex; align-items: center; padding: 20px 22px; gap: 18px; }
+        .order-body .product-img { width: 72px; height: 72px; border-radius: 10px; background: #f5f5f5; flex-shrink: 0; object-fit: cover; border: 1px solid #f0f0f0; }
+        .order-body .info { flex: 1; min-width: 0; }
+        .order-body .info h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+        .order-body .price { text-align: right; flex-shrink: 0; }
+        .order-body .price .amount { font-size: 20px; font-weight: 700; color: #ff5e62; }
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; }
+        .status-1 { background: #fff7e6; color: #fa8c16; }
+        .status-2 { background: #e6f7ff; color: #1890ff; }
+        .status-3 { background: #f0fff4; color: #52c41a; }
+        .filter-btn { padding: 10px 20px; border-radius: 22px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid #e8e8e8; transition: all 0.2s; background: #fff; color: #666; }
+        .filter-btn.active { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; }
+        .filter-btn:hover:not(.active) { border-color: #ff6a00; color: #ff6a00; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-orange-50/30 min-h-screen">
 
-<header class="bg-white border-b border-border">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/taobao/merchant-index.html" class="text-primary text-xl font-bold">
-            <i class="fa fa-arrow-left mr-2"></i>返回商家中心
-        </a>
-        <h1 class="text-dark text-2xl font-bold">订单管理</h1>
-        <div></div>
-    </div>
+<header class="bg-white border-b border-border sticky top-0 z-40">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/taobao/merchant-index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+      <i class="fa fa-arrow-left"></i> 返回商家中心
+    </a>
+    <h1 class="text-dark text-xl font-bold">订单管理</h1>
+    <div></div>
+  </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <!-- 状态筛选标签 -->
-    <div class="flex space-x-2 mb-6">
-        <button onclick="filterOrders(0)" id="btnAll" class="px-4 py-2 rounded-md bg-primary text-white">全部</button>
-        <button onclick="filterOrders(1)" id="btnPending" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">未支付</button>
-        <button onclick="filterOrders(2)" id="btnPaid" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已支付</button>
-        <button onclick="filterOrders(3)" id="btnReceived" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已签收</button>
-    </div>
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button class="filter-btn active" onclick="filterOrders(0)" id="btnAll">📋 全部</button>
+    <button class="filter-btn" onclick="filterOrders(1)" id="btnPending">⏳ 未支付</button>
+    <button class="filter-btn" onclick="filterOrders(2)" id="btnPaid">✅ 已支付</button>
+    <button class="filter-btn" onclick="filterOrders(3)" id="btnReceived">📦 已签收</button>
+    <span class="ml-auto text-sm text-light self-center" id="orderCount"></span>
+  </div>
 
-    <!-- 加载提示 -->
-    <div id="loading" class="text-center py-12 hidden">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-        <p class="text-light mt-4">加载中...</p>
-    </div>
-
-    <!-- 订单列表容器 -->
-    <div id="orderList" class="space-y-4"></div>
-
-    <!-- 空状态 -->
-    <div id="emptyState" class="hidden text-center py-12">
-        <i class="fa fa-inbox text-5xl text-gray-300 mb-4"></i>
-        <p class="text-light text-lg">暂无相关订单</p>
-    </div>
+  <div id="loading" class="text-center py-16 hidden">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+    <p class="text-light mt-4">加载中...</p>
+  </div>
+  <div id="orderList" class="space-y-4 max-w-3xl mx-auto"></div>
+  <div id="emptyState" class="hidden text-center py-16">
+    <i class="fa fa-inbox text-5xl text-gray-300 mb-4 block"></i>
+    <p class="text-light text-lg">暂无相关订单</p>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
-    axios.defaults.baseURL = window.location.origin + '/taobao';
-    let allOrders = [];
-    let currentFilter = 0;
+  axios.defaults.baseURL = window.location.origin + '/taobao';
+  var allOrders = [];
+  var currentFilter = 0;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadOrders();
-    });
+  document.addEventListener('DOMContentLoaded', function() { loadOrders(); });
 
-    function loadOrders() {
-        document.getElementById('loading').classList.remove('hidden');
-        document.getElementById('orderList').innerHTML = '';
-        document.getElementById('emptyState').classList.add('hidden');
-
-        axios.get('/order/merchant/list')
-            .then(resp => {
-                document.getElementById('loading').classList.add('hidden');
-                if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-                    allOrders = resp.data.data;
-                    applyFilter();
-                } else {
-                    document.getElementById('emptyState').classList.remove('hidden');
-                }
-            })
-            .catch(err => {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('emptyState').classList.remove('hidden');
-                document.getElementById('emptyState').innerHTML =
-                    '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
-                    '<p class="text-light">加载失败，请先登录</p>';
-            });
-    }
-
-    function filterOrders(status) {
-        ['btnAll','btnPending','btnPaid','btnReceived'].forEach(id => {
-            const btn = document.getElementById(id);
-            btn.className = btn.className.replace('bg-primary text-white', 'border border-border text-dark hover:bg-gray-100');
-        });
-        const activeBtn = document.getElementById(
-            status === 0 ? 'btnAll' : (status === 1 ? 'btnPending' : (status === 2 ? 'btnPaid' : 'btnReceived'))
-        );
-        activeBtn.className = activeBtn.className.replace('border border-border text-dark hover:bg-gray-100', 'bg-primary text-white');
-
-        currentFilter = status;
-        applyFilter();
-    }
-
-    function applyFilter() {
-        const filtered = currentFilter === 0
-            ? allOrders
-            : allOrders.filter(o => o.status === currentFilter);
-
-        const listEl = document.getElementById('orderList');
-        const emptyEl = document.getElementById('emptyState');
-
-        if (filtered.length === 0) {
-            listEl.innerHTML = '';
-            emptyEl.classList.remove('hidden');
-            return;
+  function loadOrders() {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('orderList').innerHTML = '';
+    document.getElementById('emptyState').classList.add('hidden');
+    axios.get('/order/merchant/list')
+      .then(function(resp) {
+        document.getElementById('loading').classList.add('hidden');
+        if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+          allOrders = resp.data.data;
+          applyFilter();
+        } else {
+          document.getElementById('emptyState').classList.remove('hidden');
         }
+      })
+      .catch(function() {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      });
+  }
 
-        emptyEl.classList.add('hidden');
-        listEl.innerHTML = '';
-        filtered.forEach(order => {
-            listEl.appendChild(createOrderCard(order));
-        });
-    }
+  function filterOrders(status) {
+    currentFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    var id = status === 0 ? 'btnAll' : status === 1 ? 'btnPending' : status === 2 ? 'btnPaid' : 'btnReceived';
+    document.getElementById(id).classList.add('active');
+    applyFilter();
+  }
 
-    function createOrderCard(order) {
-        const statusMap = {
-            1: { text: '未支付', color: 'text-yellow-600 bg-yellow-50' },
-            2: { text: '已支付', color: 'text-blue-600 bg-blue-50' },
-            3: { text: '已签收', color: 'text-green-600 bg-green-50' }
-        };
-        const st = statusMap[order.status] || { text: '未知', color: 'text-gray-600 bg-gray-50' };
+  function applyFilter() {
+    var filtered = currentFilter === 0 ? allOrders : allOrders.filter(function(o) { return o.status === currentFilter; });
+    document.getElementById('orderCount').textContent = '共 ' + filtered.length + ' 单';
+    var listEl = document.getElementById('orderList');
+    if (filtered.length === 0) { listEl.innerHTML = ''; document.getElementById('emptyState').classList.remove('hidden'); return; }
+    document.getElementById('emptyState').classList.add('hidden');
+    listEl.innerHTML = '';
+    filtered.forEach(function(o) { listEl.appendChild(createOrderCard(o)); });
+  }
 
-        const card = document.createElement('div');
-        card.className = 'bg-white rounded-lg shadow-sm p-4';
+  function createOrderCard(order) {
+    var stMap = { 1: { text: '⏳ 未支付', cls: 'status-1' }, 2: { text: '✅ 已支付', cls: 'status-2' }, 3: { text: '📦 已签收', cls: 'status-3' } };
+    var st = stMap[order.status] || { text: '未知', cls: 'status-1' };
+    var qty = order.quantity || 1;
+    var unit = order.unit_price || order.total_amount || 0;
+    var total = order.total_amount || 0;
+    var pid = order.product_id || 0;
 
-        card.innerHTML = `
-            <div class="flex justify-between items-start">
-                <div class="flex-1">
-                    <h3 class="font-medium text-dark">${order.product_name}</h3>
-                    <p class="text-light text-sm mt-1">
-                        <i class="fa fa-user mr-1"></i>${order.consumer_name || '未知买家'}
-                    </p>
-                    <p class="text-primary font-bold mt-2">¥${order.total_amount ? order.total_amount.toFixed(2) : '0.00'}</p>
-                    <div class="text-light text-xs mt-2 space-x-4">
-                        <span>创建：${formatTime(order.create_time)}</span>
-                        <span>更新：${formatTime(order.update_time)}</span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="inline-block px-2 py-1 rounded text-xs font-medium ${st.color}">${st.text}</span>
-                </div>
-            </div>
-        `;
-        return card;
-    }
+    var card = document.createElement('div');
+    card.className = 'order-card';
+    card.innerHTML =
+      '<div class="order-header">' +
+        '<span><i class="fa fa-file-text-o mr-1"></i>订单号 <b style="color:#555;">#' + order.id + '</b></span>' +
+        '<span class="status-badge ' + st.cls + '">' + st.text + '</span>' +
+      '</div>' +
+      '<div class="order-body">' +
+        '<img src="/taobao/product/' + pid + '/image" class="product-img" onerror="this.src=\'https://picsum.photos/seed/' + pid + '/150/150\'" alt="">' +
+        '<div class="info">' +
+          '<h3>' + order.product_name + '</h3>' +
+          '<div style="display:flex;gap:16px;font-size:13px;color:#888;margin-top:4px;">' +
+            '<span><i class="fa fa-user"></i> ' + (order.consumer_name || '买家未知') + '</span>' +
+            '<span><i class="fa fa-clock-o"></i> ' + formatTime(order.create_time) + '</span>' +
+          '</div>' +
+          '<div style="display:flex;gap:16px;font-size:12.5px;color:#888;margin-top:6px;">' +
+            '<span>单价 <b style="color:#555;">¥' + unit.toFixed(2) + '</b></span>' +
+            '<span>× <b style="color:#555;">' + qty + '</b></span>' +
+            '<span>实付 <b style="color:#ff5e62;font-size:14px;">¥' + total.toFixed(2) + '</b></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    return card;
+  }
 
-    function formatTime(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    }
+  function formatTime(d) {
+    if (!d) return '';
+    var t = new Date(d);
+    return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0') + ' ' + String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+  }
 </script>
 </body>
 </html>

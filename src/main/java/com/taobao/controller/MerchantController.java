@@ -10,6 +10,8 @@ import com.taobao.common.R;
 import com.taobao.dto.MerchantDto;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Product;
+import com.taobao.mapper.OrdersMapper;
+import com.taobao.mapper.RefundMapper;
 import com.taobao.service.MerchantService;
 import com.taobao.service.ProductService;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +30,12 @@ public class MerchantController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private OrdersMapper ordersMapper;
+
+    @Autowired
+    private RefundMapper refundMapper;
 
     @GetMapping("/all")
     public R<List<Merchant>> getAllMerchants() {
@@ -155,10 +163,23 @@ public class MerchantController {
         return R.error("删除失败：系统异常，请稍后重试");
     }
 
+    @GetMapping("/dashboard")
+    public R<Map<String, Object>> dashboard(HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) return R.error(401, "请先登录");
 
+        Merchant merchant = merchantService.getById(merchantId);
+        long productCount = productService.getProductsByMerchantId(merchantId).size();
+        long orderCount = ordersMapper.countByMerchantId(merchantId);
+        long pendingRefundCount = refundMapper.countPendingByMerchantId(merchantId);
 
-
-
+        Map<String, Object> data = new HashMap<>();
+        data.put("revenue", merchant != null ? merchant.getRevenue() : 0);
+        data.put("productCount", productCount);
+        data.put("orderCount", orderCount);
+        data.put("pendingRefundCount", pendingRefundCount);
+        return R.success(data);
+    }
 
 }
 

@@ -6,166 +6,150 @@
     <title>售后管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#ff6a00',
-                        secondary: '#f5f5f5',
-                        dark: '#1a1a1a',
-                        light: '#888888',
-                        border: '#e8e8e8'
-                    }
-                }
-            }
-        }
-    </script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#ff6a00',secondary:'#f5f5f5',dark:'#1a1a1a',light:'#888888',border:'#e8e8e8'}}}}</script>
+    <style>
+        .refund-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); overflow: hidden; transition: all 0.2s; }
+        .refund-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.10); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; background: #fafafa; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #999; }
+        .card-body { display: flex; align-items: center; padding: 20px 22px; gap: 18px; }
+        .card-body .info { flex: 1; min-width: 0; }
+        .card-body .info h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+        .card-body .price { text-align: right; flex-shrink: 0; }
+        .card-body .price .amount { font-size: 20px; font-weight: 700; color: #ff5e62; }
+        .status-badge { padding: 5px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; }
+        .status-1 { background: #fff7e6; color: #fa8c16; }
+        .status-2 { background: #f0fff4; color: #52c41a; }
+        .status-3 { background: #fff1f0; color: #ff4d4f; }
+        .btn-sm { padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-sm-agree { background: #52c41a; color: #fff; }
+        .btn-sm-agree:hover { background: #45a818; }
+        .btn-sm-reject { background: #ff4d4f; color: #fff; }
+        .btn-sm-reject:hover { background: #e04343; }
+        .filter-btn { padding: 10px 20px; border-radius: 22px; font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid #e8e8e8; transition: all 0.2s; background: #fff; color: #666; }
+        .filter-btn.active { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; }
+        .filter-btn:hover:not(.active) { border-color: #ff6a00; color: #ff6a00; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-orange-50/30 min-h-screen">
 
-<header class="bg-white border-b border-border">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/taobao/merchant-index.html" class="text-primary text-xl font-bold">
-            <i class="fa fa-arrow-left mr-2"></i>返回商家中心
-        </a>
-        <h1 class="text-dark text-2xl font-bold">售后管理</h1>
-        <div></div>
-    </div>
+<header class="bg-white border-b border-border sticky top-0 z-40">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="/taobao/merchant-index.html" class="text-primary font-bold text-lg flex items-center gap-2 hover:text-orange-600 transition-colors">
+      <i class="fa fa-arrow-left"></i> 返回商家中心
+    </a>
+    <h1 class="text-dark text-xl font-bold">售后管理</h1>
+    <div></div>
+  </div>
 </header>
 
 <main class="container mx-auto px-4 py-8">
-    <!-- 状态筛选标签 -->
-    <div class="flex space-x-2 mb-6">
-        <button onclick="filterRefunds(null)" id="btnAll" class="px-4 py-2 rounded-md bg-primary text-white">全部</button>
-        <button onclick="filterRefunds(1)" id="btnPending" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">待审核</button>
-        <button onclick="filterRefunds(2)" id="btnAgreed" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已同意</button>
-        <button onclick="filterRefunds(3)" id="btnRejected" class="px-4 py-2 rounded-md border border-border text-dark hover:bg-gray-100">已拒绝</button>
-    </div>
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button class="filter-btn active" onclick="filterRefunds(null)" id="btnAll">📋 全部</button>
+    <button class="filter-btn" onclick="filterRefunds(1)" id="btnPending">⏳ 待审核</button>
+    <button class="filter-btn" onclick="filterRefunds(2)" id="btnAgreed">✅ 已同意</button>
+    <button class="filter-btn" onclick="filterRefunds(3)" id="btnRejected">❌ 已拒绝</button>
+  </div>
 
-    <!-- 加载提示 -->
-    <div id="loading" class="text-center py-12 hidden">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-        <p class="text-light mt-4">加载中...</p>
-    </div>
-
-    <!-- 售后列表容器 -->
-    <div id="refundList" class="space-y-4"></div>
-
-    <!-- 空状态 -->
-    <div id="emptyState" class="hidden text-center py-12">
-        <i class="fa fa-check-circle text-5xl text-gray-300 mb-4"></i>
-        <p class="text-light text-lg">暂无相关售后申请</p>
-    </div>
+  <div id="loading" class="text-center py-16 hidden">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+    <p class="text-light mt-4">加载中...</p>
+  </div>
+  <div id="refundList" class="space-y-4 max-w-3xl mx-auto"></div>
+  <div id="emptyState" class="hidden text-center py-16">
+    <i class="fa fa-check-circle text-5xl text-gray-300 mb-4 block"></i>
+    <p class="text-light text-lg">暂无售后申请</p>
+  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
-    axios.defaults.baseURL = window.location.origin + '/taobao';
+  axios.defaults.baseURL = window.location.origin + '/taobao';
+  document.addEventListener('DOMContentLoaded', function() { loadRefunds(); });
 
-    document.addEventListener('DOMContentLoaded', () => loadRefunds());
+  function loadRefunds(status) {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('refundList').innerHTML = '';
+    document.getElementById('emptyState').classList.add('hidden');
+    var params = status != null ? { status: status } : {};
+    axios.get('/refund/merchant/list', { params: params })
+      .then(function(resp) {
+        document.getElementById('loading').classList.add('hidden');
+        if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
+          resp.data.data.forEach(function(r) {
+            document.getElementById('refundList').appendChild(createRefundCard(r));
+          });
+        } else {
+          document.getElementById('emptyState').classList.remove('hidden');
+        }
+      })
+      .catch(function() {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      });
+  }
 
-    function loadRefunds(status = null) {
-        document.getElementById('loading').classList.remove('hidden');
-        document.getElementById('refundList').innerHTML = '';
-        document.getElementById('emptyState').classList.add('hidden');
+  function createRefundCard(r) {
+    var typeMap = { 1: '📦 退货退款', 2: '🔄 换货' };
+    var stMap = { 1: { text: '⏳ 待审核', cls: 'status-1' }, 2: { text: '✅ 已同意', cls: 'status-2' }, 3: { text: '❌ 已拒绝', cls: 'status-3' } };
+    var st = stMap[r.status] || { text: '未知', cls: 'status-1' };
+    var qty = r.quantity || 1;
+    var unit = r.unitPrice || r.orderAmount || 0;
+    var total = r.orderAmount || 0;
 
-        const params = status != null ? { status } : {};
-        axios.get('/refund/merchant/list', { params })
-            .then(resp => {
-                document.getElementById('loading').classList.add('hidden');
-                if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-                    document.getElementById('refundList').classList.remove('hidden');
-                    renderRefunds(resp.data.data);
-                } else {
-                    document.getElementById('emptyState').classList.remove('hidden');
-                }
-            })
-            .catch(err => {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('emptyState').classList.remove('hidden');
-                document.getElementById('emptyState').innerHTML =
-                    '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4"></i>' +
-                    '<p class="text-light">加载失败，请先登录</p>';
-            });
+    var actions = '';
+    if (r.status === 1) {
+      actions = '<button class="btn-sm btn-sm-agree" onclick="audit(' + r.id + ',\'agree\')">同意</button>' +
+                '<button class="btn-sm btn-sm-reject" onclick="audit(' + r.id + ',\'reject\')">拒绝</button>';
     }
 
-    function renderRefunds(refunds) {
-        const listEl = document.getElementById('refundList');
-        listEl.innerHTML = '';
-        refunds.forEach(refund => {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-sm p-4 flex justify-between items-start';
+    var card = document.createElement('div');
+    card.className = 'refund-card';
+    card.innerHTML =
+      '<div class="card-header">' +
+        '<span>' + typeMap[r.type] + ' · 订单 #' + r.orderId + '</span>' +
+        '<span class="status-badge ' + st.cls + '">' + st.text + '</span>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<div class="info">' +
+          '<h3>' + (r.productName || '商品未知') + '</h3>' +
+          '<div style="display:flex;gap:16px;font-size:13px;color:#888;margin-top:4px;">' +
+            '<span><i class="fa fa-user"></i> ' + (r.consumerName || '买家未知') + '</span>' +
+            '<span><i class="fa fa-clock-o"></i> ' + formatTime(r.createTime) + '</span>' +
+          '</div>' +
+          (r.reason ? '<div style="margin-top:6px;font-size:13px;color:#888;"><i class="fa fa-comment"></i> ' + r.reason + '</div>' : '') +
+        '</div>' +
+        '<div class="price">' +
+          '<div style="font-size:13px;color:#999;">¥' + unit.toFixed(2) + ' × ' + qty + '</div>' +
+          '<div class="amount">¥' + total.toFixed(2) + '</div>' +
+          (actions ? '<div style="margin-top:8px;display:flex;gap:6px;">' + actions + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    return card;
+  }
 
-            const typeText = refund.type === 1 ? '退货退款' : '换货';
-            const statusMap = {
-                1: { text: '待审核', color: 'bg-yellow-100 text-yellow-700' },
-                2: { text: '已同意', color: 'bg-green-100 text-green-700' },
-                3: { text: '已拒绝', color: 'bg-red-100 text-red-700' }
-            };
-            const st = statusMap[refund.status] || { text: '未知', color: 'bg-gray-100 text-gray-700' };
+  function audit(refundId, action) {
+    var text = action === 'agree' ? '同意' : '拒绝';
+    if (!confirm('确定' + text + '该申请吗？')) return;
+    axios.put('/refund/audit', null, { params: { refundId: refundId, action: action } })
+      .then(function(resp) {
+        if (resp.data.code === 200) { alert(resp.data.msg || '操作成功'); loadRefunds(null); }
+        else alert(resp.data.msg || '操作失败');
+      })
+      .catch(function() { alert('操作失败，请重试'); });
+  }
 
-            let actionButtons = '';
-            if (refund.status === 1) {
-                actionButtons = `
-                    <div class="mt-2 space-x-2">
-                        <button onclick="auditRefund(${refund.id}, 'agree')" class="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">同意</button>
-                        <button onclick="auditRefund(${refund.id}, 'reject')" class="px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">拒绝</button>
-                    </div>
-                `;
-            }
+  function filterRefunds(status) {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    var id = status === null ? 'btnAll' : status === 1 ? 'btnPending' : status === 2 ? 'btnAgreed' : 'btnRejected';
+    document.getElementById(id).classList.add('active');
+    loadRefunds(status);
+  }
 
-            card.innerHTML = `
-                <div class="flex-1">
-                    <h3 class="font-medium text-dark">${typeText} - ${refund.productName}</h3>
-                    <p class="text-light text-sm mt-1">消费者：${refund.consumerName}</p>
-                    <p class="text-light text-sm mt-1">原因：${refund.reason || '无'}</p>
-                    <p class="text-light text-sm mt-1">金额：¥${refund.orderAmount ? refund.orderAmount.toFixed(2) : '0.00'}</p>
-                    <p class="text-light text-xs mt-1">申请时间：${formatTime(refund.createTime)}</p>
-                </div>
-                <div class="text-right">
-                    <span class="inline-block px-2 py-1 rounded text-xs font-medium ${st.color}">${st.text}</span>
-                    ${actionButtons}
-                </div>
-            `;
-            listEl.appendChild(card);
-        });
-    }
-
-    function filterRefunds(status) {
-        ['btnAll', 'btnPending', 'btnAgreed', 'btnRejected'].forEach(id => {
-            const btn = document.getElementById(id);
-            btn.className = btn.className.replace('bg-primary text-white', 'border border-border text-dark hover:bg-gray-100');
-        });
-        const activeId = status === null ? 'btnAll' : (status === 1 ? 'btnPending' : (status === 2 ? 'btnAgreed' : 'btnRejected'));
-        document.getElementById(activeId).className = document.getElementById(activeId).className.replace('border border-border text-dark hover:bg-gray-100', 'bg-primary text-white');
-        loadRefunds(status);
-    }
-
-    function auditRefund(refundId, action) {
-        const actionText = action === 'agree' ? '同意' : '拒绝';
-        if (!confirm(`确定${actionText}该申请吗？`)) return;
-
-        axios.put('/refund/audit', null, { params: { refundId, action } })
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    alert(resp.data.msg || '操作成功');
-                    loadRefunds(); // 重新加载列表
-                } else {
-                    alert(resp.data.msg || '操作失败');
-                }
-            })
-            .catch(err => {
-                console.error('审核失败:', err);
-                alert('审核失败，请重试');
-            });
-    }
-
-    function formatTime(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    }
+  function formatTime(d) {
+    if (!d) return '';
+    var t = new Date(d);
+    return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0') + ' ' + String(t.getHours()).padStart(2,'0') + ':' + String(t.getMinutes()).padStart(2,'0');
+  }
 </script>
 </body>
 </html>

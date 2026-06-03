@@ -53,6 +53,9 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Select("SELECT COUNT(*) FROM orders WHERE consumer_id = #{consumerId}")
     long selectCountByConsumerId(@Param("consumerId") int consumerId);
 
+    @Select("SELECT COUNT(*) FROM orders WHERE merchant_id = #{merchantId}")
+    long countByMerchantId(@Param("merchantId") int merchantId);
+
     // 可售后订单（已签收+30天内+含商户名，分页）
     @Select("SELECT o.*, m.merchant_name FROM orders o " +
             "JOIN merchant m ON o.merchant_id = m.id " +
