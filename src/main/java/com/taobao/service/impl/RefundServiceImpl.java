@@ -3,6 +3,7 @@ package com.taobao.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.taobao.common.AuditLogger;
 import com.taobao.common.R;
 import com.taobao.dto.OrderVO;
 import com.taobao.dto.RefundListVO;
@@ -11,6 +12,7 @@ import com.taobao.mapper.*;
 import com.taobao.service.RefundService;
 import com.taobao.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ import java.util.List;
  *@description:
  */
 @Service
+@Slf4j
 public class RefundServiceImpl implements RefundService {
     @Autowired
     private RefundMapper refundMapper;
@@ -70,6 +73,8 @@ public class RefundServiceImpl implements RefundService {
         refund.setReason(reason);
         refund.setStatus(1);
         refundMapper.insert(refund);
+        AuditLogger.log("退换货申请 | consumerId={} | orderId={} | type={} | reason={}", consumerId, orderId, type == 1 ? "退货退款" : "换货", reason);
+        log.info("退换货申请提交 | consumerId={} | orderId={}", consumerId, orderId);
         return R.success("退换货申请已提交，等待商家审核");
     }
 
@@ -261,15 +266,21 @@ public class RefundServiceImpl implements RefundService {
                     merchantMapper.updateById(merchant);
                 }
 
+                AuditLogger.log("售后审核 | merchantId={} | refundId={} | 同意退货退款 | 金额=¥{}", merchantId, refundId, amount);
+                log.info("售后审核通过-退货退款 | merchantId={} | refundId={}", merchantId, refundId);
                 return R.success("已同意退货退款申请，钱款已退给消费者，请注意查收！");
 
             } else if (refund.getType() == 2) {
                 // 换货：不涉及资金变动
+                AuditLogger.log("售后审核 | merchantId={} | refundId={} | 同意换货", merchantId, refundId);
+                log.info("售后审核通过-换货 | merchantId={} | refundId={}", merchantId, refundId);
                 return R.success("已同意换货申请");
             }
         }
         else {
             //  拒绝情况
+            AuditLogger.log("售后审核 | merchantId={} | refundId={} | 已拒绝", merchantId, refundId);
+            log.info("售后审核拒绝 | merchantId={} | refundId={}", merchantId, refundId);
             refund.setStatus(3);
             refundMapper.updateById(refund);
             return R.success("已拒绝退换货申请");

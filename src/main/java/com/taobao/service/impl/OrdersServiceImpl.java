@@ -3,6 +3,7 @@ package com.taobao.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.taobao.common.AuditLogger;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.OrderVO;
@@ -18,6 +19,7 @@ import com.taobao.mapper.ProductMapper;
 import com.taobao.service.OrdersService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -32,6 +34,7 @@ import java.util.List;
  @description: 订单表实现
  */
 @Service
+@Slf4j
 public class OrdersServiceImpl implements OrdersService {
     @Autowired
     private OrdersMapper ordersMapper;
@@ -170,6 +173,8 @@ public class OrdersServiceImpl implements OrdersService {
         // 清空购物车数据库记录
         cartMapper.deleteByConsumerId(consumerId);
 
+        AuditLogger.log("订单支付 | consumerId={} | 订单数={} | 总金额={}", consumerId, orders.size(), totalToPay);
+        log.info("支付成功 | consumerId={} | {}单 | ¥{}", consumerId, orders.size(), totalToPay);
         return R.success("支付成功，共 " + totalToPay + " 元");
     }
 
@@ -208,6 +213,8 @@ public class OrdersServiceImpl implements OrdersService {
         order.setReceive_time(LocalDateTime.now());
         ordersMapper.updateById(order);
 
+        AuditLogger.log("订单签收 | orderId={} | merchantId={} | 金额=¥{}", id, order.getMerchant_id(), money);
+        log.info("订单签收 | orderId={} | ¥{}", id, money);
         return R.success("签收成功!");
     }
 

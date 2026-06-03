@@ -1,6 +1,7 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.taobao.common.AuditLogger;
 import com.taobao.common.R;
 import com.taobao.dto.CartItem;
 import com.taobao.dto.UserLoginDto;
@@ -18,6 +19,7 @@ import com.taobao.service.OrdersService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -30,6 +32,7 @@ import java.util.List;
  @description: 消费者表
  */
 @Service
+@Slf4j
 public class ConsumerServiceImpl implements ConsumerService {
     @Autowired
     private ConsumerMapper consumerMapper;
@@ -117,6 +120,8 @@ public class ConsumerServiceImpl implements ConsumerService {
 
 
         consumerMapper.insert(c);
+        log.info("消费者注册成功 | username={}", registerDto.getUsername());
+        AuditLogger.log("消费者注册 | username={}", registerDto.getUsername());
         return R.success("注册成功!");
     }
 
@@ -149,6 +154,8 @@ public class ConsumerServiceImpl implements ConsumerService {
         List<CartItem> cartItems = cartService.loadCart(consumer.getId());
         session.setAttribute("cart", cartItems);
 
+        log.info("消费者登录成功 | username={} | id={}", consumer.getUsername(), consumer.getId());
+        AuditLogger.log("消费者登录 | username={} | id={}", consumer.getUsername(), consumer.getId());
         return R.success("登录成功!", consumer);
     }
 

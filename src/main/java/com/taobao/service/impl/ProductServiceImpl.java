@@ -3,11 +3,13 @@ package com.taobao.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.taobao.common.AuditLogger;
 import com.taobao.entity.Product;
 import com.taobao.mapper.ProductMapper;
 import com.taobao.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductMapper productMapper;
@@ -30,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean addProduct(Product product) {
+        AuditLogger.log("商品上架 | id={} | name={} | price=¥{}", product.getId(), product.getProduct_name(), product.getPrice());
+        log.info("商品上架 | {} | ¥{}", product.getProduct_name(), product.getPrice());
         return productMapper.insert(product) > 0;
     }
 

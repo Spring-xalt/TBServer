@@ -1,6 +1,7 @@
 package com.taobao.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.taobao.common.AuditLogger;
 import com.taobao.common.R;
 import com.taobao.dto.MerchantDto;
 import com.taobao.dto.UserLoginDto;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
@@ -31,6 +33,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class MerchantServiceImpl implements MerchantService {
 
 
@@ -168,6 +171,8 @@ public class MerchantServiceImpl implements MerchantService {
         session.setAttribute("role", "merchant");
         session.setAttribute("displayName", merchant.getMerchant_name() != null ? merchant.getMerchant_name() : merchant.getUsername());
 
+        log.info("商户登录成功 | username={} | id={}", merchant.getUsername(), merchant.getId());
+        AuditLogger.log("商户登录 | username={} | id={}", merchant.getUsername(), merchant.getId());
         return R.success("登录成功！",merchant);
     }
 
