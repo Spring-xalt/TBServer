@@ -58,7 +58,7 @@
       #accountDropdown, #merchantDropdown { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); animation: fadeIn 0.2s ease; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
       /* 轮播图 */
-      .banner-container { position: relative; overflow: hidden; border-radius: 12px; height: 280px; }
+      .banner-container { position: relative; overflow: hidden; border-radius: 12px; height: 280px; cursor: pointer; }
       .banner-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; display: flex; align-items: center; padding: 0 60px; }
       .banner-slide.active { opacity: 1; }
       .banner-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
@@ -196,21 +196,21 @@
 <!-- 轮播图 -->
 <div class="container mx-auto px-4 mt-4">
   <div class="banner-container" style="box-shadow: 0 4px 20px rgba(0,0,0,0.10);">
-    <div class="banner-slide active" style="background: linear-gradient(135deg, #ff6a00 0%, #ff8533 40%, #ffaa66 100%); cursor:pointer;" onclick="showBannerProducts('new-arrivals', '新品上市')">
+    <div class="banner-slide active" style="background: linear-gradient(135deg, #ff6a00 0%, #ff8533 40%, #ffaa66 100%);" data-mode="new-arrivals" data-title="新品上市">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">NEW ARRIVALS</p>
         <h2 class="text-3xl font-bold mb-2">新品上市</h2>
         <p class="text-lg opacity-90">最近7天上架的新品，抢先体验</p>
       </div>
     </div>
-    <div class="banner-slide" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%); cursor:pointer;" onclick="showBannerProducts('hot-sales', '热销推荐')">
+    <div class="banner-slide" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);" data-mode="hot-sales" data-title="热销推荐">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">HOT SALE</p>
         <h2 class="text-3xl font-bold mb-2">热销推荐</h2>
         <p class="text-lg opacity-90">近30天销量排行，大家都在买</p>
       </div>
     </div>
-    <div class="banner-slide" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); cursor:pointer;" onclick="showBannerProducts('special-offers', '特价促销')">
+    <div class="banner-slide" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" data-mode="special-offers" data-title="特价促销">
       <div class="text-white">
         <p class="text-sm opacity-80 mb-2">SPECIAL OFFER</p>
         <h2 class="text-3xl font-bold mb-2">特价促销</h2>
@@ -512,6 +512,7 @@
   function initBanner() {
     const slides = document.querySelectorAll('.banner-slide');
     const dots = document.querySelectorAll('.banner-dot');
+    const container = document.querySelector('.banner-container');
     let current = 0;
     let timer;
 
@@ -524,6 +525,14 @@
     }
 
     function next() { goTo((current + 1) % slides.length); }
+
+    // 点击容器时，根据当前 active 的 slide 跳转
+    container.addEventListener('click', () => {
+      const activeSlide = slides[current];
+      const mode = activeSlide.dataset.mode;
+      const title = activeSlide.dataset.title;
+      if (mode) showBannerProducts(mode, title);
+    });
 
     dots.forEach(dot => {
       dot.addEventListener('click', (e) => { e.stopPropagation(); goTo(parseInt(dot.dataset.index)); resetTimer(); });
