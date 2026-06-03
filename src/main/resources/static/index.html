@@ -72,7 +72,7 @@
       .breadcrumb-tag .close { cursor: pointer; opacity: 0.6; font-size: 14px; }
       .breadcrumb-tag .close:hover { opacity: 1; }
       /* ====== 小淘 AI 助手 — 鲜明活泼风格 ====== */
-      .ai-chat-btn { position: fixed; bottom: 24px; right: 24px; z-index: 1000; width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #ff5e62 0%, #ff6a00 40%, #ff9966 100%); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(255,94,98,0.40); display: flex; align-items: center; justify-content: center; font-size: 26px; transition: all 0.3s; animation: aiPulse 2.5s infinite; }
+      .ai-chat-btn { position: fixed; top: 100px; right: 24px; z-index: 1000; width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #ff5e62 0%, #ff6a00 40%, #ff9966 100%); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(255,94,98,0.40); display: flex; align-items: center; justify-content: center; font-size: 26px; transition: all 0.3s; animation: aiPulse 2.5s infinite; }
       .ai-chat-btn:hover { transform: scale(1.10) rotate(-5deg); box-shadow: 0 8px 30px rgba(255,94,98,0.55); }
       .ai-chat-btn::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px dashed rgba(255,255,255,0.3); animation: aiSpin 8s linear infinite; pointer-events: none; }
       .ai-chat-btn .badge { position: absolute; top: -2px; right: -2px; width: 20px; height: 20px; background: #00e676; border-radius: 50%; border: 3px solid #fff; animation: aiGlow 1.5s infinite; }
@@ -80,7 +80,11 @@
       @keyframes aiSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       @keyframes aiGlow { 0%,100% { box-shadow: 0 0 4px #00e676; } 50% { box-shadow: 0 0 12px #00e676, 0 0 20px rgba(0,230,118,0.5); } }
 
-      .ai-chat-panel { position: fixed; bottom: 100px; right: 24px; z-index: 1001; width: 390px; max-width: calc(100vw - 48px); height: 540px; max-height: calc(100vh - 140px); background: #fff; border-radius: 20px; box-shadow: 0 12px 50px rgba(0,0,0,0.18); display: flex; flex-direction: column; overflow: hidden; transform-origin: bottom right; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+      .ai-chat-panel { position: fixed; top: 170px; right: 24px; z-index: 1001; width: 390px; max-width: calc(100vw - 48px); height: 540px; max-height: calc(100vh - 200px); background: #fff; border-radius: 20px; box-shadow: 0 12px 50px rgba(0,0,0,0.18); display: flex; flex-direction: column; overflow: hidden; transform-origin: top right; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+      /* 欢迎气泡 */
+      .ai-welcome-toast { position: fixed; top: 100px; right: 100px; z-index: 999; background: #fff; border-radius: 16px; padding: 14px 18px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); font-size: 13px; color: #555; max-width: 260px; animation: aiToastIn 0.5s ease, aiToastOut 0.5s ease 4.5s forwards; white-space: nowrap; }
+      @keyframes aiToastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes aiToastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(20px); } }
       .ai-chat-panel.collapsed { transform: scale(0); opacity: 0; pointer-events: none; }
 
       .ai-chat-header { background: linear-gradient(135deg, #ff5e62 0%, #ff6a00 50%, #ff9966 100%); color: #fff; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; overflow: hidden; }
@@ -658,6 +662,9 @@
 
               if (loggedIn) {
                 document.getElementById('guestActions').classList.add('hidden');
+                // 显示小淘欢迎气泡
+                const displayName = payload && payload.displayName;
+                if (displayName) showAiWelcome(displayName);
 
                 if (role === 'consumer') {
                   document.getElementById('consumerActions').classList.remove('hidden');
@@ -686,6 +693,7 @@
                 else if (role === 'admin') document.getElementById('adminActions').classList.remove('hidden');
               } else {
                 document.getElementById('guestActions').classList.remove('hidden');
+                showAiWelcome(null);
               }
             })
             .catch(err => {
@@ -987,6 +995,22 @@
 
   // ========== AI 智能助手 ==========
   let chatOpen = false;
+
+  function showAiWelcome(name) {
+    const old = document.getElementById('aiWelcomeToast');
+    if (old) old.remove();
+    const toast = document.createElement('div');
+    toast.id = 'aiWelcomeToast';
+    toast.className = 'ai-welcome-toast';
+    if (name) {
+      toast.innerHTML = '👋 你好 <b>' + name + '</b>！我是<em>小淘</em> 🦊<br><span style="font-size:11px;color:#999;">购物助手在线，尽管问我～</span>';
+    } else {
+      toast.innerHTML = '🦊 你好！我是<em>小淘</em>，你的购物助手<br><span style="font-size:11px;color:#999;">选商品、问优惠、查订单，尽管问我～</span>';
+    }
+    toast.onclick = function() { toast.remove(); };
+    document.body.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 5000);
+  }
 
   function toggleAiChat() {
     chatOpen = !chatOpen;

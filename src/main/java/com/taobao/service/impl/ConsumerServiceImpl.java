@@ -143,6 +143,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         // 登录之后的关键，将消费者id写入session，后续需要靠这个校验查数据
         session.setAttribute("consumerId", consumer.getId());
         session.setAttribute("role", "consumer");
+        session.setAttribute("displayName", consumer.getUsername());
 
         //登陆后立即加载 之前用户提交过的购物车信息给临时对象 cartItem,将所有的数据库数据放入session供后续使用
         List<CartItem> cartItems = cartService.loadCart(consumer.getId());

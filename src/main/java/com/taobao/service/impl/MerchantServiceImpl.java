@@ -166,6 +166,7 @@ public class MerchantServiceImpl implements MerchantService {
         // 保存商户状态给session
         session.setAttribute("merchantId", merchant.getId());
         session.setAttribute("role", "merchant");
+        session.setAttribute("displayName", merchant.getMerchant_name() != null ? merchant.getMerchant_name() : merchant.getUsername());
 
         return R.success("登录成功！",merchant);
     }

@@ -57,6 +57,7 @@ public class AuthController {
         } else {
             data.put("loggedIn", !"guest".equals(role));
             data.put("role", role.toString());
+            data.put("displayName", session.getAttribute("displayName"));
         }
         return R.success("状态获取成功", data);
     }
