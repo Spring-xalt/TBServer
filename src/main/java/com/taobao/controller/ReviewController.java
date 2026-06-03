@@ -1,5 +1,6 @@
 package com.taobao.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.ReviewVO;
 import com.taobao.dto.SubmitReviewDto;
@@ -10,7 +11,9 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  *@auther:Jimi
@@ -62,13 +65,19 @@ public class ReviewController {
 
     //用于消费者评价中心的 返回每一条详细信息的
     @GetMapping("/myDetail")
-    public R<List<ReviewVO>> myReviewDetails(HttpSession session) {
+    public R<Map<String, Object>> myReviewDetails(
+            HttpSession session,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size) {
         Integer consumerId = (Integer) session.getAttribute("consumerId");
-        if (consumerId == null) {
-            return R.error(401, "请先登录");
-        }
-        List<ReviewVO> list = reviewService.getConsumerReviewsDetail(consumerId);
-        return R.success(list);
+        if (consumerId == null) return R.error(401, "请先登录");
+        IPage<ReviewVO> result = reviewService.getConsumerReviewsDetail(consumerId, page, size);
+        Map<String, Object> data = new HashMap<>();
+        data.put("reviews", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", result.getCurrent());
+        data.put("pages", result.getPages());
+        return R.success(data);
     }
 
 

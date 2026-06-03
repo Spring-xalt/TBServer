@@ -1,5 +1,6 @@
 package com.taobao.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.taobao.common.R;
 import com.taobao.dto.ReviewVO;
 import com.taobao.entity.Orders;
@@ -18,8 +19,8 @@ public interface ReviewService {
     // 查询消费者可评价的订单列表（已签收+3个月内+未评价）
     List<Orders> getReviewableOrders(int consumerId);
 
-    //根据消费者id拿
-    List<ReviewVO> getConsumerReviewsDetail(int consumerId);
+    //根据消费者id拿（分页）
+    IPage<ReviewVO> getConsumerReviewsDetail(int consumerId, int page, int size);
 
 
 

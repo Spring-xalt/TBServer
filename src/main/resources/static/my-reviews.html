@@ -55,6 +55,7 @@
     </div>
 
     <div id="reviewsList" class="hidden space-y-4 max-w-2xl mx-auto"></div>
+    <div id="pagination" class="max-w-2xl mx-auto"></div>
 
     <div id="emptyState" class="hidden text-center py-16">
         <i class="fa fa-star-o text-5xl text-gray-300 mb-4 block"></i>
@@ -66,14 +67,19 @@
 <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
 <script>
     axios.defaults.baseURL = window.location.origin + '/taobao';
-    document.addEventListener('DOMContentLoaded', loadReviews);
+    var reviewPage = 1, reviewPages = 1, pageSize = 5;
+    document.addEventListener('DOMContentLoaded', function() { loadReviews(1); });
 
-    function loadReviews() {
-        axios.get('/review/myDetail')
+    function loadReviews(page) {
+        reviewPage = page || 1;
+        axios.get('/review/myDetail', { params: { page: reviewPage, size: pageSize } })
             .then(function(resp) {
                 document.getElementById('loading').classList.add('hidden');
-                if (resp.data.code === 200 && resp.data.data && resp.data.data.length > 0) {
-                    var reviews = resp.data.data;
+                var payload = resp.data.data;
+                var reviews = (payload && payload.reviews) ? payload.reviews : [];
+                reviewPages = (payload && payload.pages) ? payload.pages : 1;
+
+                if (reviews.length > 0) {
                     var listEl = document.getElementById('reviewsList');
                     listEl.innerHTML = '';
                     reviews.forEach(function(review) {
@@ -100,6 +106,7 @@
                         listEl.appendChild(card);
                     });
                     document.getElementById('reviewsList').classList.remove('hidden');
+                    renderPagination();
                 } else {
                     document.getElementById('emptyState').classList.remove('hidden');
                 }
@@ -110,6 +117,17 @@
                 document.getElementById('emptyState').innerHTML =
                     '<i class="fa fa-exclamation-triangle text-4xl text-orange-400 mb-4 block"></i><p class="text-light">加载失败，请先登录</p>';
             });
+    }
+
+    function renderPagination() {
+        var container = document.getElementById('pagination');
+        if (!container || reviewPages <= 1) { container.innerHTML = ''; return; }
+        container.innerHTML =
+            '<div class="flex items-center justify-center space-x-2 mt-6">' +
+                '<button onclick="loadReviews(' + (reviewPage - 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (reviewPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (reviewPage <= 1 ? 'disabled' : '') + '>上一页</button>' +
+                '<span class="text-sm text-light">第 ' + reviewPage + ' / ' + reviewPages + ' 页</span>' +
+                '<button onclick="loadReviews(' + (reviewPage + 1) + ')" class="px-3 py-2 border rounded-md text-sm ' + (reviewPage >= reviewPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100') + '" ' + (reviewPage >= reviewPages ? 'disabled' : '') + '>下一页</button>' +
+            '</div>';
     }
 
     function formatTime(dateStr) {

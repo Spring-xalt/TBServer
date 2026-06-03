@@ -1,5 +1,7 @@
 package com.taobao.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.taobao.common.R;
 import com.taobao.dto.ReviewVO;
 import com.taobao.entity.*;
@@ -95,34 +97,25 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewVO> getConsumerReviewsDetail(int consumerId) {
-        List<Review> reviews = reviewMapper.selectByConsumerId(consumerId);
+    public IPage<ReviewVO> getConsumerReviewsDetail(int consumerId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<Review> reviews = reviewMapper.selectByConsumerIdPage(consumerId, offset, size);
+        long total = reviewMapper.countByConsumerId(consumerId);
         List<ReviewVO> vos = new ArrayList<>();
-
         for (Review r : reviews) {
             ReviewVO vo = new ReviewVO();
-            // 基础属性拷贝
             BeanUtils.copyProperties(r, vo);
-
-            // 商品名
             Product product = productMapper.selectById(r.getProduct_id());
-            if (product != null) {
-                vo.setProductName(product.getProduct_name());
-            }
-            // 商户名
+            if (product != null) vo.setProductName(product.getProduct_name());
             Merchant merchant = merchantMapper.selectById(r.getMerchant_id());
-            if (merchant != null) {
-                vo.setMerchantName(merchant.getMerchant_name());
-            }
-
-            // 消费者昵称
+            if (merchant != null) vo.setMerchantName(merchant.getMerchant_name());
             Consumer consumer = consumerMapper.selectById(r.getConsumer_id());
-            if (consumer != null) {
-                vo.setConsumerName(consumer.getConsumer_name());
-            }
+            if (consumer != null) vo.setConsumerName(consumer.getConsumer_name());
             vos.add(vo);
         }
-        return vos;
+        Page<ReviewVO> result = new Page<>(page, size, total);
+        result.setRecords(vos);
+        return result;
     }
 
 

@@ -46,6 +46,7 @@
     .card-body .info .meta { font-size: 13px; color: #888; display: flex; gap: 16px; margin-top: 4px; }
     .card-body .price { text-align: right; flex-shrink: 0; }
     .card-body .price .amount { font-size: 20px; font-weight: 700; color: #ff5e62; }
+    .product-img { width: 72px; height: 72px; border-radius: 10px; background: #f5f5f5; flex-shrink: 0; object-fit: cover; border: 1px solid #f0f0f0; }
     .status-badge { padding: 5px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 600; }
     .status-1 { background: #fff7e6; color: #fa8c16; }
     .status-2 { background: #f0fff4; color: #52c41a; }
@@ -239,10 +240,12 @@
   }
 
   function createOrderCard(order) {
+    var pid = order.product_id || 0;
     var card = document.createElement('div');
     card.className = 'refund-card';
     card.innerHTML =
       '<div class="card-body">' +
+        '<img src="/taobao/product/' + pid + '/image" class="product-img" onerror="this.src=\'https://picsum.photos/seed/' + pid + '/150/150\'" alt="">' +
         '<div class="info">' +
           '<h3>' + order.product_name + '</h3>' +
           '<div class="meta">' +
@@ -268,12 +271,14 @@
 
     var card = document.createElement('div');
     card.className = 'refund-card';
+    var pid = r.productId || 0;
     card.innerHTML =
       '<div class="card-header">' +
         '<span>' + typeMap[r.type] + ' · 订单 #' + r.orderId + '</span>' +
         '<span class="status-badge ' + st.cls + '">' + st.text + '</span>' +
       '</div>' +
       '<div class="card-body">' +
+        '<img src="/taobao/product/' + pid + '/image" class="product-img" onerror="this.src=\'https://picsum.photos/seed/' + pid + '/150/150\'" alt="">' +
         '<div class="info">' +
           '<h3>' + (r.productName || '商品未知') + '</h3>' +
           '<div class="meta">' +
