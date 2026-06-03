@@ -9,10 +9,12 @@ import com.taobao.dto.OrderVO;
 import com.taobao.entity.Consumer;
 import com.taobao.entity.Merchant;
 import com.taobao.entity.Orders;
+import com.taobao.entity.Product;
 import com.taobao.mapper.CartMapper;
 import com.taobao.mapper.ConsumerMapper;
 import com.taobao.mapper.MerchantMapper;
 import com.taobao.mapper.OrdersMapper;
+import com.taobao.mapper.ProductMapper;
 import com.taobao.service.OrdersService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import java.util.List;
 public class OrdersServiceImpl implements OrdersService {
     @Autowired
     private OrdersMapper ordersMapper;
+    @Autowired
+    private ProductMapper productMapper;
 
     @Autowired
     private ConsumerMapper consumerMapper;
@@ -147,12 +151,20 @@ public class OrdersServiceImpl implements OrdersService {
         consumer.setAccount_balance(consumer.getAccount_balance().subtract(totalToPay));
         consumerMapper.updateById(consumer);
 
-        // 更新订单状态为已支付，记录暂存金额
+        // 更新订单状态 + 扣库存
         for (Orders order : orders) {
             order.setStatus(2);
-            // 支付之后金额暂存在order 的 temp_amount，之后reset订单
             order.setTemp_amount(order.getTotal_amount());
             ordersMapper.updateById(order);
+
+            // 减商品库存
+            Product product = productMapper.selectById(order.getProduct_id());
+            if (product != null) {
+                int qty = order.getQuantity() != null ? order.getQuantity() : 1;
+                int newStock = Math.max(0, product.getStock() - qty);
+                product.setStock(newStock);
+                productMapper.updateById(product);
+            }
         }
 
         // 清空购物车数据库记录
