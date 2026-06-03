@@ -54,10 +54,15 @@ public class AdminController {
     public R<PageResult<Product>> productsPaged(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "time") String orderBy) {
         QueryWrapper<Product> w = new QueryWrapper<>();
         if (type != null && !type.isEmpty()) w.eq("type", type);
-        w.orderByDesc("create_time");
+        if ("price".equals(orderBy)) {
+            w.orderByDesc("price");
+        } else {
+            w.orderByDesc("create_time");
+        }
         return R.success(PageResult.of(productMapper.selectList(w), page, size));
     }
 

@@ -335,3 +335,5 @@ java.lang.IllegalArgumentException: Name for argument of type [int] not specifie
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:1570)
+2026-06-03 18:33:58.325 INFO  [http-nio-0.0.0.0-8080-exec-10] com.taobao.service.impl.ConsumerServiceImpl - 消费者登录成功 | username=jimi | id=6
+2026-06-03 18:54:37.452 INFO  [http-nio-0.0.0.0-8080-exec-7] com.taobao.service.impl.ConsumerServiceImpl - 消费者登录成功 | username=jimi | id=6

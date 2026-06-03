@@ -20,46 +20,80 @@
             }
         }
     </script>
+    <style>
+        .nav-link {
+            display: flex; align-items: center;
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 13.5px; font-weight: 500;
+            color: #bbb; text-decoration: none;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .nav-link.active { background: #ff6a00; color: #fff; }
+        .tab-content.hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex">
+<body class="bg-gray-100 min-h-screen">
 
-<!-- ========= 左侧侧边栏 ========= -->
-<aside class="w-64 bg-dark text-white flex flex-col">
-    <div class="p-6 text-xl font-bold border-b border-gray-600">
-        <i class="fa fa-cog mr-2"></i>管理后台
-    </div>
-    <nav class="flex-1 p-4 space-y-2">
-        <a href="#" onclick="switchTab('products')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-products">
-            <i class="fa fa-shopping-bag mr-2"></i>商品概览
-        </a>
-        <a href="#" onclick="switchTab('consumers')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-consumers">
-            <i class="fa fa-users mr-2"></i>消费者概览
-        </a>
-        <a href="#" onclick="switchTab('merchants')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-merchants">
-            <i class="fa fa-store mr-2"></i>商户概览
-        </a>
-        <a href="#" onclick="switchTab('orders')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-orders">
-            <i class="fa fa-file-text mr-2"></i>订单概览
-        </a>
-        <a href="#" onclick="switchTab('today')" class="block px-4 py-2 rounded hover:bg-gray-700 transition-colors" id="nav-today">
-            <i class="fa fa-line-chart mr-2"></i>今日交易额
-        </a>
-    </nav>
-    <div class="p-4 border-t border-gray-600">
-        <a href="#" onclick="logout()" class="text-gray-300 hover:text-white">
-            <i class="fa fa-sign-out mr-2"></i>退出登录
-        </a>
-    </div>
-</aside>
+<!-- ========= 顶部横向导航栏 ========= -->
+<header class="bg-dark text-white sticky top-0 z-40 shadow-md" style="display:flex; align-items:center; justify-content:space-between; padding:0 24px; min-height:56px;">
+  <!-- 左侧 Logo -->
+  <h1 style="font-size:18px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:8px;">
+    <i class="fa fa-cog" style="color:#ff6a00;"></i> 管理后台
+  </h1>
 
-<!-- ========= 右侧内容区 ========= -->
-<main class="flex-1 p-8 overflow-y-auto">
+  <!-- 中间导航 -->
+  <nav style="display:flex; gap:4px;">
+    <a href="#" onclick="switchTab('products')" class="nav-link active" id="nav-products">
+      <i class="fa fa-shopping-bag mr-1.5"></i>商品
+    </a>
+    <a href="#" onclick="switchTab('consumers')" class="nav-link" id="nav-consumers">
+      <i class="fa fa-users mr-1.5"></i>消费者
+    </a>
+    <a href="#" onclick="switchTab('merchants')" class="nav-link" id="nav-merchants">
+      <i class="fa fa-store mr-1.5"></i>商户
+    </a>
+    <a href="#" onclick="switchTab('orders')" class="nav-link" id="nav-orders">
+      <i class="fa fa-file-text mr-1.5"></i>订单
+    </a>
+    <a href="#" onclick="switchTab('today')" class="nav-link" id="nav-today">
+      <i class="fa fa-line-chart mr-1.5"></i>今日交易额
+    </a>
+  </nav>
+
+  <!-- 右侧退出 -->
+  <div style="white-space:nowrap;">
+    <button onclick="logout()" style="padding:8px 18px; border:1px solid #dc3545; color:#dc3545; border-radius:20px; font-size:13px; background:transparent; cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='#dc3545';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#dc3545'">
+      <i class="fa fa-sign-out mr-1.5"></i>退出登录
+    </button>
+  </div>
+</header>
+
+<!-- ========= 内容区 ========= -->
+<main class="container mx-auto p-8">
 
     <!-- 商品概览 -->
     <div id="tab-products" class="tab-content">
-        <h2 class="text-2xl font-bold text-dark mb-6">商品概览</h2>
+        <h2 class="text-2xl font-bold text-dark mb-4">商品概览</h2>
+
+        <!-- 筛选 + 排序栏 -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div id="productTypeFilters" class="flex gap-2 flex-wrap"></div>
+            <select id="productOrderBy" onchange="loadProducts()"
+                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-dark bg-white focus:outline-none focus:border-primary">
+                <option value="time">按上架时间 ↓</option>
+                <option value="price">按价格 ↓</option>
+            </select>
+        </div>
+
+        <!-- 商品卡片 -->
         <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        <div id="productLoading" class="text-center py-8 text-light">加载中...</div>
+
+        <!-- 分页 -->
+        <div id="productPagination" class="flex justify-center mt-6"></div>
+
+        <div id="productLoading" class="text-center py-8 text-light hidden">加载中...</div>
     </div>
 
     <!-- 消费者概览 -->
@@ -145,14 +179,14 @@
 
     function switchTab(tab) {
         // 更新导航高亮
-        document.querySelectorAll('nav a').forEach(el => el.classList.remove('bg-gray-700'));
-        document.getElementById('nav-' + tab).classList.add('bg-gray-700');
+        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-' + tab).classList.add('active');
         // 切换内容区
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
         document.getElementById('tab-' + tab).classList.remove('hidden');
         currentTab = tab;
         // 加载对应数据
-        if (tab === 'products') loadProducts();
+        if (tab === 'products') { buildProductTypeFilters(); loadProducts(); }
         else if (tab === 'consumers') loadConsumers();
         else if (tab === 'merchants') loadMerchants();
         else if (tab === 'orders') loadOrders();
@@ -160,24 +194,68 @@
     }
 
     // ========== 商品概览 ==========
-    function loadProducts() {
+    let productPage = 1, productPages = 1, productSize = 9;
+    let currentProductType = '', currentProductOrderBy = 'time';
+
+    function buildProductTypeFilters() {
+        const types = ['', '数码电子', '服装鞋帽', '生活用品', '学习办公', '食品饮料', '美妆个护', '运动户外'];
+        document.getElementById('productTypeFilters').innerHTML = types.map(t => {
+            const label = t || '全部分类';
+            const active = currentProductType === t;
+            return `<span onclick="filterProductType('${t}')" class="px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${active ? 'bg-primary text-white border-primary' : 'bg-white text-light border-gray-200 hover:border-primary hover:text-primary'}">${label}</span>`;
+        }).join('');
+    }
+
+    function filterProductType(type) {
+        currentProductType = type;
+        productPage = 1;
+        buildProductTypeFilters();
+        loadProducts();
+    }
+
+    function loadProducts(pg) {
+        if (pg) productPage = pg;
         const list = document.getElementById('productList');
         const loading = document.getElementById('productLoading');
+        const pagination = document.getElementById('productPagination');
         list.innerHTML = '';
+        pagination.innerHTML = '';
         loading.classList.remove('hidden');
-        axios.get('/product/all', { params: { page: 1, size: 100 } })
-            .then(resp => {
-                loading.classList.add('hidden');
-                if (resp.data.code === 200 && resp.data.data) {
-                    const products = resp.data.data.products || [];
-                    products.forEach(p => {
-                        list.appendChild(createProductCard(p));
-                    });
-                }
-            })
-            .catch(err => {
-                loading.innerHTML = '加载失败，请刷新重试';
-            });
+
+        currentProductOrderBy = document.getElementById('productOrderBy').value;
+
+        axios.get('/admin/products/paged', {
+            params: {
+                page: productPage,
+                size: productSize,
+                type: currentProductType || undefined,
+                orderBy: currentProductOrderBy
+            }
+        }).then(resp => {
+            loading.classList.add('hidden');
+            if (resp.data.code === 200 && resp.data.data) {
+                const d = resp.data.data;
+                productPages = d.pages || 1;
+                (d.records || []).forEach(p => list.appendChild(createProductCard(p)));
+                renderProductPagination();
+            }
+        }).catch(() => {
+            loading.classList.add('hidden');
+            loading.innerHTML = '加载失败，请刷新重试';
+        });
+    }
+
+    function renderProductPagination() {
+        const pagination = document.getElementById('productPagination');
+        if (productPages <= 1) { pagination.innerHTML = ''; return; }
+        pagination.innerHTML = `
+            <div class="flex items-center gap-2 text-sm">
+                <button onclick="loadProducts(${productPage - 1})" ${productPage <= 1 ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${productPage <= 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">上一页</button>
+                <span class="text-light">第 ${productPage} / ${productPages} 页</span>
+                <button onclick="loadProducts(${productPage + 1})" ${productPage >= productPages ? 'disabled' : ''}
+                    class="px-3 py-1.5 border rounded ${productPage >= productPages ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}">下一页</button>
+            </div>`;
     }
 
     function createProductCard(p) {
