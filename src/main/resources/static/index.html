@@ -80,7 +80,7 @@
       @keyframes aiSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       @keyframes aiGlow { 0%,100% { box-shadow: 0 0 4px #00e676; } 50% { box-shadow: 0 0 12px #00e676, 0 0 20px rgba(0,230,118,0.5); } }
 
-      .ai-chat-panel { position: fixed; top: 170px; right: 24px; z-index: 1001; width: 390px; max-width: calc(100vw - 48px); height: 540px; max-height: calc(100vh - 200px); background: #fff; border-radius: 20px; box-shadow: 0 12px 50px rgba(0,0,0,0.18); display: flex; flex-direction: column; overflow: hidden; transform-origin: top right; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+      .ai-chat-panel { position: fixed; top: 170px; right: 24px; z-index: 1001; width: 440px; max-width: calc(100vw - 48px); height: 620px; max-height: calc(100vh - 200px); background: #fff; border-radius: 20px; box-shadow: 0 12px 50px rgba(0,0,0,0.18); display: flex; flex-direction: column; overflow: hidden; transform-origin: top right; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
       /* 欢迎气泡 */
       .ai-welcome-toast { position: fixed; top: 100px; right: 100px; z-index: 999; background: #fff; border-radius: 16px; padding: 14px 18px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); font-size: 13px; color: #555; max-width: 260px; animation: aiToastIn 0.5s ease, aiToastOut 0.5s ease 4.5s forwards; white-space: nowrap; }
       @keyframes aiToastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
@@ -101,10 +101,10 @@
       .ai-bubble.bot { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 3px solid #ff9966; }
       .ai-bubble .time { font-size: 10px; opacity: 0.5; margin-top: 5px; }
 
-      .ai-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-top: 1px solid #f0f0f0; flex-shrink: 0; background: #fff; }
-      .ai-suggestion { padding: 7px 14px; border-radius: 18px; background: #fff; color: #ff5e62; font-size: 12px; cursor: pointer; border: 1.5px solid #ffcdd2; transition: all 0.25s; white-space: nowrap; font-weight: 500; }
+      .ai-suggestions { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 10px 16px; border-top: 1px solid #f0f0f0; flex-shrink: 0; background: #fff; align-items: center; }
+      .ai-suggestion { padding: 9px 14px; border-radius: 18px; background: #fff; color: #ff5e62; font-size: 12.5px; cursor: pointer; border: 1.5px solid #ffcdd2; transition: all 0.25s; font-weight: 500; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .ai-suggestion:hover { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,94,98,0.30); }
-      .ai-refresh-btn { background: #fafafa; color: #999; border: 1px dashed #ddd; font-size: 11px; padding: 6px 10px; }
+      .ai-refresh-btn { background: #fafafa; color: #999; border: 1px dashed #ddd; font-size: 11px; padding: 8px 8px; text-align: center; cursor: pointer; border-radius: 18px; transition: all 0.25s; white-space: nowrap; min-width: 64px; }
       .ai-refresh-btn:hover { background: #ff5e62; color: #fff; border-color: #ff5e62; transform: translateY(-2px); }
 
       .ai-chat-input-wrap { display: flex; align-items: center; padding: 12px 16px; border-top: 1px solid #f0f0f0; gap: 8px; background: #fff; flex-shrink: 0; }
@@ -1088,11 +1088,10 @@
   function renderAiSuggestions(suggestions) {
     const container = document.getElementById('aiSuggestions');
     if (!container) return;
-    // 先清空，再添加问题 pills，最后加刷新按钮
     const pills = (suggestions || []).map(s =>
       `<span class="ai-suggestion" onclick="quickAsk('${s.replace(/'/g,"\\'")}')">${s}</span>`
     ).join('');
-    container.innerHTML = pills + '<span id="aiRefreshBtn" class="ai-suggestion ai-refresh-btn" onclick="refreshSuggestions()" title="换一批问题">🔄 换一批</span>';
+    container.innerHTML = pills + '<span id="aiRefreshBtn" class="ai-refresh-btn" onclick="refreshSuggestions()">🔄</span>';
   }
 
   function quickAsk(question) {

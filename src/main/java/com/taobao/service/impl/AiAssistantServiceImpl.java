@@ -33,44 +33,46 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     private static final String BASE_SYSTEM_PROMPT =
         "你是「仿淘宝商城」的智能购物助手，名叫小淘。\n" +
         "商城分类：数码电子、服装鞋帽、生活用品、学习办公、食品饮料、美妆个护、运动户外\n" +
-        "首页轮播：新品上市（最近7天）、热销推荐（近30天销量排行）、特价促销（0-50元）\n" +
-        "要求：用中文回复，语气亲切活泼，每次2-4句话。回答时尽量引用下方的真实商品数据。\n";
+        "首页轮播：新品上市（最近7天）、热销推荐（近30天销量排行）、特价促销（0-50元）\n\n" +
+        "⚠️ 重要规则，必须遵守：\n" +
+        "1. 你只能回答与商品推荐、价格比较、分类浏览相关的问题。\n" +
+        "2. 关于退换货、退款、物流时效、支付方式、保修、优惠券等平台政策，你没有任何内部信息。\n" +
+        "   遇到这类问题，统一回复：建议查看平台帮助中心或联系具体卖家确认，不要编造任何政策。\n" +
+        "3. 下方提供的商品数据是你唯一的信息来源，不要引用数据中没有的商品或价格。\n" +
+        "4. 语气亲切活泼，每次2-4句话。\n";
 
-    // 推荐问题池（不与首页 banner 重复）
+    // 推荐问题池：只问 AI 能答的（商品相关），不问政策类的
     private static final List<String> SUGGESTION_POOL = Arrays.asList(
         "学生党预算有限，哪些东西性价比高？",
-        "我想买礼物送朋友，有什么推荐吗？",
-        "买了不喜欢可以退吗？怎么退？",
-        "有没有适合办公室用的好东西？",
-        "怎么判断一个商品靠不靠谱？",
-        "下单后多久能发货？",
-        "支持哪些支付方式？",
-        "最近有什么值得关注的商品？",
+        "有没有适合送朋友的礼物推荐？",
+        "有什么适合在办公室用的好东西？",
+        "最近有什么值得关注的上新？",
         "同样的东西为什么价格差这么多？",
-        "买东西能砍价或者用优惠券吗？",
-        "退款一般几天到账？",
-        "收到的商品有质量问题怎么办？",
-        "还没发货可以取消订单吗？",
-        "怎么查看物流信息？",
-        "100元左右有什么好东西？",
-        "有没有适合送父母的礼物？",
-        "食品类会不会过期？保质期怎么看？",
-        "怎么联系卖家咨询？",
-        "第一次购物有什么注意事项？",
-        "数码产品有保修吗？"
+        "100元左右有什么好东西推荐？",
+        "有没有适合送长辈的礼物？",
+        "哪个分类的商品最多？帮我看看",
+        "怎么快速找到我想要的东西？",
+        "库存紧张的商品有哪些？",
+        "有没有好看又实用的生活用品？",
+        "想买点零食，有什么推荐的？",
+        "数码产品哪款性价比最高？",
+        "运动户外有什么装备推荐？",
+        "美妆类的商品多吗？有什么好的？",
+        "怎么看一个商品值不值得买？",
+        "学习用品区有什么好东西？",
+        "首页轮播的三个入口分别是什么？",
+        "想买衣服，哪个分类里找？",
+        "怎么快速搜到我想要的东西？"
     );
 
     @Override
     public String chat(String userMessage) {
         try {
-            // 1. 查数据库拿真实商品
             List<Product> relevantProducts = queryRelevantProducts(userMessage);
-            String dbContext = buildProductContext(relevantProducts);
+            String dbContext = buildProductContext(relevantProducts, userMessage);
 
-            // 2. 拼 system prompt
             String fullSystemPrompt = BASE_SYSTEM_PROMPT + dbContext;
 
-            // 3. 调 DeepSeek
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", config.getModel());
             requestBody.put("stream", false);
@@ -104,10 +106,9 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     @Override
     public List<String> getSuggestions() {
-        // 从池子里随机取 4 条不重复的
         List<String> pool = new ArrayList<>(SUGGESTION_POOL);
         Collections.shuffle(pool, random);
-        return pool.subList(0, Math.min(4, pool.size()));
+        return pool.subList(0, Math.min(2, pool.size()));
     }
 
     // ========== 数据库查询 ==========
@@ -119,6 +120,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             || lower.contains("商品") || lower.contains("产品") || lower.contains("有什么")
             || lower.contains("有没有") || lower.contains("哪些") || lower.contains("看看")
             || lower.contains("介绍") || lower.contains("好物") || lower.contains("值得")
+            || lower.contains("库存") || lower.contains("分类") || lower.contains("哪个")
             || containsCategoryKeyword(lower);
 
         if (!askingAboutProducts) {
@@ -137,6 +139,14 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                 || (lower.contains("50") && lower.contains("元")) || (lower.contains("100") && lower.contains("元"))) {
             return productMapper.selectSpecialOffers(0, 10);
         }
+        if (lower.contains("库存") || lower.contains("紧张") || lower.contains("快没")) {
+            List<Product> all = productMapper.selectNewArrivals(0, 50);
+            return all.stream()
+                .filter(p -> p.getStock() != null && p.getStock() <= 5)
+                .sorted(Comparator.comparingInt(Product::getStock))
+                .limit(10)
+                .collect(Collectors.toList());
+        }
 
         String category = extractCategory(lower);
         if (category != null) {
@@ -153,7 +163,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     private String extractCategory(String msg) {
         String[][] mappings = {
             {"数码电子", "数码", "手机", "电脑", "耳机", "平板", "充电"},
-            {"服装鞋帽", "服装", "衣服", "鞋", "穿", "裙子", "裤子", "T恤"},
+            {"服装鞋帽", "服装", "衣服", "鞋", "穿", "裙子", "裤子", "T恤", "帽"},
             {"生活用品", "日用", "家居", "生活"},
             {"学习办公", "学习", "办公", "文具", "书", "笔"},
             {"食品饮料", "食品", "饮料", "吃", "喝", "零食", "水果"},
@@ -177,13 +187,26 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                 .collect(Collectors.toList());
     }
 
-    private String buildProductContext(List<Product> products) {
+    private String buildProductContext(List<Product> products, String userMessage) {
+        String lower = userMessage.toLowerCase();
+        boolean isPolicyQuestion = lower.contains("退") || lower.contains("退款")
+            || lower.contains("换") || lower.contains("货") || lower.contains("售后")
+            || lower.contains("物流") || lower.contains("快递") || lower.contains("发货")
+            || lower.contains("支付") || lower.contains("付款") || lower.contains("优惠券")
+            || lower.contains("砍价") || lower.contains("保修") || lower.contains("过期")
+            || lower.contains("取消") || lower.contains("到账");
+
         if (products.isEmpty()) {
-            return "\n【当前数据库状态】暂无匹配商品。请根据你的知识给用户建议。";
+            if (isPolicyQuestion) {
+                return "\n【注意：用户问的是平台政策类问题，你没有这方面的内部数据。" +
+                    "请诚实告知用户你不了解具体政策，建议查看平台帮助中心或联系卖家，不要编造任何条款。】";
+            }
+            return "\n【当前数据库暂无精确匹配商品。请根据问题帮用户分析思路、提供选购建议，" +
+                "但不要编造不存在的商品。可以引导用户使用搜索或分类筛选功能。】";
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\n【以下是数据库中真实的商品数据，请据此回答】\n");
+        sb.append("\n【以下是数据库中真实的商品数据，请据此回答用户问题】\n");
 
         for (int i = 0; i < Math.min(products.size(), 15); i++) {
             Product p = products.get(i);
@@ -199,7 +222,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         }
 
         long total = productMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>());
-        sb.append("\n商城共 ").append(total).append(" 件商品在售。请基于以上数据回答。");
+        sb.append("\n商城共 ").append(total).append(" 件在售商品。请基于以上数据回答，不要编造数据中没有的信息。");
         return sb.toString();
     }
 }
