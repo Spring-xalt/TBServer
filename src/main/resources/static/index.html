@@ -101,11 +101,11 @@
       .ai-bubble.bot { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 3px solid #ff9966; }
       .ai-bubble .time { font-size: 10px; opacity: 0.5; margin-top: 5px; }
 
-      .ai-suggestions { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 10px 16px; border-top: 1px solid #f0f0f0; flex-shrink: 0; background: #fff; align-items: center; }
+      .ai-suggestions { display: grid; grid-template-columns: 1fr 52px; gap: 6px; padding: 10px 16px; border-top: 1px solid #f0f0f0; flex-shrink: 0; background: #fff; }
       .ai-suggestion { padding: 9px 14px; border-radius: 18px; background: #fff; color: #ff5e62; font-size: 12.5px; cursor: pointer; border: 1.5px solid #ffcdd2; transition: all 0.25s; font-weight: 500; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .ai-suggestion:hover { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,94,98,0.30); }
-      .ai-refresh-btn { background: #fafafa; color: #999; border: 1px dashed #ddd; font-size: 11px; padding: 8px 8px; text-align: center; cursor: pointer; border-radius: 18px; transition: all 0.25s; white-space: nowrap; min-width: 64px; }
-      .ai-refresh-btn:hover { background: #ff5e62; color: #fff; border-color: #ff5e62; transform: translateY(-2px); }
+      .ai-suggestion:hover { background: linear-gradient(135deg, #ff5e62, #ff6a00); color: #fff; border-color: transparent; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,94,98,0.30); }
+      .ai-refresh-btn { border-radius: 18px; background: #fafafa; color: #999; border: 1px dashed #ddd; font-size: 11px; cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; }
+      .ai-refresh-btn:hover { background: #ff5e62; color: #fff; border-color: #ff5e62; }
 
       .ai-chat-input-wrap { display: flex; align-items: center; padding: 12px 16px; border-top: 1px solid #f0f0f0; gap: 8px; background: #fff; flex-shrink: 0; }
       .ai-chat-input-wrap input { flex: 1; border: 2px solid #f0f0f0; border-radius: 24px; padding: 10px 18px; font-size: 14px; outline: none; transition: all 0.25s; background: #fafafa; }
@@ -1088,10 +1088,19 @@
   function renderAiSuggestions(suggestions) {
     const container = document.getElementById('aiSuggestions');
     if (!container) return;
-    const pills = (suggestions || []).map(s =>
-      `<span class="ai-suggestion" onclick="quickAsk('${s.replace(/'/g,"\\'")}')">${s}</span>`
-    ).join('');
-    container.innerHTML = pills + '<span id="aiRefreshBtn" class="ai-refresh-btn" onclick="refreshSuggestions()">🔄</span>';
+    const list = suggestions || [];
+    let html = '';
+    // 第一行：pill + 透明占位（保证和第二行 pill 等宽）
+    if (list.length > 0) {
+      html += '<span class="ai-suggestion" onclick="quickAsk(\'' + list[0].replace(/'/g,"\\'") + '\')">' + list[0] + '</span>';
+      html += '<span></span>';
+    }
+    // 第二行：pill + 换一批
+    if (list.length > 1) {
+      html += '<span class="ai-suggestion" onclick="quickAsk(\'' + list[1].replace(/'/g,"\\'") + '\')">' + list[1] + '</span>';
+      html += '<span id="aiRefreshBtn" class="ai-refresh-btn" onclick="refreshSuggestions()">🔄</span>';
+    }
+    container.innerHTML = html;
   }
 
   function quickAsk(question) {
