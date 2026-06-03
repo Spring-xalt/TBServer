@@ -119,5 +119,16 @@ public class ChatServiceImpl implements ChatService {
         return dto;
     }
 
+    @Override
+    public ChatContactDto startNewChatForMerchant(int merchantId, int consumerId) {
+        Consumer consumer = consumerMapper.selectById(consumerId);
+        if (consumer == null) return null;
+        ChatContactDto dto = new ChatContactDto();
+        dto.setId(consumerId);
+        dto.setName(consumer.getConsumer_name() != null ? consumer.getConsumer_name() : consumer.getUsername());
+        dto.setRole("consumer");
+        return dto;
+    }
+
 
 }

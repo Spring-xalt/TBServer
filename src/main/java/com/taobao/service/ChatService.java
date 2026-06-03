@@ -23,4 +23,7 @@ public interface ChatService {
     //消费者可以拉起一个新聊天
     ChatContactDto startNewChat(int consumerId, int merchantId);
 
+    //商户可以拉起一个新聊天
+    ChatContactDto startNewChatForMerchant(int merchantId, int consumerId);
+
 }

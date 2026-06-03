@@ -109,12 +109,17 @@ public class ChatController {
         }
 
         ChatContactDto dto = chatService.startNewChat(consumerId, targetId);
-        if (dto == null) {
-            return R.error("商户不存在");
-        }
+        if (dto == null) return R.error("商户不存在");
         return R.success(dto);
     }
 
-
+    @GetMapping("/merchantNewChat")
+    public R<ChatContactDto> merchantNewChat(@RequestParam("targetId") int targetId, HttpSession session) {
+        Integer merchantId = (Integer) session.getAttribute("merchantId");
+        if (merchantId == null) return R.error(401, "请先登录商家账号");
+        ChatContactDto dto = chatService.startNewChatForMerchant(merchantId, targetId);
+        if (dto == null) return R.error("消费者不存在");
+        return R.success(dto);
+    }
 
 }
