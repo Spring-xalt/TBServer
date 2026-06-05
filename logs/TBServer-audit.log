@@ -8,4 +8,184 @@
 2026-06-05 12:21:07.925 - 商品上架 | id=null | name=粉面彩蛋加量款 | price=¥8
 2026-06-05 12:21:40.102 - 商品上架 | id=null | name=火鸡面 | price=¥4
 2026-06-05 12:25:14.769 - 商户登录 | username=yangzhanggui | id=55
+2026# TBServer 接口设计文档
+
+    ## 1 概述
+
+    - **基础路径**：`http://localhost:8080/taobao`
+    - **认证方式**：HttpSession + JSESSIONID Cookie
+    - **响应格式**：统一 JSON `{"code": 200, "msg": "success", "data": {}}`，200 成功 / 401 未登录 / 403 无权限 / 404 不存在 / 500 业务错误
+
+    ### 权限拦截
+
+    两层 Filter 串联：
+
+    - **LoginFilter**：拦截除 `/auth/**`、`/product/all`、`/product/search`、`/product/*/image`、`/alipay/notify`、静态资源外的所有路径，未登录返回 401
+    - **RoleFilter**：`/cart/**` 和 `/consumer/**` 仅 consumer，`/merchant/**` 仅 merchant，`/admin/**` 仅 admin，其余核心路径任意角色可访问
+
+    ------
+
+    ## 2 认证模块 `/auth`
+
+    主要负责三种角色的登录、注册、登出，以及游客登录和状态查询。
+
+    | 接口                      | 方法 | 请求体                 | 说明                                       |
+    | ------------------------- | ---- | ---------------------- | ------------------------------------------ |
+    | `/auth/guest`             | POST | —                      | 游客登录（清除旧 Session，设为 guest）     |
+    | `/auth/status`            | GET  | —                      | 获取当前登录状态，返回 `{loggedIn, role}`  |
+    | `/auth/consumer/register` | POST | `{username, password}` | 消费者注册（密码 6-18 位，MD5 入库）       |
+    | `/auth/merchant/register` | POST | `{username, password}` | 商家注册（同上）                           |
+    | `/auth/consumer/login`    | POST | `{username, password}` | 消费者登录（成功自动加载购物车到 Session） |
+    | `/auth/merchant/login`    | POST | `{username, password}` | 商家登录                                   |
+    | `/auth/admin/login`       | POST | `{username, password}` | 管理员登录（默认 admin / 123456）          |
+    | `/auth/logout`            | POST | —                      | 统一退出（销毁 Session）                   |
+
+    ------
+
+    ## 3 商品模块 `/product` & `/merchant`
+
+    公开浏览：`/product/all`、`/product/search`、`/product/{id}/image` 为公开接口。
+    商家管理：需登录 merchant，只能操作自己的商品。
+    管理员操作：需 admin 角色，不受归属限制。
+
+    | 接口                             | 方法   | 参数                                   | 说明                                                    |
+    | -------------------------------- | ------ | -------------------------------------- | ------------------------------------------------------- |
+    | `/product/all`                   | GET    | `?page=1&size=8`                       | 商品分页（公开），返回 `{products, total, page, pages}` |
+    | `/product/search`                | GET    | `?keyword=手机`                        | 全局搜索（LIKE 匹配名称和描述，公开）                   |
+    | `/product/{id}`                  | GET    | Path                                   | 商品详情                                                |
+    | `/product/{id}/image`            | GET    | Path                                   | 商品图片字节流（自动识别 JPEG/PNG/GIF，公开）           |
+    | `/product/{merchantId}/products` | GET    | Path                                   | 按商家 ID 查全部商品                                    |
+    | `/product/add`                   | POST   | multipart: product(JSON) + image(文件) | 商家上架商品（merchant_id 自动绑定）                    |
+    | `/product/update`                | PUT    | multipart: product(JSON) + image(可选) | 商家编辑商品（仅改自己的，可选换图，限 2MB）            |
+    | `/product/delete/{id}`           | DELETE | Path                                   | 商家下架商品（仅自己的，同步删图片文件）                |
+    | `/product/adminAdd`              | POST   | multipart: product(JSON) + image(文件) | 管理员新增商品                                          |
+    | `/product/adminUpdate`           | PUT    | multipart: product(JSON) + image(可选) | 管理员编辑商品                                          |
+    | `/product/adminDelete/{id}`      | DELETE | Path                                   | 管理员强制删除（无视归属，同步删图片）                  |
+    | `/merchant/my-products`          | GET    | `?page=1&size=8`                       | 商家查看自家商品分页                                    |
+    | `/merchant/my-products/search`   | GET    | `?keyword=xx`                          | 商家搜索自家商品                                        |
+
+    ------
+
+    ## 4 购物车模块 `/cart`
+
+    Session + DB 双写：日常增删改查操作 Session，save 时覆写 DB，登录时从 DB 恢复到 Session。
+
+    | 接口                   | 方法   | 请求体 / 参数             | 说明                                              |
+    | ---------------------- | ------ | ------------------------- | ------------------------------------------------- |
+    | `/cart/list`           | GET    | —                         | 查看购物车（从 Session 读取，返回 CartItem 列表） |
+    | `/cart/count`          | GET    | —                         | 获取商品种类数（前端角标）                        |
+    | `/cart/add`            | POST   | `{productId: 1}`          | 加入购物车（已存在则数量+1，仅操作 Session）      |
+    | `/cart/update`         | PUT    | `{index: 0, quantity: 3}` | 修改数量（通过数组下标定位，>=1）                 |
+    | `/cart/delete/{index}` | DELETE | Path                      | 移除商品（通过下标定位）                          |
+    | `/cart/save`           | POST   | —                         | 持久化购物车（Session → DB，先删后插）            |
+    | `/cart/clear`          | DELETE | —                         | 清空购物车（同时清 DB 和 Session）                |
+
+    ------
+
+    ## 5 订单与支付模块 `/order` & `/alipay`
+
+    **订单状态**：1=未支付，2=已支付，3=已签收
+    **资金流**：支付时余额扣至 temp_amount（暂存）→ 确认收货 temp_amount 转入商家 revenue
+
+    | 接口                            | 方法   | 请求体 / 参数          | 说明                                                         |
+    | ------------------------------- | ------ | ---------------------- | ------------------------------------------------------------ |
+    | `/order/createAndPay`           | POST   | `{password}`           | 购物车结算：验证密码 → 生成订单 → 扣余额支付。余额够：status=2 + 清空购物车；余额不够：status=1 + 保留购物车 |
+    | `/order/consumerSelf`           | GET    | —                      | 消费者查看自己的订单（含商家名，按时间倒序）                 |
+    | `/order/merchant/list`          | GET    | —                      | 商家查看店铺订单（含消费者昵称）                             |
+    | `/order/{orderId}/confirm`      | PUT    | Path                   | 消费者确认收货（status 2→3，资金从 temp_amount 转入商家 revenue） |
+    | `/order/all`                    | GET    | —                      | 查询所有订单                                                 |
+    | `/order/{id}`                   | GET    | Path                   | 按 ID 查订单                                                 |
+    | `/order/consumer/{consumer_id}` | GET    | Path                   | 按消费者 ID 查订单                                           |
+    | `/order/merchant/{merchant_id}` | GET    | Path                   | 按商家 ID 查订单                                             |
+    | `/order/add`                    | POST   | Orders JSON            | 创建订单                                                     |
+    | `/order/update`                 | PUT    | Orders JSON（需含 id） | 更新订单（仅 status=1 或 2 时可更新）                        |
+    | `/order/delete/{id}`            | DELETE | Path                   | 删除订单                                                     |
+    | `/alipay/recharge`              | POST   | `{amount}`             | 发起充值，返回支付宝二维码链接                               |
+    | `/alipay/status`                | GET    | `?outTradeNo=xxx`      | 查询支付状态，返回 SUCCESS / WAITING（供前端轮询）           |
+    | `/alipay/notify`                | POST   | 支付宝回调参数         | 支付宝异步通知（公开接口，验签后增加余额）                   |
+
+    ------
+
+    ## 6 评价与售后模块 `/review` & `/refund`
+
+    **评价条件**：订单已签收 + 3 个月内 + 未评价 + 未申请售后
+    **售后条件**：订单已签收 + 30 天内 + 未评价 + 未申请售后
+    **互斥**：评价和售后互斥，一个订单只能选其一
+
+    **售后状态**：1=待审核，2=已同意，3=已拒绝
+    **售后类型**：1=退货退款（审核通过退钱），2=换货（不涉及资金）
+
+    | 接口                                | 方法 | 请求体 / 参数               | 说明                                                         |
+    | ----------------------------------- | ---- | --------------------------- | ------------------------------------------------------------ |
+    | `/review/submit`                    | POST | `{orderId, score, content}` | 消费者提交评价（一单一评，score 1-5）                        |
+    | `/review/reviewable`                | GET  | —                           | 查询可评价的订单列表                                         |
+    | `/review/my`                        | GET  | —                           | 查看自己的所有评价                                           |
+    | `/review/myDetail`                  | GET  | —                           | 查看评价详情（含商品名、商家名）                             |
+    | `/review/merchant/list`             | GET  | —                           | 商家查看店铺评价（含消费者昵称）                             |
+    | `/refund/consumer/available-orders` | GET  | —                           | 查询可申请售后的订单                                         |
+    | `/refund/apply`                     | POST | `{orderId, type, reason}`   | 消费者提交售后申请                                           |
+    | `/refund/status`                    | GET  | `?orderId=xx`               | 查询某订单的售后状态（返回 Refund 或 null）                  |
+    | `/refund/consumer/list`             | GET  | —                           | 查看自己的售后记录                                           |
+    | `/refund/merchant/list`             | GET  | `?status=xx`（可选）        | 商家售后管理列表（可按状态筛选）                             |
+    | `/refund/audit`                     | PUT  | `?refundId=1&action=agree`  | 商家审核售后（agree=同意 / reject=拒绝），退货退款类型自动退钱 |
+
+    ------
+
+    ## 7 消费者模块 `/consumer`
+
+    | 接口                    | 方法   | 请求体 / 参数            | 说明                             |
+    | ----------------------- | ------ | ------------------------ | -------------------------------- |
+    | `/consumer/me`          | GET    | —                        | 获取当前登录消费者信息           |
+    | `/consumer/update`      | PUT    | Consumer JSON（需含 id） | 更新个人信息                     |
+    | `/consumer/{id}`        | GET    | Path                     | 按 ID 查询消费者                 |
+    | `/consumer/all`         | GET    | —                        | 查询所有消费者                   |
+    | `/consumer/add`         | POST   | Consumer JSON            | 新增消费者                       |
+    | `/consumer/delete/{id}` | DELETE | Path                     | 删除消费者（所有订单必须已签收） |
+
+    ------
+
+    ## 8 商家模块 `/merchant`
+
+    | 接口                    | 方法   | 请求体 / 参数          | 说明                           |
+    | ----------------------- | ------ | ---------------------- | ------------------------------ |
+    | `/merchant/myInfo`      | GET    | —                      | 获取当前登录商家信息           |
+    | `/merchant/updateInfo`  | PUT    | `?merchantName=新店名` | 修改店铺名称（只能改 name）    |
+    | `/merchant/{id}`        | GET    | Path                   | 按 ID 查询商家                 |
+    | `/merchant/all`         | GET    | —                      | 查询所有商家                   |
+    | `/merchant/add`         | POST   | MerchantDto JSON       | 新增商家（含商品列表）         |
+    | `/merchant/update`      | PUT    | MerchantDto JSON       | 更新商家（覆写信息及商品列表） |
+    | `/merchant/delete/{id}` | DELETE | Path                   | 删除商家（同步下架所有商品）   |
+
+    ------
+
+    ## 9 即时通讯模块 `/chat`
+
+    **WebSocket 连接**：`ws://localhost:8080/taobao/chat?userId=6&role=consumer`
+
+    发送 JSON 消息，后端持久化 + 实时转发在线用户：
+
+    ```json
+    {"senderId": 6, "senderRole": "consumer", "receiverId": 7, "receiverRole": "merchant", "content": "你好"}
+    ```
+
+    | 接口                    | 方法 | 参数                   | 说明                                                  |
+    | ----------------------- | ---- | ---------------------- | ----------------------------------------------------- |
+    | `/chat/contacts`        | GET  |                        | 获取联系人列表（返回 ChatContactDto：id、name、role） |
+    | `/chat/conversation`    | GET  | `?userId1=6&userId2=7` | 获取两人历史消息（校验至少一方是自己，按时间排序）    |
+    | `/chat/consumerNewChat` | GET  | `?targetId=7`          | 消费者发起新聊天（返回目标商家信息）                  |
+
+    ## 10 管理员模块 `/admin`
+
+    管理员通过 `/auth/admin/login` 独立登录。
+
+    | 接口                          | 方法 | 参数 | 说明                                 |
+    | ----------------------------- | ---- | ---- | ------------------------------------ |
+    | `/admin/consumers`            | GET  | —    | 查看所有消费者                       |
+    | `/admin/merchants`            | GET  | —    | 查看所有商家                         |
+    | `/admin/orders`               | GET  | —    | 查看所有订单                         |
+    | `/admin/today-total`          | GET  | —    | 今日交易总额（当天签收订单金额之和） |
+    | `/admin/consumer/{id}/toggle` | PUT  | Path | 切换消费者禁用/解禁（0↔1）           |
+    | `/admin/merchant/{id}/toggle` | PUT  | Path | 切换商家禁用/解禁（0↔1）             |
 2026-06-05 12:25:22.339 - 消费者登录 | username=jimi | id=511
+2026-06-05 14:52:32.442 - 消费者登录 | username=jimi | id=511
+2026-06-05 14:53:09.758 - 消费者登录 | username=jimi | id=511
