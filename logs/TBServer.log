@@ -585,3 +585,5 @@ java.lang.IllegalArgumentException: Name for argument of type [int] not specifie
 2026-06-05 12:20:39.699 INFO  [http-nio-0.0.0.0-8080-exec-4] com.taobao.service.impl.ProductServiceImpl - 商品上架 | 粉面彩蛋基础款 | ¥6
 2026-06-05 12:21:07.925 INFO  [http-nio-0.0.0.0-8080-exec-3] com.taobao.service.impl.ProductServiceImpl - 商品上架 | 粉面彩蛋加量款 | ¥8
 2026-06-05 12:21:40.103 INFO  [http-nio-0.0.0.0-8080-exec-9] com.taobao.service.impl.ProductServiceImpl - 商品上架 | 火鸡面 | ¥4
+2026-06-05 12:25:14.767 INFO  [http-nio-0.0.0.0-8080-exec-2] com.taobao.service.impl.MerchantServiceImpl - 商户登录成功 | username=yangzhanggui | id=55
+2026-06-05 12:25:22.338 INFO  [http-nio-0.0.0.0-8080-exec-9] com.taobao.service.impl.ConsumerServiceImpl - 消费者登录成功 | username=jimi | id=511
