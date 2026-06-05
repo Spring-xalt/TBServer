@@ -56,8 +56,8 @@
     <a href="#" onclick="switchTab('orders')" class="nav-link" id="nav-orders">
       <i class="fa fa-file-text mr-1.5"></i>订单
     </a>
-    <a href="#" onclick="switchTab('today')" class="nav-link" id="nav-today">
-      <i class="fa fa-line-chart mr-1.5"></i>今日交易额
+    <a href="#" onclick="switchTab('dashboard')" class="nav-link" id="nav-dashboard">
+      <i class="fa fa-dashboard mr-1.5"></i>数据大屏
     </a>
   </nav>
 
@@ -179,12 +179,48 @@
         <div id="orderPagination" class="flex justify-center mt-6"></div>
     </div>
 
-    <!-- 今日交易额 -->
-    <div id="tab-today" class="tab-content hidden">
-        <h2 class="text-2xl font-bold text-dark mb-6">今日交易额</h2>
-        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
-            <p class="text-4xl font-bold text-primary" id="todayTotal">¥0.00</p>
-            <p class="text-light mt-2">今日已签收订单总金额</p>
+    <!-- 数据大屏 -->
+    <div id="tab-dashboard" class="tab-content hidden">
+        <!-- KPI 卡片 -->
+        <div class="grid grid-cols-1 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-5 border-l-4 border-primary">
+                <p class="text-light text-sm mb-1">今日交易额（已签收）</p>
+                <p class="text-3xl font-bold text-primary" id="kpiTodayTotal">¥0.00</p>
+            </div>
+        </div>
+
+        <!-- 订单分析 — 4组件，满宽 -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden flex flex-col mb-4" style="min-height:600px;">
+            <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <h3 class="font-bold"><i class="fa fa-bar-chart mr-2"></i>订单分析（4组件） <span class="text-xs bg-white/20 px-2 py-0.5 rounded ml-1">密码 671c</span></h3>
+                <a href="http://localhost:37799/webroot/decision/link/RXzu" target="_blank"
+                   class="text-xs text-blue-100 hover:text-white"><i class="fa fa-external-link mr-1"></i>新窗口打开</a>
+            </div>
+            <iframe src="http://localhost:37799/webroot/decision/link/RXzu"
+                    class="flex-1 w-full border-0" allowfullscreen></iframe>
+        </div>
+
+        <!-- 退款分析 + 加购分析 — 各1组件，并排 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden flex flex-col" style="min-height:420px;">
+                <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white">
+                    <h3 class="font-bold text-sm"><i class="fa fa-pie-chart mr-2"></i>退款分析 <span class="text-xs bg-white/20 px-2 py-0.5 rounded ml-1">密码 07b4</span></h3>
+                    <a href="http://localhost:37799/webroot/decision/link/9XAJ" target="_blank"
+                       class="text-xs text-red-100 hover:text-white"><i class="fa fa-external-link mr-1"></i>新窗口打开</a>
+                </div>
+                <iframe src="http://localhost:37799/webroot/decision/link/9XAJ"
+                        class="flex-1 w-full border-0" allowfullscreen></iframe>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden flex flex-col" style="min-height:420px;">
+                <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white">
+                    <h3 class="font-bold text-sm"><i class="fa fa-shopping-cart mr-2"></i>用户加购分析 <span class="text-xs bg-white/20 px-2 py-0.5 rounded ml-1">密码 87bd</span></h3>
+                    <a href="http://localhost:37799/webroot/decision/link/AT3V" target="_blank"
+                       class="text-xs text-green-100 hover:text-white"><i class="fa fa-external-link mr-1"></i>新窗口打开</a>
+                </div>
+                <iframe src="http://localhost:37799/webroot/decision/link/AT3V"
+                        class="flex-1 w-full border-0" allowfullscreen></iframe>
+            </div>
         </div>
     </div>
 
@@ -212,7 +248,7 @@
         else if (tab === 'consumers') { buildConsumerFilters(); loadConsumers(); }
         else if (tab === 'merchants') { buildMerchantFilters(); loadMerchants(); }
         else if (tab === 'orders') { buildOrderFilters(); loadOrders(); }
-        else if (tab === 'today') loadTodayTotal();
+        else if (tab === 'dashboard') loadDashboard();
     }
 
     // ========== 商品概览 ==========
@@ -530,14 +566,13 @@
             </div>`;
     }
 
-    // ========== 今日交易额 ==========
-    function loadTodayTotal() {
-        axios.get('/admin/today-total')
-            .then(resp => {
-                if (resp.data.code === 200) {
-                    document.getElementById('todayTotal').innerText = '¥' + (resp.data.data || 0).toFixed(2);
-                }
-            });
+    // ========== 数据大屏 ==========
+    function loadDashboard() {
+        axios.get('/admin/today-total').then(resp => {
+            if (resp.data.code === 200) {
+                document.getElementById('kpiTodayTotal').innerText = '¥' + (resp.data.data || 0).toFixed(2);
+            }
+        });
     }
 
     // ========== 禁用/解禁 ==========

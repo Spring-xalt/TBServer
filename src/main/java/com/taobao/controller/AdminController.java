@@ -52,10 +52,10 @@ public class AdminController {
     // ======== 新分页接口（admin-dashboard.html 用） ========
     @GetMapping("/products/paged")
     public R<PageResult<Product>> productsPaged(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) String type,
-            @RequestParam(defaultValue = "time") String orderBy) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "type", required = false) String type,
+            @RequestParam(name = "orderBy", defaultValue = "time") String orderBy) {
         QueryWrapper<Product> w = new QueryWrapper<>();
         if (type != null && !type.isEmpty()) w.eq("type", type);
         if ("price".equals(orderBy)) {
@@ -68,11 +68,11 @@ public class AdminController {
 
     @GetMapping("/consumers/paged")
     public R<PageResult<Consumer>> consumersPaged(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) BigDecimal balanceMin,
-            @RequestParam(required = false) BigDecimal balanceMax,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "balanceMin", required = false) BigDecimal balanceMin,
+            @RequestParam(name = "balanceMax", required = false) BigDecimal balanceMax,
+            @RequestParam(name = "status", required = false) Integer status) {
         QueryWrapper<Consumer> w = new QueryWrapper<>();
         if (balanceMin != null) w.ge("account_balance", balanceMin);
         if (balanceMax != null) w.le("account_balance", balanceMax);
@@ -83,11 +83,11 @@ public class AdminController {
 
     @GetMapping("/merchants/paged")
     public R<PageResult<Merchant>> merchantsPaged(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) BigDecimal revenueMin,
-            @RequestParam(required = false) BigDecimal revenueMax,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "revenueMin", required = false) BigDecimal revenueMin,
+            @RequestParam(name = "revenueMax", required = false) BigDecimal revenueMax,
+            @RequestParam(name = "status", required = false) Integer status) {
         QueryWrapper<Merchant> w = new QueryWrapper<>();
         if (revenueMin != null) w.ge("revenue", revenueMin);
         if (revenueMax != null) w.le("revenue", revenueMax);
@@ -98,9 +98,9 @@ public class AdminController {
 
     @GetMapping("/orders/paged")
     public R<PageResult<Orders>> ordersPaged(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) String amountRange) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size,
+            @RequestParam(name = "amountRange", required = false) String amountRange) {
         QueryWrapper<Orders> w = new QueryWrapper<>();
         if ("small".equals(amountRange)) w.le("total_amount", new BigDecimal("100"));
         else if ("large".equals(amountRange)) w.ge("total_amount", new BigDecimal("500"));

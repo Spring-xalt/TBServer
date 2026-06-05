@@ -40,6 +40,12 @@ logging:
     com.taobao.mapper: debug
     com.taobao.service: info
     root: warn
+# FineReport 大屏代理配置
+finereport:
+  base-url: http://localhost:37799
+  username: admin
+  password: 123456
+
 # DeepSeek AI 助手配置
 ai:
   assistant:
