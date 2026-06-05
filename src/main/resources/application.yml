@@ -59,7 +59,7 @@ alipay:
   alipay-public-key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkDdpnbXg9QH9N/KzEMfATJPapoSFi8VJRCrHM/biDSAKQ1ryAkD0rJ2H1j0N3qwyn8jkEagIFGvxAvaVLswooSA21ilo/7fwTNA5/mgEpotlOE1BDKGhDbnCYQy2vAuO6qchU0uO1d91LftoAznNjENjyIb5f45rHf4V9kFCzlkw6BstQpe4uh8vFIPZ8T8eifaN875e0VxYs/0HTn7Uo3e/jFXHvjt3GaXCUoUJaZPwUIn39Cybv/umk4kwrbWL0GjTneaXFtGtFQa1wXffXJo9XWRFwoDmQu0ifaULStYISA5wOz/UNXguwuzHsIV+ClZ7Iivpi/LUtha6BwHQWwIDAQAB"
   gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
 
-  notify-url: http://yb7caacd.natappfree.cc/taobao/alipay/notify
+  notify-url: http://rd262c29.natappfree.cc/taobao/alipay/notify
   return-url: http://localhost:8080/taobao/pay-result.html
 
 

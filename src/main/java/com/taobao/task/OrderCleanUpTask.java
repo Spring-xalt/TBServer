@@ -29,7 +29,7 @@ public class OrderCleanUpTask {
     }
 
 
-    // 清理已签收订单：每天凌晨2点执行一次
+    // 清理已签收订单：每天下午四点执行一次
     @Scheduled(cron = "0 0 16 * * ?")
     public void cleanReceivedOrders() {
         int received = ordersMapper.deleteExpiredReceivedOrders();
